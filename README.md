@@ -3,7 +3,7 @@
 </p>
 
 # The Aati Package Manager
-Small package manager written in Rust
+Minimal package manager written in Rust
 
 ## How can I use it?
 

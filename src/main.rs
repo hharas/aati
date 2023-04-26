@@ -17,7 +17,7 @@ fn main() {
             // I got plans to make colored output an option since some terminals might not support coloring that well
             Some("--help") => {
                 println!(
-                    "{} - Small package manager written in Rust",
+                    "{} - Minimal package manager written in Rust",
                     "aati".bright_blue(),
                 );
                 println!();
