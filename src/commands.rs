@@ -463,9 +463,15 @@ pub fn list_command(choice_option: Option<&str>) {
 
             println!(
                 "{}",
-                format!("+ Available Packages ({}):", available_packages.len())
-                    .as_str()
-                    .bright_green()
+                format!(
+                    "+ Available Packages ({}):",
+                    available_packages
+                        .iter()
+                        .filter(|pkg| pkg["arch"].as_str().unwrap() == get_arch())
+                        .count()
+                )
+                .as_str()
+                .bright_green()
             );
 
             if !available_packages.is_empty() {
