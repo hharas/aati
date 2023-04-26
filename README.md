@@ -56,7 +56,7 @@ aati_repo/
 - `aarch64`: where ARMv8 packages are located
 - `dummy-package/`: a folder that contains LZ4 compressed packages of the default dummy package.
 
-`repo.toml` is the most importamt file. It contains the following template at first:
+`repo.toml` is the most important file. It contains the following template at first:
 
 ```toml
 [repo]
