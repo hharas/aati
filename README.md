@@ -66,13 +66,13 @@ description = "<description>"
 
 [index]
 packages = [
-    { name = "dummy-package", current = "0.1.1", arch = "x86-64", versions = [
-        { tag = "0.1.0", checksum = "f491af2a427cc0655922f4d5ff6b2b8961fa98cfc4b76a2a94bdcded247ba094" },
-        { tag = "0.1.1", checksum = "8852fe93baebe4a0ced17970812c0b5a2cb4d3b471f2941a094d4ca9cfb07cfa" },
-    ], author = "<maintainer>", description = "Aati Dummy Package. This is a Package created as a template.", url = "https://codeberg.org/amad/aati" },
     { name = "dummy-package", current = "0.1.1", arch = "aarch64", versions = [
         { tag = "0.1.0", checksum = "4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac" },
         { tag = "0.1.1", checksum = "eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4" },
+    ], author = "<maintainer>", description = "Aati Dummy Package. This is a Package created as a template.", url = "https://codeberg.org/amad/aati" },
+    { name = "dummy-package", current = "0.1.1", arch = "x86-64", versions = [
+        { tag = "0.1.0", checksum = "ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95" },
+        { tag = "0.1.1", checksum = "64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a" },
     ], author = "<maintainer>", description = "Aati Dummy Package. This is a Package created as a template.", url = "https://codeberg.org/amad/aati" }
 ]
 ```
