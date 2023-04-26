@@ -48,7 +48,9 @@ pub fn get_command(package_name: &str) {
         for available_package in available_packages {
             if available_package["name"].as_str().unwrap() == extracted_package[0] {
                 for package_version in available_package["versions"].as_array().unwrap() {
-                    if package_version["tag"].as_str().unwrap() == extracted_package[1].clone() {
+                    if package_version["tag"].as_str().unwrap() == extracted_package[1].clone()
+                        && available_package["arch"].as_str().unwrap() == get_arch()
+                    {
                         is_found = true;
                         checksum = package_version["checksum"].as_str().unwrap();
                     }
@@ -72,8 +74,9 @@ pub fn get_command(package_name: &str) {
         let version = extracted_package[1].clone();
 
         let url = format!(
-            "{}/{}/{}-{}.lz4",
+            "{}/{}/{}/{}-{}.lz4",
             repo_toml["repo"]["url"].as_str().unwrap(),
+            get_arch(),
             name,
             name,
             version
@@ -237,7 +240,10 @@ pub fn upgrade_command(choice: Option<&str>) {
                 .iter()
                 .find(|pkg| pkg["name"].as_str().unwrap() == package_name)
             {
-                if installed_package["version"].as_str() != available_package["current"].as_str() {
+                if installed_package["version"].as_str().unwrap()
+                    != available_package["current"].as_str().unwrap()
+                    && available_package["arch"].as_str().unwrap() == get_arch()
+                {
                     if prompt_yn(
                         format!(
                             "/ Are you sure you want to upgrade {}-{} -> {}?",
@@ -279,6 +285,7 @@ pub fn upgrade_command(choice: Option<&str>) {
                         == available_package["name"].as_str().unwrap()
                         && installed_package["version"].as_str().unwrap()
                             != available_package["current"].as_str().unwrap()
+                        && available_package["arch"].as_str().unwrap() == get_arch()
                     {
                         to_be_upgraded.push(available_package["name"].as_str().unwrap());
                         println!(
@@ -425,6 +432,7 @@ pub fn list_command(choice_option: Option<&str>) {
                     for available_package in available_packages {
                         if installed_package["name"].as_str().unwrap()
                             == available_package["name"].as_str().unwrap()
+                            && available_package["arch"].as_str().unwrap() == get_arch()
                         {
                             if installed_package["version"].as_str().unwrap()
                                 != available_package["current"].as_str().unwrap()
@@ -462,29 +470,53 @@ pub fn list_command(choice_option: Option<&str>) {
 
             if !available_packages.is_empty() {
                 for package in available_packages {
-                    println!("    {}:", package["name"].as_str().unwrap());
-                    let versions = package["versions"].as_array().unwrap();
+                    if package["arch"].as_str().unwrap() == get_arch() {
+                        println!("    {}:", package["name"].as_str().unwrap());
+                        let versions = package["versions"].as_array().unwrap();
 
-                    let mut reversed_versions = versions.clone();
-                    reversed_versions.reverse();
+                        let mut reversed_versions = versions.clone();
+                        reversed_versions.reverse();
 
-                    for version in reversed_versions {
-                        let tag = version["tag"].as_str().unwrap();
-                        let is_installed = installed_packages.iter().any(|installed_pkg| {
-                            installed_pkg["name"].as_str().unwrap()
-                                == package["name"].as_str().unwrap()
-                                && installed_pkg["version"].as_str().unwrap() == tag
-                        });
+                        for version in reversed_versions {
+                            let tag = version["tag"].as_str().unwrap();
+                            let is_installed = installed_packages.iter().any(|installed_pkg| {
+                                installed_pkg["name"].as_str().unwrap()
+                                    == package["name"].as_str().unwrap()
+                                    && installed_pkg["version"].as_str().unwrap() == tag
+                            });
 
-                        if !is_installed {
+                            if !is_installed {
+                                println!("      {}-{}", package["name"].as_str().unwrap(), tag);
+                            } else {
+                                println!(
+                                    "      {}-{} {}",
+                                    package["name"].as_str().unwrap(),
+                                    tag,
+                                    "[installed]".bright_green()
+                                );
+                            }
+                        }
+                    }
+                }
+
+                println!("{}", "\n+ Unsupported packages:".bright_yellow());
+
+                for package in available_packages {
+                    if package["arch"].as_str().unwrap() != get_arch() {
+                        println!(
+                            "    {} ({}):",
+                            package["name"].as_str().unwrap(),
+                            package["arch"].as_str().unwrap()
+                        );
+                        let versions = package["versions"].as_array().unwrap();
+
+                        let mut reversed_versions = versions.clone();
+                        reversed_versions.reverse();
+
+                        for version in reversed_versions {
+                            let tag = version["tag"].as_str().unwrap();
+
                             println!("      {}-{}", package["name"].as_str().unwrap(), tag);
-                        } else {
-                            println!(
-                                "      {}-{} {}",
-                                package["name"].as_str().unwrap(),
-                                tag,
-                                "[installed]".bright_green()
-                            );
                         }
                     }
                 }
@@ -505,6 +537,7 @@ pub fn list_command(choice_option: Option<&str>) {
                 for available_package in available_packages {
                     if installed_package["name"].as_str().unwrap()
                         == available_package["name"].as_str().unwrap()
+                        && available_package["arch"].as_str().unwrap() == get_arch()
                     {
                         if installed_package["version"].as_str().unwrap()
                             != available_package["current"].as_str().unwrap()
@@ -596,28 +629,45 @@ pub fn repo_command(repo_url_option: Option<&str>) {
             fs::create_dir_all("aati_repo").unwrap();
             let mut file = File::create("aati_repo/repo.toml").unwrap();
 
-            fs::create_dir_all("aati_repo/dummy-package").unwrap();
+            fs::create_dir_all("aati_repo/x86_64").unwrap();
+            fs::create_dir_all("aati_repo/x86_64/dummy-package").unwrap();
+            fs::create_dir_all("aati_repo/aarch64").unwrap();
+            fs::create_dir_all("aati_repo/aarch64/dummy-package").unwrap();
 
-            let dummy1_path = PathBuf::from("aati_repo/dummy-package/dummy-package-0.1.0");
-            let dummy2_path = PathBuf::from("aati_repo/dummy-package/dummy-package-0.1.1");
+            let dummy1_path = PathBuf::from("aati_repo/x86_64/dummy-package/dummy-package-0.1.0");
+            let dummy2_path = PathBuf::from("aati_repo/x86_64/dummy-package/dummy-package-0.1.1");
+            let dummy3_path = PathBuf::from("aati_repo/aarch64/dummy-package/dummy-package-0.1.0");
+            let dummy4_path = PathBuf::from("aati_repo/aarch64/dummy-package/dummy-package-0.1.1");
 
             let mut dummy1 = File::create(dummy1_path.clone()).unwrap();
             let mut dummy2 = File::create(dummy2_path.clone()).unwrap();
+            let mut dummy3 = File::create(dummy3_path.clone()).unwrap();
+            let mut dummy4 = File::create(dummy4_path.clone()).unwrap();
 
             dummy1
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86_64 machines\"")
                 .unwrap();
             dummy2
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86_64 machines\"")
+                .unwrap();
+            dummy3
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for aarch64 machines\"")
+                .unwrap();
+            dummy4
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for aarch64 machines\"")
                 .unwrap();
 
             package_command(format!("{}", dummy1_path.display()).as_str());
             package_command(format!("{}", dummy2_path.display()).as_str());
+            package_command(format!("{}", dummy3_path.display()).as_str());
+            package_command(format!("{}", dummy4_path.display()).as_str());
 
             fs::remove_file(dummy1_path).unwrap();
             fs::remove_file(dummy2_path).unwrap();
+            fs::remove_file(dummy3_path).unwrap();
+            fs::remove_file(dummy4_path).unwrap();
 
-            let contents = format!("[repo]\nurl = \"{}\"\nmaintainer = \"{}\"\ndescription = \"{}\"\n\n[index]\npackages = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", versions = [\n        {{ tag = \"0.1.0\", checksum = \"a7d9edd360059777ee8e0d80a6dcf64299b41d7e6a5f720833fcf2bcd7105604\" }},\n        {{ tag = \"0.1.1\", checksum = \"c92d96486db47fc9d4a9fdef0da454afb5a434a933801e0b603269d17f0ad64d\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }}\n]", repo_url, repo_maintainer, repo_description, repo_maintainer);
+            let contents = format!("[repo]\nurl = \"{}\"\nmaintainer = \"{}\"\ndescription = \"{}\"\n\n[index]\npackages = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"x86_64\", versions = [\n        {{ tag = \"0.1.0\", checksum = \"f491af2a427cc0655922f4d5ff6b2b8961fa98cfc4b76a2a94bdcded247ba094\" }},\n        {{ tag = \"0.1.1\", checksum = \"8852fe93baebe4a0ced17970812c0b5a2cb4d3b471f2941a094d4ca9cfb07cfa\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"aarch64\", versions = [\n        {{ tag = \"0.1.0\", checksum = \"4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac\" }},\n        {{ tag = \"0.1.1\", checksum = \"eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }}\n]\n", repo_url, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
 
             file.write_all(contents.as_bytes()).unwrap();
 
@@ -742,14 +792,16 @@ pub fn info_command(package_name: &str) {
     }
 
     let author = package["author"].as_str().unwrap();
+    let arch = package["arch"].as_str().unwrap();
     let url = package["url"].as_str().unwrap();
     let description = package["description"].as_str().unwrap();
 
     println!(
-        "{}\n    Name: {}\n    Author: {}",
+        "{}\n    Name: {}\n    Author: {}\n    Architecture: {}",
         "+ Package Information:".bright_green(),
         name,
-        author
+        author,
+        arch
     );
 
     match is_installed {

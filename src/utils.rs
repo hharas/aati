@@ -9,6 +9,16 @@ use std::process::exit;
 use colored::Colorize;
 use ring::digest;
 
+pub fn get_arch() -> String {
+    if cfg!(target_arch = "x86_64") {
+        "x86_64".to_string()
+    } else if cfg!(target_arch = "aarch64") {
+        "aarch64".to_string()
+    } else {
+        "unknown".to_string()
+    }
+}
+
 pub fn check_config_dir() {
     let config_dir = dirs::home_dir().unwrap().join(".config");
     let aati_config_dir = dirs::home_dir().unwrap().join(".config/aati");
@@ -130,7 +140,9 @@ pub fn extract_package(text: &str) -> Vec<String> {
         name = text;
 
         for available_package in available_packages {
-            if available_package["name"].as_str().unwrap() == text {
+            if available_package["name"].as_str().unwrap() == text
+                && available_package["arch"].as_str().unwrap() == get_arch()
+            {
                 version = available_package["current"].as_str().unwrap();
             }
         }

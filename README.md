@@ -1,3 +1,7 @@
+<p align="center">
+    <img src="aati.png" alt="Aati Andalusian Calligraphy in ASCII" width="300" />
+</p>
+
 # The Aati Package Manager
 Small package manager written in Rust
 
@@ -36,13 +40,20 @@ After answering the prompts, you will be left with this folder structure:
 ```
 aati_repo/
     repo.toml
-    dummy-package/
-        dummy-package-0.1.0.lz4
-        dummy-package-0.1.1.lz4
+    aarch64/
+        dummy-package/
+            dummy-package-0.1.0.lz4
+            dummy-package-0.1.1.lz4
+    x86_64/
+        dummy-package/
+            dummy-package-0.1.0.lz4
+            dummy-package-0.1.1.lz4
 ```
 
 - `aati_repo/`: your repository's folder, in it you can initialise a git repository and host it somewhere, like on Codeberg or Gitlab.
 - `repo.toml`: the file that contains the data needed to be able to host this package repository.
+- `x86_64`: where amd64 packages are located
+- `aarch64`: where ARMv8 packages are located
 - `dummy-package/`: a folder that contains LZ4 compressed packages of the default dummy package.
 
 `repo.toml` is the most importamt file. It contains the following template at first:
@@ -55,9 +66,13 @@ description = "<description>"
 
 [index]
 packages = [
-    { name = "dummy-package", current = "0.1.1", versions = [
-        { tag = "0.1.0", checksum = "a7d9edd360059777ee8e0d80a6dcf64299b41d7e6a5f720833fcf2bcd7105604" },
-        { tag = "0.1.1", checksum = "c92d96486db47fc9d4a9fdef0da454afb5a434a933801e0b603269d17f0ad64d" },
+    { name = "dummy-package", current = "0.1.1", arch = "x86_64", versions = [
+        { tag = "0.1.0", checksum = "f491af2a427cc0655922f4d5ff6b2b8961fa98cfc4b76a2a94bdcded247ba094" },
+        { tag = "0.1.1", checksum = "8852fe93baebe4a0ced17970812c0b5a2cb4d3b471f2941a094d4ca9cfb07cfa" },
+    ], author = "<maintainer>", description = "Aati Dummy Package. This is a Package created as a template.", url = "https://codeberg.org/amad/aati" },
+    { name = "dummy-package", current = "0.1.1", arch = "aarch64", versions = [
+        { tag = "0.1.0", checksum = "4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac" },
+        { tag = "0.1.1", checksum = "eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4" },
     ], author = "<maintainer>", description = "Aati Dummy Package. This is a Package created as a template.", url = "https://codeberg.org/amad/aati" }
 ]
 ```
@@ -66,13 +81,13 @@ Under `[repo]` there's general information about the Repository. What matters mo
 
 Under `[index]` is where the `packages` array is located. The `packages` array contains an array that consists of the following package scheme:
 ```toml
-{ name = "<package name>", current = "<package's current version>", versions = [
+{ name = "<package name>", current = "<package's current version>", arch = "<target architecture>", versions = [
     { tag = "version's tag", checksum = "file's sha256sum" }
 ], author = "<package author>", description = "<package description>", url = "<package url>" }
 ```
 
 In order to add a package, you need to perform two actions:
-1. Add your Package to the file structure by creating a directory under `aati_repo/` named after your package's name. In it you will be putting your binaries in the following format: `package-name-x.x.x`. Afterwards you will run `aati package package-name-x.x.x` in order to compress your binary using LZ4, then delete the original binary.
+1. Add your Package to the file structure by creating a directory under `aati_repo/<architecture>/` named after your package's name. In it you will be putting your binaries in the following format: `package-name-x.x.x`. Afterwards you will run `aati package package-name-x.x.x` in order to compress your binary using LZ4, then delete the original binary.
 
 2. Add your package to the `repo.toml` file. Although this step will be replaced by adding a main `index.toml` file for this job, however this hasn't been implemented yet. In order to add it to the `repo.toml` file, you need to generate a sha256 hash of your LZ4 compressed package, then add that as a package entry to the `packages` array. If you're adding a new version to your program, then add it to the `versions` array inside your package's object.
 

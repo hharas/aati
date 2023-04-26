@@ -1,3 +1,5 @@
+// بسم الله الرحمن الرحيم
+
 mod commands;
 mod constants;
 mod structs;
@@ -134,3 +136,5 @@ fn main() {
         );
     }
 }
+
+// تم بحمد الله
