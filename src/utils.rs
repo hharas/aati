@@ -11,7 +11,7 @@ use ring::digest;
 
 pub fn get_arch() -> String {
     if cfg!(target_arch = "x86_64") {
-        "x86_64".to_string()
+        "x86-64".to_string()
     } else if cfg!(target_arch = "aarch64") {
         "aarch64".to_string()
     } else {

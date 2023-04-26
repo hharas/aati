@@ -44,7 +44,7 @@ aati_repo/
         dummy-package/
             dummy-package-0.1.0.lz4
             dummy-package-0.1.1.lz4
-    x86_64/
+    x86-64/
         dummy-package/
             dummy-package-0.1.0.lz4
             dummy-package-0.1.1.lz4
@@ -52,7 +52,7 @@ aati_repo/
 
 - `aati_repo/`: your repository's folder, in it you can initialise a git repository and host it somewhere, like on Codeberg or Gitlab.
 - `repo.toml`: the file that contains the data needed to be able to host this package repository.
-- `x86_64`: where amd64 packages are located
+- `x86-64`: where amd64 packages are located
 - `aarch64`: where ARMv8 packages are located
 - `dummy-package/`: a folder that contains LZ4 compressed packages of the default dummy package.
 
@@ -66,7 +66,7 @@ description = "<description>"
 
 [index]
 packages = [
-    { name = "dummy-package", current = "0.1.1", arch = "x86_64", versions = [
+    { name = "dummy-package", current = "0.1.1", arch = "x86-64", versions = [
         { tag = "0.1.0", checksum = "f491af2a427cc0655922f4d5ff6b2b8961fa98cfc4b76a2a94bdcded247ba094" },
         { tag = "0.1.1", checksum = "8852fe93baebe4a0ced17970812c0b5a2cb4d3b471f2941a094d4ca9cfb07cfa" },
     ], author = "<maintainer>", description = "Aati Dummy Package. This is a Package created as a template.", url = "https://codeberg.org/amad/aati" },

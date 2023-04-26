@@ -629,13 +629,13 @@ pub fn repo_command(repo_url_option: Option<&str>) {
             fs::create_dir_all("aati_repo").unwrap();
             let mut file = File::create("aati_repo/repo.toml").unwrap();
 
-            fs::create_dir_all("aati_repo/x86_64").unwrap();
-            fs::create_dir_all("aati_repo/x86_64/dummy-package").unwrap();
+            fs::create_dir_all("aati_repo/x86-64").unwrap();
+            fs::create_dir_all("aati_repo/x86-64/dummy-package").unwrap();
             fs::create_dir_all("aati_repo/aarch64").unwrap();
             fs::create_dir_all("aati_repo/aarch64/dummy-package").unwrap();
 
-            let dummy1_path = PathBuf::from("aati_repo/x86_64/dummy-package/dummy-package-0.1.0");
-            let dummy2_path = PathBuf::from("aati_repo/x86_64/dummy-package/dummy-package-0.1.1");
+            let dummy1_path = PathBuf::from("aati_repo/x86-64/dummy-package/dummy-package-0.1.0");
+            let dummy2_path = PathBuf::from("aati_repo/x86-64/dummy-package/dummy-package-0.1.1");
             let dummy3_path = PathBuf::from("aati_repo/aarch64/dummy-package/dummy-package-0.1.0");
             let dummy4_path = PathBuf::from("aati_repo/aarch64/dummy-package/dummy-package-0.1.1");
 
@@ -645,10 +645,10 @@ pub fn repo_command(repo_url_option: Option<&str>) {
             let mut dummy4 = File::create(dummy4_path.clone()).unwrap();
 
             dummy1
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86_64 machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86-64 machines\"")
                 .unwrap();
             dummy2
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86_64 machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86-64 machines\"")
                 .unwrap();
             dummy3
                 .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for aarch64 machines\"")
@@ -667,7 +667,7 @@ pub fn repo_command(repo_url_option: Option<&str>) {
             fs::remove_file(dummy3_path).unwrap();
             fs::remove_file(dummy4_path).unwrap();
 
-            let contents = format!("[repo]\nurl = \"{}\"\nmaintainer = \"{}\"\ndescription = \"{}\"\n\n[index]\npackages = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"x86_64\", versions = [\n        {{ tag = \"0.1.0\", checksum = \"f491af2a427cc0655922f4d5ff6b2b8961fa98cfc4b76a2a94bdcded247ba094\" }},\n        {{ tag = \"0.1.1\", checksum = \"8852fe93baebe4a0ced17970812c0b5a2cb4d3b471f2941a094d4ca9cfb07cfa\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"aarch64\", versions = [\n        {{ tag = \"0.1.0\", checksum = \"4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac\" }},\n        {{ tag = \"0.1.1\", checksum = \"eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }}\n]\n", repo_url, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
+            let contents = format!("[repo]\nurl = \"{}\"\nmaintainer = \"{}\"\ndescription = \"{}\"\n\n[index]\npackages = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"x86-64\", versions = [\n        {{ tag = \"0.1.0\", checksum = \"f491af2a427cc0655922f4d5ff6b2b8961fa98cfc4b76a2a94bdcded247ba094\" }},\n        {{ tag = \"0.1.1\", checksum = \"8852fe93baebe4a0ced17970812c0b5a2cb4d3b471f2941a094d4ca9cfb07cfa\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"aarch64\", versions = [\n        {{ tag = \"0.1.0\", checksum = \"4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac\" }},\n        {{ tag = \"0.1.1\", checksum = \"eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }}\n]\n", repo_url, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
 
             file.write_all(contents.as_bytes()).unwrap();
 
