@@ -441,7 +441,7 @@ pub fn list_command(choice_option: Option<&str>) {
                                     "    {}-{} {}",
                                     installed_package["name"].as_str().unwrap(),
                                     installed_package["version"].as_str().unwrap(),
-                                    "[outdated]".bright_red()
+                                    "[outdated]".yellow()
                                 );
                             } else {
                                 println!(
@@ -552,7 +552,7 @@ pub fn list_command(choice_option: Option<&str>) {
                                 "    {}-{} {}",
                                 installed_package["name"].as_str().unwrap(),
                                 installed_package["version"].as_str().unwrap(),
-                                "[outdated]".bright_red()
+                                "[outdated]".yellow()
                             );
                         } else {
                             println!(
@@ -765,7 +765,12 @@ pub fn info_command(package_name: &str) {
         .as_array()
         .unwrap()
         .iter()
-        .find(|pkg| pkg["name"] == package_name.into())
+        .find(|pkg| pkg["name"] == package_name.into() && pkg["arch"] == get_arch().into())
+        //                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        //                                                      This has a drawback, which is that
+        //                                                      if a user runs aati info <package>
+        //                                                      he won't receive any info if it's
+        //                                                      a package written for another arch
         .expect("- PACKAGE NOT FOUND! TRY: $ aati sync");
 
     let aati_lock = get_aati_lock().unwrap();
@@ -816,7 +821,7 @@ pub fn info_command(package_name: &str) {
             false => println!(
                 "    Version: {} {}",
                 version,
-                format!("[{} is installed]", installed_package_version).bright_red()
+                format!("[{} is installed]", installed_package_version).yellow()
             ),
         },
         false => println!("    Version: {}", version),
