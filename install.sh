@@ -3,9 +3,9 @@
 set -e
 
 echo "+ Checking for repository updates..."
-echo "+ Running ($ git pull origin master)"
+echo "+ Running ($ git pull origin master --no-rebase)"
 
-git pull origin master
+git pull origin master --no-rebase
 
 echo "+ Building Aati..."
 echo "+ Running ($ cargo build --release)..."
