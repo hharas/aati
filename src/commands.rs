@@ -721,13 +721,6 @@ pub fn repo_command(repo_url_option: Option<&str>) {
                     );
                     writeln!(repo_config, "{}", repo_toml.as_str()).unwrap();
 
-                    // Extracting the URL
-
-                    repo_config.sync_all().unwrap();
-
-                    let repo_toml: toml::Value = repo_toml.parse().unwrap();
-                    let url = repo_toml["repo"]["url"].as_str().unwrap();
-
                     // Putting it in rc.toml
 
                     let mut aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
@@ -740,7 +733,10 @@ pub fn repo_command(repo_url_option: Option<&str>) {
                         .as_table_mut()
                         .unwrap();
 
-                    repo_table.insert("url".to_owned(), toml::Value::String(url.to_owned()));
+                    repo_table.insert(
+                        "url".to_owned(),
+                        toml::Value::String(requested_url.to_owned()),
+                    );
 
                     writeln!(
                         File::create(home_dir.join(".config/aati/rc.toml")).unwrap(),
