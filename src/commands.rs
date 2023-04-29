@@ -860,8 +860,8 @@ pub fn info_command(package_name: &str) {
             };
 
             println!(
-                "    Available Versions: {}\n    URL: {}\n    Description:\n      {}",
-                tags.join(", "),
+                "    Available Versions:\n      - {}\n    URL: {}\n    Description:\n      {}",
+                tags.join("\n      - "),
                 url,
                 description
             );
