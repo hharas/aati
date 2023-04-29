@@ -2,7 +2,7 @@
 name = "aati"
 readme = "README.md"
 license = "GPL-3.0-only"
-version = "0.2.5"
+version = "0.3.0"
 edition = "2021"
 
 [dependencies]
