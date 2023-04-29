@@ -23,14 +23,14 @@ pub fn get_command(package_name: &str) {
     let repo_toml: toml::Value = get_repo_config().unwrap().parse().unwrap();
     let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
-    let extracted_package = extract_package(package_name);
+    let extracted_package = extract_package(&package_name.to_string());
 
     let mut is_installed = false;
     let mut is_found = false;
     let mut checksum = "";
 
     for installed_package in installed_packages {
-        if installed_package["name"].as_str().unwrap() == extracted_package[0] {
+        if installed_package["name"].as_str().unwrap() == extracted_package[1] {
             is_installed = true;
         }
     }
@@ -46,9 +46,9 @@ pub fn get_command(package_name: &str) {
         exit(0);
     } else {
         for available_package in available_packages {
-            if available_package["name"].as_str().unwrap() == extracted_package[0] {
+            if available_package["name"].as_str().unwrap() == extracted_package[1] {
                 for package_version in available_package["versions"].as_array().unwrap() {
-                    if package_version["tag"].as_str().unwrap() == extracted_package[1].clone()
+                    if package_version["tag"].as_str().unwrap() == extracted_package[2].clone()
                         && available_package["arch"].as_str().unwrap() == get_arch()
                     {
                         is_found = true;
@@ -70,12 +70,14 @@ pub fn get_command(package_name: &str) {
     }
 
     if !is_installed && is_found {
-        let name = extracted_package[0].clone();
-        let version = extracted_package[1].clone();
+        let name = extracted_package[1].clone();
+        let version = extracted_package[2].clone();
+
+        let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
 
         let url = format!(
             "{}/{}/{}/{}-{}.lz4",
-            repo_toml["repo"]["url"].as_str().unwrap(),
+            aati_config["repo"]["url"].as_str().unwrap(),
             get_arch(),
             name,
             name,
@@ -458,8 +460,8 @@ pub fn list_command(choice_option: Option<&str>) {
             }
         } else if choice.to_ascii_lowercase() == "available" {
             let installed_packages = aati_lock["package"].as_array().unwrap();
-
             let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+            let repo_name = repo_toml["repo"]["name"].as_str().unwrap();
 
             println!(
                 "{}",
@@ -477,7 +479,7 @@ pub fn list_command(choice_option: Option<&str>) {
             if !available_packages.is_empty() {
                 for package in available_packages {
                     if package["arch"].as_str().unwrap() == get_arch() {
-                        println!("    {}:", package["name"].as_str().unwrap());
+                        println!("    {}/{}:", repo_name, package["name"].as_str().unwrap());
                         let versions = package["versions"].as_array().unwrap();
 
                         let mut reversed_versions = versions.clone();
@@ -510,7 +512,8 @@ pub fn list_command(choice_option: Option<&str>) {
                 for package in available_packages {
                     if package["arch"].as_str().unwrap() != get_arch() {
                         println!(
-                            "    {} ({}):",
+                            "    {}/{} ({}):",
+                            repo_name,
                             package["name"].as_str().unwrap(),
                             package["arch"].as_str().unwrap()
                         );
@@ -635,6 +638,7 @@ pub fn sync_command() {
 pub fn repo_command(repo_url_option: Option<&str>) {
     if let Some(repo_url) = repo_url_option {
         if repo_url == "init" {
+            let repo_name = prompt("* What will be the Repository's name (i.e. <name>/package)?");
             let repo_maintainer = prompt("* What's the name of its Maintainer?");
             let repo_description = prompt("* What's the Description of the Repository?");
 
@@ -679,7 +683,7 @@ pub fn repo_command(repo_url_option: Option<&str>) {
             fs::remove_file(dummy3_path).unwrap();
             fs::remove_file(dummy4_path).unwrap();
 
-            let contents = format!("[repo]\nmaintainer = \"{}\"\ndescription = \"{}\"\n\n[index]\npackages = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"x86-64\", versions = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"aarch64\", versions = [\n        {{ tag = \"0.1.0\", checksum = \"4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac\" }},\n        {{ tag = \"0.1.1\", checksum = \"eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},\n        {{ tag = \"0.1.0\", checksum = \"ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95\" }},\n        {{ tag = \"0.1.1\", checksum = \"64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }}]\n", repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
+            let contents = format!("[repo]\nname = \"{}\"\nmaintainer = \"{}\"\ndescription = \"{}\"\n\n[index]\npackages = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"x86-64\", versions = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"aarch64\", versions = [\n        {{ tag = \"0.1.0\", checksum = \"4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac\" }},\n        {{ tag = \"0.1.1\", checksum = \"eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},\n        {{ tag = \"0.1.0\", checksum = \"ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95\" }},\n        {{ tag = \"0.1.1\", checksum = \"64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }}]\n", repo_name, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
 
             file.write_all(contents.as_bytes()).unwrap();
 
@@ -733,10 +737,7 @@ pub fn repo_command(repo_url_option: Option<&str>) {
                         .as_table_mut()
                         .unwrap();
 
-                    repo_table.insert(
-                        "url".to_owned(),
-                        toml::Value::String(repo_url.to_owned()),
-                    );
+                    repo_table.insert("url".to_owned(), toml::Value::String(repo_url.to_owned()));
 
                     writeln!(
                         File::create(home_dir.join(".config/aati/rc.toml")).unwrap(),

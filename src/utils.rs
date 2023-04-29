@@ -143,34 +143,42 @@ pub fn prompt_yn(prompt_text: &str) -> bool {
     input.trim().is_empty() || input.trim().to_lowercase() == "y"
 }
 
-pub fn extract_package(text: &str) -> Vec<String> {
-    let (mut name, mut version) = text.rsplit_once('-').unwrap_or((text, text));
+pub fn extract_package(text: &String) -> Vec<String> {
+    if !text.contains('/') {
+        let (mut name, mut version) = text.rsplit_once('-').unwrap_or((text, text));
 
-    let repo_toml: toml::Value = get_repo_config().unwrap().parse().unwrap();
-    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+        let repo_toml: toml::Value = get_repo_config().unwrap().parse().unwrap();
+        let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
-    if name == version {
-        for available_package in available_packages {
-            if available_package["name"].as_str().unwrap() == name {
-                version = available_package["current"].as_str().unwrap();
+        if name == version {
+            for available_package in available_packages {
+                if available_package["name"].as_str().unwrap() == name {
+                    version = available_package["current"].as_str().unwrap();
+                }
+            }
+        } else if !version.chars().next().unwrap().is_ascii_digit() {
+            name = text;
+
+            for available_package in available_packages {
+                if available_package["name"].as_str().unwrap() == text
+                    && available_package["arch"].as_str().unwrap() == get_arch()
+                {
+                    version = available_package["current"].as_str().unwrap();
+                }
             }
         }
-    } else if !version.chars().next().unwrap().is_ascii_digit() {
-        name = text;
 
-        for available_package in available_packages {
-            if available_package["name"].as_str().unwrap() == text
-                && available_package["arch"].as_str().unwrap() == get_arch()
-            {
-                version = available_package["current"].as_str().unwrap();
-            }
-        }
+        let name_string = name.to_string();
+        let version_string = version.to_string();
+
+        vec!["$unprovided$".to_string(), name_string, version_string]
+    } else {
+        let (repo_name, text_to_be_extracted) = text.split_once('/').unwrap();
+
+        let result = extract_package(&text_to_be_extracted.to_string());
+
+        vec![repo_name.to_string(), result[1].clone(), result[2].clone()]
     }
-
-    let name_string = name.to_string();
-    let version_string = version.to_string();
-
-    vec![name_string, version_string]
 }
 
 pub fn verify_checksum(body: &[u8], checksum: String) -> bool {
