@@ -735,7 +735,7 @@ pub fn repo_command(repo_url_option: Option<&str>) {
 
                     repo_table.insert(
                         "url".to_owned(),
-                        toml::Value::String(requested_url.to_owned()),
+                        toml::Value::String(repo_url.to_owned()),
                     );
 
                     writeln!(
