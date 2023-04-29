@@ -60,7 +60,6 @@ aati_repo/
 
 ```toml
 [repo]
-url = "<url>"
 maintainer = "<maintainer>"
 description = "<description>"
 
@@ -77,9 +76,7 @@ packages = [
 ]
 ```
 
-Under `[repo]` there's general information about the Repository. What matters most there is the `url` field, since that's what Aati will look for when syncing with your Repository. The `url` field should be a url that doesn't end with a `/` and should be hosting the `aati_repo` directory. If you're hosting this Repository as a Git Repository on Codeberg, the URL should be `https://codeberg.org/<username>/<repo>/raw/branch/<branch>`.
-
-Under `[index]` is where the `packages` array is located. The `packages` array contains an array that consists of the following package scheme:
+Under `[repo]` there's general information about the Repository. Under `[index]` is where the `packages` array is located. The `packages` array contains an array that consists of the following package scheme:
 ```toml
 { name = "<package name>", current = "<package's current version>", arch = "<target architecture>", versions = [
     { tag = "version's tag", checksum = "file's sha256sum" }
@@ -93,13 +90,12 @@ In order to add a package, you need to perform two actions:
 
 If you want to test things out only, then do the following:
 1. `$ aati repo init`
-2. Make sure to set `http://localhost:8000` as the repository's url.
-3. `$ cd aati_repo`
-4. `$ python -m http.server`
-5. `$ aati repo http://localhost:8000`
-6. Now you're all set. Try installing the dummy package.
-7. `$ aati get dummy-package`
-8. `$ dummy-package`
+2. `$ cd aati_repo`
+3. `$ python -m http.server`
+4. `$ aati repo http://localhost:8000`
+5. Now you're all set. Try installing the dummy package.
+6. `$ aati get dummy-package`
+7. `$ dummy-package`
 
 Here you go! You set up a local Aati repository that you can use to test things out.
 
@@ -109,7 +105,7 @@ Simply: It was so fun to develop. I always thought of building my own package ma
 
 # Contribution
 
-Any contribution to the Aati Package Manager are welcomed. This Project is definitely incomplete and immature, so any development is appreciated.
+Any contributions to the Aati Package Manager are welcomed. This Project is definitely incomplete and immature, so any development is appreciated.
 
 # License
 

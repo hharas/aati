@@ -571,55 +571,62 @@ pub fn list_command(choice_option: Option<&str>) {
 }
 
 pub fn sync_command() {
-    let repo_config: toml::Value = get_repo_config()
+    let aati_config: toml::Value = get_aati_config()
         .unwrap()
         .parse()
-        .expect("- UNABLE TO PARSE ~/.config/aati/repo.toml!");
+        .expect("- UNABLE TO PARSE ~/.config/aati/rc.toml!");
 
-    let repo_url = repo_config
+    match aati_config
         .get("repo")
         .and_then(|repo| repo.get("url"))
         .and_then(|url| url.as_str())
-        .expect("- UNABLE TO PARSE INFO FROM ~/.config/aati/repo.toml!");
-
-    let requested_url = format!("{}/repo.toml", repo_url);
-
-    println!(
-        "{}",
-        format!("+ Requesting ({})", requested_url)
-            .as_str()
-            .bright_green()
-    );
-
-    match ureq::get(requested_url.as_str()).call() {
-        Ok(repo_toml) => {
-            let repo_toml = repo_toml.into_string().unwrap();
-
-            let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
-            let repo_config_path_buf = home_dir.join(".config/aati/repo.toml");
-
-            let mut repo_config = File::create(repo_config_path_buf)
-                .expect("- UNABLE TO CREATE ~/.config/aati/repo.toml!");
+    {
+        Some(url) => {
+            let requested_url = format!("{}/repo.toml", url);
 
             println!(
                 "{}",
-                "+ Writing Repo Config to ~/.config/aati/repo.toml".bright_green()
+                format!("+ Requesting ({})", requested_url)
+                    .as_str()
+                    .bright_green()
             );
-            writeln!(repo_config, "{}", repo_toml.as_str()).unwrap();
 
-            println!("{}", "+ Done syncing with the Repo!".bright_green());
+            match ureq::get(requested_url.as_str()).call() {
+                Ok(repo_toml) => {
+                    let repo_toml = repo_toml.into_string().unwrap();
+
+                    let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
+                    let repo_config_path_buf = home_dir.join(".config/aati/repo.toml");
+
+                    let mut repo_config = File::create(repo_config_path_buf)
+                        .expect("- UNABLE TO CREATE ~/.config/aati/repo.toml!");
+
+                    println!(
+                        "{}",
+                        "+ Writing Repo Config to ~/.config/aati/repo.toml".bright_green()
+                    );
+                    writeln!(repo_config, "{}", repo_toml.as_str()).unwrap();
+
+                    println!("{}", "+ Done syncing with the Repo!".bright_green());
+                }
+
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO REQUEST ({})! ERROR[5]: {}",
+                            requested_url, error
+                        )
+                        .as_str()
+                        .bright_red()
+                    );
+                    exit(1);
+                }
+            }
         }
 
-        Err(error) => {
-            println!(
-                "{}",
-                format!(
-                    "- UNABLE TO REQUEST ({})! ERROR[5]: {}",
-                    requested_url, error
-                )
-                .as_str()
-                .bright_red()
-            );
+        None => {
+            println!("{}", "- ERROR[8]: UNABLE TO PARSE INFO FROM ~/.config/aati/rc.toml! TRY: aati repo <repo url>".bright_red());
             exit(1);
         }
     }
@@ -628,7 +635,6 @@ pub fn sync_command() {
 pub fn repo_command(repo_url_option: Option<&str>) {
     if let Some(repo_url) = repo_url_option {
         if repo_url == "init" {
-            let repo_url = prompt("* On what URL will this Package Repository be hosted?");
             let repo_maintainer = prompt("* What's the name of its Maintainer?");
             let repo_description = prompt("* What's the Description of the Repository?");
 
@@ -673,7 +679,7 @@ pub fn repo_command(repo_url_option: Option<&str>) {
             fs::remove_file(dummy3_path).unwrap();
             fs::remove_file(dummy4_path).unwrap();
 
-            let contents = format!("[repo]\nurl = \"{}\"\nmaintainer = \"{}\"\ndescription = \"{}\"\n\n[index]\npackages = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"x86-64\", versions = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"aarch64\", versions = [\n        {{ tag = \"0.1.0\", checksum = \"4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac\" }},\n        {{ tag = \"0.1.1\", checksum = \"eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},\n        {{ tag = \"0.1.0\", checksum = \"ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95\" }},\n        {{ tag = \"0.1.1\", checksum = \"64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }}]\n", repo_url, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
+            let contents = format!("[repo]\nmaintainer = \"{}\"\ndescription = \"{}\"\n\n[index]\npackages = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"x86-64\", versions = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"aarch64\", versions = [\n        {{ tag = \"0.1.0\", checksum = \"4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac\" }},\n        {{ tag = \"0.1.1\", checksum = \"eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},\n        {{ tag = \"0.1.0\", checksum = \"ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95\" }},\n        {{ tag = \"0.1.1\", checksum = \"64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }}]\n", repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
 
             file.write_all(contents.as_bytes()).unwrap();
 
@@ -715,7 +721,33 @@ pub fn repo_command(repo_url_option: Option<&str>) {
                     );
                     writeln!(repo_config, "{}", repo_toml.as_str()).unwrap();
 
-                    println!("{}", "+ Repo set successfully!".bright_green());
+                    // Extracting the URL
+
+                    repo_config.sync_all().unwrap();
+
+                    let repo_toml: toml::Value = repo_toml.parse().unwrap();
+                    let url = repo_toml["repo"]["url"].as_str().unwrap();
+
+                    // Putting it in rc.toml
+
+                    let mut aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+
+                    let aati_config = aati_config.as_table_mut().unwrap();
+
+                    let repo_table = aati_config
+                        .entry("repo".to_owned())
+                        .or_insert(toml::Value::Table(toml::map::Map::new()))
+                        .as_table_mut()
+                        .unwrap();
+
+                    repo_table.insert("url".to_owned(), toml::Value::String(url.to_owned()));
+
+                    writeln!(
+                        File::create(home_dir.join(".config/aati/rc.toml")).unwrap(),
+                        "{}",
+                        toml::to_string_pretty(aati_config).unwrap()
+                    )
+                    .unwrap()
                 }
 
                 Err(error) => {
@@ -732,13 +764,17 @@ pub fn repo_command(repo_url_option: Option<&str>) {
             }
         }
     } else {
-        let repo_config = get_repo_config().unwrap();
+        let aati_config = get_aati_config().unwrap();
+        let aati_toml: toml::Value = aati_config
+            .parse()
+            .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
 
+        let repo_config = get_repo_config().unwrap();
         let repo_toml: toml::Value = repo_config
             .parse()
             .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
 
-        let url = repo_toml["repo"]["url"].as_str().unwrap();
+        let url = aati_toml["repo"]["url"].as_str().unwrap();
         let maintainer = repo_toml["repo"]["maintainer"].as_str().unwrap();
         let description = repo_toml["repo"]["description"].as_str().unwrap();
         let packages_number = repo_toml["index"]["packages"].as_array().unwrap().len();
@@ -761,7 +797,7 @@ pub fn info_command(package_name: &str) {
         .parse()
         .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
 
-    let package = repo_toml["index"]["packages"]
+    match repo_toml["index"]["packages"]
         .as_array()
         .unwrap()
         .iter()
@@ -771,68 +807,75 @@ pub fn info_command(package_name: &str) {
         //                                                      if a user runs aati info <package>
         //                                                      he won't receive any info if it's
         //                                                      a package written for another arch
-        .expect("- PACKAGE NOT FOUND! TRY: $ aati sync");
+    {
+        Some(package) => {
+            let aati_lock = get_aati_lock().unwrap();
 
-    let aati_lock = get_aati_lock().unwrap();
+            let lock_toml: toml::Value = aati_lock
+                .parse()
+                .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
 
-    let lock_toml: toml::Value = aati_lock
-        .parse()
-        .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
+            let installed_packages = lock_toml["package"].as_array().unwrap();
 
-    let installed_packages = lock_toml["package"].as_array().unwrap();
-
-    if !installed_packages.is_empty() {
-        for installed_package in installed_packages {
-            if installed_package["name"].as_str().unwrap() == package_name {
-                is_installed = true;
-                installed_package_version = installed_package["version"].as_str().unwrap();
-                if installed_package_version == package["current"].as_str().unwrap() {
-                    is_up_to_date = true;
+            if !installed_packages.is_empty() {
+                for installed_package in installed_packages {
+                    if installed_package["name"].as_str().unwrap() == package_name {
+                        is_installed = true;
+                        installed_package_version = installed_package["version"].as_str().unwrap();
+                        if installed_package_version == package["current"].as_str().unwrap() {
+                            is_up_to_date = true;
+                        }
+                    }
                 }
             }
+
+            let name = package["name"].as_str().unwrap();
+            let version = package["current"].as_str().unwrap();
+
+            let versions = package["versions"].as_array().unwrap();
+            let mut tags: Vec<&str> = vec![];
+            for version in versions {
+                tags.push(version["tag"].as_str().unwrap())
+            }
+
+            let author = package["author"].as_str().unwrap();
+            let arch = package["arch"].as_str().unwrap();
+            let url = package["url"].as_str().unwrap();
+            let description = package["description"].as_str().unwrap();
+
+            println!(
+                "{}\n    Name: {}\n    Author: {}\n    Architecture: {}",
+                "+ Package Information:".bright_green(),
+                name,
+                author,
+                arch
+            );
+
+            match is_installed {
+                true => match is_up_to_date {
+                    true => println!("    Version: {} {}", version, "[installed]".bright_green()),
+                    false => println!(
+                        "    Version: {} {}",
+                        version,
+                        format!("[{} is installed]", installed_package_version).yellow()
+                    ),
+                },
+                false => println!("    Version: {}", version),
+            };
+
+            println!(
+                "    Available Versions: {}\n    URL: {}\n    Description:\n      {}",
+                tags.join(", "),
+                url,
+                description
+            );
+        }
+
+        None => {
+            println!("{}", "- ERROR[9]: PACKAGE NOT FOUND (AT LEAST FOR YOUR ISA)! TRY: $ aati sync".bright_red());
+            exit(1);
         }
     }
-
-    let name = package["name"].as_str().unwrap();
-    let version = package["current"].as_str().unwrap();
-
-    let versions = package["versions"].as_array().unwrap();
-    let mut tags: Vec<&str> = vec![];
-    for version in versions {
-        tags.push(version["tag"].as_str().unwrap())
-    }
-
-    let author = package["author"].as_str().unwrap();
-    let arch = package["arch"].as_str().unwrap();
-    let url = package["url"].as_str().unwrap();
-    let description = package["description"].as_str().unwrap();
-
-    println!(
-        "{}\n    Name: {}\n    Author: {}\n    Architecture: {}",
-        "+ Package Information:".bright_green(),
-        name,
-        author,
-        arch
-    );
-
-    match is_installed {
-        true => match is_up_to_date {
-            true => println!("    Version: {} {}", version, "[installed]".bright_green()),
-            false => println!(
-                "    Version: {} {}",
-                version,
-                format!("[{} is installed]", installed_package_version).yellow()
-            ),
-        },
-        false => println!("    Version: {}", version),
-    };
-
-    println!(
-        "    Available Versions: {}\n    URL: {}\n    Description:\n      {}",
-        tags.join(", "),
-        url,
-        description
-    );
 }
 
 pub fn package_command(filename: &str) {

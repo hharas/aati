@@ -80,6 +80,25 @@ pub fn get_repo_config() -> Option<String> {
     Some(repo_config.trim().to_string())
 }
 
+pub fn get_aati_config() -> Option<String> {
+    check_config_dir();
+
+    let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
+
+    let aati_config_path_buf = home_dir.join(".config/aati/rc.toml");
+
+    let aati_config_path = Path::new(&aati_config_path_buf);
+
+    if !Path::exists(aati_config_path) {
+        File::create(aati_config_path_buf.clone()).unwrap();
+    }
+
+    let aati_config =
+        read_to_string(aati_config_path).expect("UNABLE TO READ ~/.config/aati/repo.toml!");
+
+    Some(aati_config.trim().to_string())
+}
+
 fn flush_output() {
     io::stdout().flush().unwrap();
 }
