@@ -175,7 +175,11 @@ pub fn get_command(package_name: &str) {
                                 let mut lock_file: structs::LockFile =
                                     toml::from_str(&lock_file_str).unwrap();
 
-                                let package = structs::Package { name, version };
+                                let package = structs::Package {
+                                    name,
+                                    source: "default".to_string(),
+                                    version,
+                                };
 
                                 lock_file.package.push(package);
 
@@ -330,91 +334,98 @@ pub fn uninstall_command(package_name: &str) {
     let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
-    let mut is_installed = false;
-    let mut package: &toml::Value =
-        &toml::Value::from("name = \"dummy-package\"\nversion = \"0.1.0\"");
+    if package_name != "--all" {
+        let mut is_installed = false;
+        let mut package: &toml::Value =
+            &toml::Value::from("name = \"dummy-package\"\nversion = \"0.1.0\"");
 
-    for installed_package in installed_packages {
-        if installed_package["name"].as_str().unwrap() == package_name {
-            package = installed_package;
-            is_installed = true;
+        for installed_package in installed_packages {
+            if installed_package["name"].as_str().unwrap() == package_name {
+                package = installed_package;
+                is_installed = true;
+            }
         }
-    }
 
-    if is_installed {
-        if prompt_yn(
-            format!(
-                "/ Are you sure you want to completely uninstall {}-{}?",
-                package_name,
-                package["version"].as_str().unwrap()
-            )
-            .as_str(),
-        ) {
-            println!(
-                "{}",
-                format!("+ Deleting '{}' binary...", package_name)
-                    .as_str()
-                    .bright_green()
-            );
-
-            let path = dirs::home_dir()
-                .unwrap()
-                .join(format!(".local/bin/{}", package_name));
-
-            match fs::remove_file(path) {
-                Ok(_) => {
-                    println!(
-                        "{}",
-                        "+ Removing package from the Lockfile...".bright_green()
-                    );
-
-                    let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
-                    let aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
-
-                    let lock_file_str = fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
-                    let mut lock_file: structs::LockFile = toml::from_str(&lock_file_str).unwrap();
-
-                    lock_file
-                        .package
-                        .retain(|package| package.name != package_name);
-
-                    let mut file = OpenOptions::new()
-                        .write(true)
-                        .truncate(true)
-                        .open(&aati_lock_path_buf)
-                        .unwrap();
-
-                    let toml_str = toml::to_string_pretty(&lock_file).unwrap();
-                    file.write_all(toml_str.as_bytes()).unwrap();
-
-                    println!(
-                        "{}",
-                        "+ Uninstallation finished successfully!".bright_green()
-                    );
-                }
-
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- COULD NOT DELETE {}'S BINARY! ERROR[2]: {}",
-                            package_name, error
-                        )
+        if is_installed {
+            if prompt_yn(
+                format!(
+                    "/ Are you sure you want to completely uninstall {}-{}?",
+                    package_name,
+                    package["version"].as_str().unwrap()
+                )
+                .as_str(),
+            ) {
+                println!(
+                    "{}",
+                    format!("+ Deleting '{}' binary...", package_name)
                         .as_str()
-                        .bright_red()
-                    );
-                    exit(1);
+                        .bright_green()
+                );
+
+                let path = dirs::home_dir()
+                    .unwrap()
+                    .join(format!(".local/bin/{}", package_name));
+
+                match fs::remove_file(path) {
+                    Ok(_) => {
+                        println!(
+                            "{}",
+                            "+ Removing package from the Lockfile...".bright_green()
+                        );
+
+                        let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
+                        let aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
+
+                        let lock_file_str = fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
+                        let mut lock_file: structs::LockFile =
+                            toml::from_str(&lock_file_str).unwrap();
+
+                        lock_file
+                            .package
+                            .retain(|package| package.name != package_name);
+
+                        let mut file = OpenOptions::new()
+                            .write(true)
+                            .truncate(true)
+                            .open(&aati_lock_path_buf)
+                            .unwrap();
+
+                        let toml_str = toml::to_string_pretty(&lock_file).unwrap();
+                        file.write_all(toml_str.as_bytes()).unwrap();
+
+                        println!(
+                            "{}",
+                            "+ Uninstallation finished successfully!".bright_green()
+                        );
+                    }
+
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- COULD NOT DELETE {}'S BINARY! ERROR[2]: {}",
+                                package_name, error
+                            )
+                            .as_str()
+                            .bright_red()
+                        );
+                        exit(1);
+                    }
                 }
+            } else {
+                println!("{}", "+ Transaction stopped".bright_green());
             }
         } else {
-            println!("{}", "+ Transaction stopped".bright_green());
+            println!(
+                "{}",
+                "- This Package is already not installed!".bright_red()
+            );
+            exit(0);
         }
     } else {
-        println!(
-            "{}",
-            "- This Package is already not installed!".bright_red()
-        );
-        exit(0);
+        for package in installed_packages {
+            uninstall_command(package["name"].as_str().unwrap());
+        }
     }
 }
 
