@@ -95,11 +95,14 @@ fn main() {
             Some("sync") => commands::sync_command(),
 
             Some("repo") => {
-                if let Some(arg) = args.get(2) {
-                    let url = arg;
-                    commands::repo_command(Some(url));
+                if let Some(arg1) = args.get(2) {
+                    if let Some(arg2) = args.get(3) {
+                        commands::repo_command(Some(arg1), Some(arg2));
+                    } else {
+                        commands::repo_command(Some(arg1), None)
+                    }
                 } else {
-                    commands::repo_command(None);
+                    commands::repo_command(None, None);
                 }
             }
 

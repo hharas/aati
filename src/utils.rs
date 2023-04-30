@@ -90,7 +90,11 @@ pub fn get_aati_config() -> Option<String> {
     let aati_config_path = Path::new(&aati_config_path_buf);
 
     if !Path::exists(aati_config_path) {
-        File::create(aati_config_path_buf.clone()).unwrap();
+        let mut aati_config_file = File::create(aati_config_path_buf.clone()).unwrap();
+
+        let default_config = "[sources]\nrepos = []";
+        writeln!(aati_config_file, "{}", default_config)
+            .expect("- CAN'T WRITE INTO ~/.config/aati/rc.toml");
     }
 
     let aati_config =
