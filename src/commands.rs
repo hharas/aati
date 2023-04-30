@@ -226,7 +226,7 @@ pub fn get_command(package_name: &str) {
             }
         }
     } else {
-        println!("{}", "+ Transaction stopped".bright_green());
+        println!("{}", "+ Transaction aborted".bright_green());
     }
 }
 
@@ -263,7 +263,7 @@ pub fn upgrade_command(choice: Option<&str>) {
                         get_command(package_name);
                         println!("{}", "+ Package Upgrade finished!".bright_green());
                     } else {
-                        println!("{}", "+ Transaction stopped".bright_green());
+                        println!("{}", "+ Transaction aborted".bright_green());
                     }
                 } else {
                     println!(
@@ -314,7 +314,7 @@ pub fn upgrade_command(choice: Option<&str>) {
 
                     println!("{}", "+ Finished upgrading!".bright_green());
                 } else {
-                    println!("{}", "+ Transaction stopped".bright_green());
+                    println!("{}", "+ Transaction aborted".bright_green());
                 }
             } else {
                 println!("{}", "+   None!".bright_green());
@@ -413,7 +413,7 @@ pub fn uninstall_command(package_name: &str) {
                     }
                 }
             } else {
-                println!("{}", "+ Transaction stopped".bright_green());
+                println!("{}", "+ Transaction aborted".bright_green());
             }
         } else {
             println!(
@@ -428,7 +428,7 @@ pub fn uninstall_command(package_name: &str) {
                 uninstall_command(package["name"].as_str().unwrap());
             }
         } else {
-            println!("{}", "+ Transaction stopped".bright_green());
+            println!("{}", "+ Transaction aborted".bright_green());
         }
     } else {
         println!("{}", "+ You have no packages installed!".bright_green());
@@ -654,6 +654,11 @@ pub fn sync_command() {
 
 pub fn repo_command(first_argument_option: Option<&str>, second_argument_option: Option<&str>) {
     if let Some(first_argument) = first_argument_option {
+        let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+        let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
+
+        let aati_config_path_buf = home_dir.join(".config/aati/rc.toml");
+
         if first_argument == "init" {
             let repo_name = prompt("* What will be the Repository's name (i.e. <name>/package)?");
             let repo_maintainer = prompt("* What's the name of its Maintainer?");
@@ -709,15 +714,16 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                 "+ The Repo is done! Now you can add your packages".bright_green()
             );
         } else if first_argument == "list" {
-            let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
             let repos = aati_config["sources"]["repos"].as_array().unwrap();
 
             if !repos.is_empty() {
                 println!("{}", "+ Currently set package repositories:".bright_green());
                 for repo in repos {
                     println!(
-                        "{}",
-                        format!("+   {}", repo.as_str().unwrap()).bright_green()
+                        "{}   {} ({})",
+                        "+".bright_green(),
+                        repo["name"].as_str().unwrap(),
+                        repo["url"].as_str().unwrap(),
                     );
                 }
             } else {
@@ -725,79 +731,170 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             }
         } else if first_argument == "add" {
             if let Some(second_argument) = second_argument_option {
-                println!(
-                    "{}",
-                    format!("+ Adding ({}) as a package repository", second_argument)
-                        .bright_green()
-                );
+                let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+                let added_repos = aati_config["sources"]["repos"].as_array().unwrap();
 
-                let requested_url = format!("{}/repo.toml", second_argument);
-                println!(
-                    "{}",
-                    format!("+ Requesting ({})", requested_url).bright_green()
-                );
+                let mut is_added = false;
 
-                match ureq::get(requested_url.as_str()).call() {
-                    Ok(repo_toml) => {
-                        let repo_toml = repo_toml.into_string().unwrap();
-
-                        check_config_dir();
-
-                        let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
-                        let repo_config_path_buf = home_dir.join(".config/aati/repo.toml");
-
-                        let mut repo_config = File::create(repo_config_path_buf)
-                            .expect("- UNABLE TO CREATE ~/.config/aati/repo.toml!");
-
-                        println!(
-                            "{}",
-                            "+ Writing Repo Config to ~/.config/aati/repo.toml".bright_green()
-                        );
-                        writeln!(repo_config, "{}", repo_toml.as_str()).unwrap();
-
-                        // Putting it in rc.toml
-
-                        println!("{}", "+ Adding URL to the Config File...".bright_green());
-
-                        let config_file_str = get_aati_config().unwrap();
-
-                        let mut config_file: structs::ConfigFile =
-                            toml::from_str(&config_file_str).unwrap();
-
-                        let repo = structs::Repo {
-                            name: "ss".to_string(),
-                            url: second_argument.to_string(),
-                        };
-
-                        config_file.sources.repos.push(repo);
-
-                        let mut file = OpenOptions::new()
-                            .write(true)
-                            .truncate(true)
-                            .open(home_dir.join(".config/aati/rc.toml"))
-                            .unwrap();
-
-                        let toml_str = toml::to_string(&config_file).unwrap();
-                        file.write_all(toml_str.as_bytes()).unwrap();
-
-                        println!("{}", "+ The Repository is added successfully!".bright_green());
+                for added_repo in added_repos {
+                    if added_repo["url"].as_str().unwrap() == second_argument {
+                        is_added = true;
                     }
+                }
 
-                    Err(error) => {
-                        println!(
-                            "{}",
-                            format!(
-                                "- UNABLE TO REQUEST ({})! ERROR[6]: {}",
-                                requested_url, error
-                            )
-                            .bright_red()
-                        );
-                        exit(1);
+                if !is_added {
+                    println!(
+                        "{}",
+                        format!("+ Adding ({}) as a package repository", second_argument)
+                            .bright_green()
+                    );
+
+                    let requested_url = format!("{}/repo.toml", second_argument);
+                    println!(
+                        "{}",
+                        format!("+ Requesting ({})", requested_url).bright_green()
+                    );
+
+                    match ureq::get(requested_url.as_str()).call() {
+                        Ok(repo_toml) => {
+                            let repo_toml = repo_toml.into_string().unwrap();
+
+                            let repo_value: toml::Value = repo_toml.parse().unwrap();
+
+                            let repo_name = repo_value["repo"]["name"].as_str().unwrap();
+
+                            check_config_dir();
+
+                            let repo_config_path_buf =
+                                home_dir.join(format!(".config/aati/repos/{}.toml", repo_name));
+
+                            let mut repo_config = File::create(repo_config_path_buf).expect(
+                                format!(
+                                    "- UNABLE TO CREATE ~/.config/aati/repos/{}.toml!",
+                                    repo_name
+                                )
+                                .as_str(),
+                            );
+
+                            println!(
+                                "{}",
+                                format!(
+                                    "+ Writing Repo Config to ~/.config/aati/repos/{}.toml",
+                                    repo_name
+                                )
+                                .bright_green()
+                            );
+
+                            writeln!(repo_config, "{}", repo_toml).unwrap();
+
+                            // Putting it in rc.toml
+
+                            println!("{}", "+ Adding URL to the Config File...".bright_green());
+
+                            let config_file_str = get_aati_config().unwrap();
+
+                            let mut config_file: structs::ConfigFile =
+                                toml::from_str(&config_file_str).unwrap();
+
+                            let repo = structs::Repo {
+                                name: repo_name.to_string(),
+                                url: second_argument.to_string(),
+                            };
+
+                            config_file.sources.repos.push(repo);
+
+                            let mut file = OpenOptions::new()
+                                .write(true)
+                                .truncate(true)
+                                .open(home_dir.join(".config/aati/rc.toml"))
+                                .unwrap();
+
+                            let toml_str = toml::to_string(&config_file).unwrap();
+                            file.write_all(toml_str.as_bytes()).unwrap();
+
+                            println!(
+                                "{}",
+                                "+ The Repository is added successfully!".bright_green()
+                            );
+                        }
+
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!(
+                                    "- UNABLE TO REQUEST ({})! ERROR[6]: {}",
+                                    requested_url, error
+                                )
+                                .bright_red()
+                            );
+                            exit(1);
+                        }
                     }
+                } else {
+                    println!("{}", "- This Repository is already added!".bright_red());
+                    exit(1);
                 }
             } else {
                 println!("{}", "- No Repository URL is given!".bright_red());
                 exit(1)
+            }
+        } else if first_argument == "remove" {
+            if let Some(second_argument) = second_argument_option {
+                let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+                let added_repos = aati_config["sources"]["repos"].as_array().unwrap();
+
+                let mut is_added = false;
+                let mut repo: &toml::Value =
+                    &toml::Value::from("name = \"dummy-repo\"\nurl = \"http://localhost:8000\"");
+
+                for added_repo in added_repos {
+                    if added_repo["name"].as_str().unwrap() == second_argument {
+                        repo = added_repo;
+                        is_added = true;
+                    }
+                }
+
+                if is_added {
+                    if prompt_yn(format!("Are you sure you want to remove '{}' from your added package repositories?", second_argument).as_str()) {
+                        let config_file_str =
+                            fs::read_to_string(aati_config_path_buf.clone()).unwrap();
+                        let mut config_file: structs::ConfigFile =
+                            toml::from_str(&config_file_str).unwrap();
+
+                        config_file.sources.repos.retain(|r| {
+                            r.name != repo["name"].as_str().unwrap()
+                                && r.url != repo["url"].as_str().unwrap()
+                        });
+
+                        let mut file = OpenOptions::new()
+                            .write(true)
+                            .truncate(true)
+                            .open(&aati_config_path_buf)
+                            .unwrap();
+
+                        let toml_str = toml::to_string_pretty(&config_file).unwrap();
+                        file.write_all(toml_str.as_bytes()).unwrap();
+
+                        println!(
+                            "{}",
+                            format!(
+                                "+ The Repository {} is removed successfully!",
+                                repo["name"].as_str().unwrap()
+                            )
+                            .bright_green()
+                        );
+                    } else {
+                        println!("{}", "+ Transaction aborted".bright_green());
+                    }
+                } else {
+                    println!(
+                        "{}",
+                        "- This Repo is not added to the Config file!".bright_red()
+                    );
+                    exit(1);
+                }
+            } else {
+                println!("{}", "- No repo name?".bright_red());
             }
         }
     } else {
