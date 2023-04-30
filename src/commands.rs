@@ -856,6 +856,8 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
 
                 if is_added {
                     if prompt_yn(format!("Are you sure you want to remove '{}' from your added package repositories?", second_argument).as_str()) {
+                        println!("{}", format!("+ Removing {} from the Config File...", second_argument).bright_green());
+                        
                         let config_file_str =
                             fs::read_to_string(aati_config_path_buf.clone()).unwrap();
                         let mut config_file: structs::ConfigFile =
@@ -874,6 +876,10 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
 
                         let toml_str = toml::to_string_pretty(&config_file).unwrap();
                         file.write_all(toml_str.as_bytes()).unwrap();
+
+                        println!("{}", format!("+ Deleting '{}'...", home_dir.join(format!(".config/aati/repos/{}.toml", second_argument)).display()).bright_green());
+
+                        fs::remove_file(home_dir.join(format!(".config/aati/repos/{}.toml", second_argument))).unwrap();
 
                         println!(
                             "{}",
