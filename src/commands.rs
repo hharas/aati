@@ -422,18 +422,16 @@ pub fn uninstall_command(package_name: &str) {
             );
             exit(0);
         }
-    } else {
-        if !installed_packages.is_empty() {
-            if prompt_yn("Are you sure you want to uninstall all of your packages?") {
-                for package in installed_packages {
-                    uninstall_command(package["name"].as_str().unwrap());
-                }
-            } else {
-                println!("{}", "+ Transaction stopped".bright_green());
+    } else if !installed_packages.is_empty() {
+        if prompt_yn("Are you sure you want to uninstall all of your packages?") {
+            for package in installed_packages {
+                uninstall_command(package["name"].as_str().unwrap());
             }
         } else {
-            println!("{}", "+ You have no packages installed!".bright_green());
+            println!("{}", "+ Transaction stopped".bright_green());
         }
+    } else {
+        println!("{}", "+ You have no packages installed!".bright_green());
     }
 }
 
@@ -656,96 +654,87 @@ pub fn sync_command() {
 
 pub fn repo_command(first_argument_option: Option<&str>, second_argument_option: Option<&str>) {
     if let Some(first_argument) = first_argument_option {
-        if let Some(second_argument) = second_argument_option {
-        } else {
-            if first_argument == "init" {
-                let repo_name =
-                    prompt("* What will be the Repository's name (i.e. <name>/package)?");
-                let repo_maintainer = prompt("* What's the name of its Maintainer?");
-                let repo_description = prompt("* What's the Description of the Repository?");
+        if first_argument == "init" {
+            let repo_name = prompt("* What will be the Repository's name (i.e. <name>/package)?");
+            let repo_maintainer = prompt("* What's the name of its Maintainer?");
+            let repo_description = prompt("* What's the Description of the Repository?");
 
-                fs::create_dir_all("aati_repo").unwrap();
-                let mut file = File::create("aati_repo/repo.toml").unwrap();
+            fs::create_dir_all("aati_repo").unwrap();
+            let mut file = File::create("aati_repo/repo.toml").unwrap();
 
-                fs::create_dir_all("aati_repo/x86-64").unwrap();
-                fs::create_dir_all("aati_repo/x86-64/dummy-package").unwrap();
-                fs::create_dir_all("aati_repo/aarch64").unwrap();
-                fs::create_dir_all("aati_repo/aarch64/dummy-package").unwrap();
+            fs::create_dir_all("aati_repo/x86-64").unwrap();
+            fs::create_dir_all("aati_repo/x86-64/dummy-package").unwrap();
+            fs::create_dir_all("aati_repo/aarch64").unwrap();
+            fs::create_dir_all("aati_repo/aarch64/dummy-package").unwrap();
 
-                let dummy1_path =
-                    PathBuf::from("aati_repo/x86-64/dummy-package/dummy-package-0.1.0");
-                let dummy2_path =
-                    PathBuf::from("aati_repo/x86-64/dummy-package/dummy-package-0.1.1");
-                let dummy3_path =
-                    PathBuf::from("aati_repo/aarch64/dummy-package/dummy-package-0.1.0");
-                let dummy4_path =
-                    PathBuf::from("aati_repo/aarch64/dummy-package/dummy-package-0.1.1");
+            let dummy1_path = PathBuf::from("aati_repo/x86-64/dummy-package/dummy-package-0.1.0");
+            let dummy2_path = PathBuf::from("aati_repo/x86-64/dummy-package/dummy-package-0.1.1");
+            let dummy3_path = PathBuf::from("aati_repo/aarch64/dummy-package/dummy-package-0.1.0");
+            let dummy4_path = PathBuf::from("aati_repo/aarch64/dummy-package/dummy-package-0.1.1");
 
-                let mut dummy1 = File::create(dummy1_path.clone()).unwrap();
-                let mut dummy2 = File::create(dummy2_path.clone()).unwrap();
-                let mut dummy3 = File::create(dummy3_path.clone()).unwrap();
-                let mut dummy4 = File::create(dummy4_path.clone()).unwrap();
+            let mut dummy1 = File::create(dummy1_path.clone()).unwrap();
+            let mut dummy2 = File::create(dummy2_path.clone()).unwrap();
+            let mut dummy3 = File::create(dummy3_path.clone()).unwrap();
+            let mut dummy4 = File::create(dummy4_path.clone()).unwrap();
 
-                dummy1
+            dummy1
                 .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86-64 machines\"")
                 .unwrap();
-                dummy2
+            dummy2
                 .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86-64 machines\"")
                 .unwrap();
-                dummy3
+            dummy3
                 .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for aarch64 machines\"")
                 .unwrap();
-                dummy4
+            dummy4
                 .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for aarch64 machines\"")
                 .unwrap();
 
-                package_command(format!("{}", dummy1_path.display()).as_str());
-                package_command(format!("{}", dummy2_path.display()).as_str());
-                package_command(format!("{}", dummy3_path.display()).as_str());
-                package_command(format!("{}", dummy4_path.display()).as_str());
+            package_command(format!("{}", dummy1_path.display()).as_str());
+            package_command(format!("{}", dummy2_path.display()).as_str());
+            package_command(format!("{}", dummy3_path.display()).as_str());
+            package_command(format!("{}", dummy4_path.display()).as_str());
 
-                fs::remove_file(dummy1_path).unwrap();
-                fs::remove_file(dummy2_path).unwrap();
-                fs::remove_file(dummy3_path).unwrap();
-                fs::remove_file(dummy4_path).unwrap();
+            fs::remove_file(dummy1_path).unwrap();
+            fs::remove_file(dummy2_path).unwrap();
+            fs::remove_file(dummy3_path).unwrap();
+            fs::remove_file(dummy4_path).unwrap();
 
-                let contents = format!("[repo]\nname = \"{}\"\nmaintainer = \"{}\"\ndescription = \"{}\"\n\n[index]\npackages = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"x86-64\", versions = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"aarch64\", versions = [\n        {{ tag = \"0.1.0\", checksum = \"4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac\" }},\n        {{ tag = \"0.1.1\", checksum = \"eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},\n        {{ tag = \"0.1.0\", checksum = \"ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95\" }},\n        {{ tag = \"0.1.1\", checksum = \"64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }}]\n", repo_name, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
+            let contents = format!("[repo]\nname = \"{}\"\nmaintainer = \"{}\"\ndescription = \"{}\"\n\n[index]\npackages = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"x86-64\", versions = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"aarch64\", versions = [\n        {{ tag = \"0.1.0\", checksum = \"4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac\" }},\n        {{ tag = \"0.1.1\", checksum = \"eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},\n        {{ tag = \"0.1.0\", checksum = \"ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95\" }},\n        {{ tag = \"0.1.1\", checksum = \"64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }}]\n", repo_name, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
 
-                file.write_all(contents.as_bytes()).unwrap();
+            file.write_all(contents.as_bytes()).unwrap();
 
-                println!(
-                    "{}",
-                    "+ The Repo is done! Now you can add your packages".bright_green()
-                );
-            } else if first_argument == "list" {
-                let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
-                let repos = aati_config["sources"]["repos"].as_array().unwrap();
+            println!(
+                "{}",
+                "+ The Repo is done! Now you can add your packages".bright_green()
+            );
+        } else if first_argument == "list" {
+            let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+            let repos = aati_config["sources"]["repos"].as_array().unwrap();
 
-                if !repos.is_empty() {
-                    println!("{}", "+ Currently set package repositories:".bright_green());
-                    for repo in repos {
-                        println!(
-                            "{}",
-                            format!("+   {}", repo.as_str().unwrap()).bright_green()
-                        );
-                    }
-                } else {
-                    println!("{}", "+ You have no repos set!".yellow());
+            if !repos.is_empty() {
+                println!("{}", "+ Currently set package repositories:".bright_green());
+                for repo in repos {
+                    println!(
+                        "{}",
+                        format!("+   {}", repo.as_str().unwrap()).bright_green()
+                    );
                 }
             } else {
+                println!("{}", "+ You have no repos set!".yellow());
+            }
+        } else if first_argument == "add" {
+            if let Some(second_argument) = second_argument_option {
                 println!(
                     "{}",
-                    format!("+ Setting ({}) as the current repository", first_argument)
-                        .as_str()
+                    format!("+ Adding ({}) as a package repository", second_argument)
                         .bright_green()
                 );
 
-                let requested_url = format!("{}/repo.toml", first_argument);
+                let requested_url = format!("{}/repo.toml", second_argument);
                 println!(
                     "{}",
-                    format!("+ Requesting ({})", requested_url)
-                        .as_str()
-                        .bright_green()
+                    format!("+ Requesting ({})", requested_url).bright_green()
                 );
 
                 match ureq::get(requested_url.as_str()).call() {
@@ -768,28 +757,30 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
 
                         // Putting it in rc.toml
 
-                        let mut aati_config: toml::Value =
-                            get_aati_config().unwrap().parse().unwrap();
+                        println!("{}", "+ Adding URL to the Config File...".bright_green());
 
-                        let aati_config = aati_config.as_table_mut().unwrap();
+                        let config_file_str = get_aati_config().unwrap();
 
-                        let repo_table = aati_config
-                            .entry("repo".to_owned())
-                            .or_insert(toml::Value::Table(toml::map::Map::new()))
-                            .as_table_mut()
+                        let mut config_file: structs::ConfigFile =
+                            toml::from_str(&config_file_str).unwrap();
+
+                        let repo = structs::Repo {
+                            name: "ss".to_string(),
+                            url: second_argument.to_string(),
+                        };
+
+                        config_file.sources.repos.push(repo);
+
+                        let mut file = OpenOptions::new()
+                            .write(true)
+                            .truncate(true)
+                            .open(home_dir.join(".config/aati/rc.toml"))
                             .unwrap();
 
-                        repo_table.insert(
-                            "url".to_owned(),
-                            toml::Value::String(first_argument.to_owned()),
-                        );
+                        let toml_str = toml::to_string(&config_file).unwrap();
+                        file.write_all(toml_str.as_bytes()).unwrap();
 
-                        writeln!(
-                            File::create(home_dir.join(".config/aati/rc.toml")).unwrap(),
-                            "{}",
-                            toml::to_string_pretty(aati_config).unwrap()
-                        )
-                        .unwrap()
+                        println!("{}", "+ The Repository is added successfully!".bright_green());
                     }
 
                     Err(error) => {
@@ -804,6 +795,9 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                         exit(1);
                     }
                 }
+            } else {
+                println!("{}", "- No Repository URL is given!".bright_red());
+                exit(1)
             }
         }
     } else {

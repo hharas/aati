@@ -14,6 +14,7 @@ pub struct SourcesSection {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Repo {
+    pub name: String,
     pub url: String,
 }
 
