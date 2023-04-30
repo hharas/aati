@@ -22,6 +22,7 @@ pub fn get_arch() -> String {
 pub fn check_config_dir() {
     let config_dir = dirs::home_dir().unwrap().join(".config");
     let aati_config_dir = dirs::home_dir().unwrap().join(".config/aati");
+    let repos_dir = dirs::home_dir().unwrap().join(".config/aati/repos");
 
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir).unwrap();
@@ -29,6 +30,10 @@ pub fn check_config_dir() {
 
     if !aati_config_dir.exists() {
         fs::create_dir_all(&aati_config_dir).unwrap();
+    }
+
+    if !repos_dir.exists() {
+        fs::create_dir_all(&repos_dir).unwrap();
     }
 }
 
