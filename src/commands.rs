@@ -20,10 +20,14 @@ pub fn get_command(package_name: &str) {
 
     let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
-    let repo_toml: toml::Value = get_repo_config().unwrap().parse().unwrap();
-    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
     let extracted_package = extract_package(&package_name.to_string());
+
+    let repo_toml: toml::Value = get_repo_config(extracted_package[0].as_str())
+        .unwrap()
+        .parse()
+        .unwrap();
+    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
     let mut is_installed = false;
     let mut is_found = false;
@@ -77,7 +81,14 @@ pub fn get_command(package_name: &str) {
 
         let url = format!(
             "{}/{}/{}/{}-{}.lz4",
-            aati_config["repo"]["url"].as_str().unwrap(),
+            aati_config["sources"]["repos"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|r| r["name"].as_str().unwrap() == extracted_package[0])
+                .unwrap()["url"]
+                .as_str()
+                .unwrap(),
             get_arch(),
             name,
             name,
@@ -177,7 +188,7 @@ pub fn get_command(package_name: &str) {
 
                                 let package = structs::Package {
                                     name,
-                                    source: "default".to_string(),
+                                    source: extracted_package[0].to_string(),
                                     version,
                                 };
 
@@ -230,105 +241,111 @@ pub fn get_command(package_name: &str) {
     }
 }
 
-pub fn upgrade_command(choice: Option<&str>) {
-    let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
-    let repo_toml: toml::Value = get_repo_config().unwrap().parse().unwrap();
+// pub fn upgrade_command(choice: Option<&str>) {
+//     let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
 
-    let installed_packages = aati_lock["package"].as_array().unwrap();
-    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+//     let installed_packages = aati_lock["package"].as_array().unwrap();
 
-    if let Some(package_name) = choice {
-        if let Some(installed_package) = installed_packages
-            .iter()
-            .find(|pkg| pkg["name"].as_str().unwrap() == package_name)
-        {
-            if let Some(available_package) = available_packages
-                .iter()
-                .find(|pkg| pkg["name"].as_str().unwrap() == package_name)
-            {
-                if installed_package["version"].as_str().unwrap()
-                    != available_package["current"].as_str().unwrap()
-                    && available_package["arch"].as_str().unwrap() == get_arch()
-                {
-                    if prompt_yn(
-                        format!(
-                            "/ Are you sure you want to upgrade {}-{} -> {}?",
-                            installed_package["name"].as_str().unwrap(),
-                            installed_package["version"].as_str().unwrap(),
-                            available_package["current"].as_str().unwrap()
-                        )
-                        .as_str(),
-                    ) {
-                        uninstall_command(package_name);
-                        get_command(package_name);
-                        println!("{}", "+ Package Upgrade finished!".bright_green());
-                    } else {
-                        println!("{}", "+ Transaction aborted".bright_green());
-                    }
-                } else {
-                    println!(
-                        "{} The Package '{}-{}' is up-to-date!",
-                        "+".bright_green(),
-                        installed_package["name"].as_str().unwrap(),
-                        installed_package["version"].as_str().unwrap()
-                    );
-                }
-            } else {
-                println!("{}", format!("- The Package '{}' is not found in the Package Repository! Try syncing the Repository by running:\n    $ aati sync", package_name).as_str().bright_red());
-            }
-        } else {
-            println!("{}", format!("- The Package '{}' isn't even installed! You can install it by running:\n    $ aati get {}", package_name, package_name).as_str().bright_red());
-        }
-    } else {
-        let mut to_be_upgraded: Vec<&str> = Vec::new();
+//     if let Some(package_name) = choice {
+//         let found_package = find_package(package_name).unwrap();
 
-        println!("{}", "+ Packages to be upgraded:".bright_green());
+//         let repo_toml: toml::Value = get_repo_config(&found_package.source).unwrap().parse().unwrap();
+//         let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
-        if !installed_packages.is_empty() {
-            for installed_package in installed_packages {
-                for available_package in available_packages {
-                    if installed_package["name"].as_str().unwrap()
-                        == available_package["name"].as_str().unwrap()
-                        && installed_package["version"].as_str().unwrap()
-                            != available_package["current"].as_str().unwrap()
-                        && available_package["arch"].as_str().unwrap() == get_arch()
-                    {
-                        to_be_upgraded.push(available_package["name"].as_str().unwrap());
-                        println!(
-                            "{}   {}-{} -> {}",
-                            "+".bright_green(),
-                            installed_package["name"].as_str().unwrap(),
-                            installed_package["version"].as_str().unwrap(),
-                            available_package["current"].as_str().unwrap(),
-                        );
-                    }
-                }
-            }
+//         if let Some(installed_package) = installed_packages
+//             .iter()
+//             .find(|pkg| pkg["name"].as_str().unwrap() == package_name)
+//         {
+//             if let Some(available_package) = available_packages
+//                 .iter()
+//                 .find(|pkg| pkg["name"].as_str().unwrap() == package_name)
+//             {
+//                 if installed_package["version"].as_str().unwrap()
+//                     != available_package["current"].as_str().unwrap()
+//                     && available_package["arch"].as_str().unwrap() == get_arch()
+//                 {
+//                     if prompt_yn(
+//                         format!(
+//                             "/ Are you sure you want to upgrade {}-{} -> {}?",
+//                             installed_package["name"].as_str().unwrap(),
+//                             installed_package["version"].as_str().unwrap(),
+//                             available_package["current"].as_str().unwrap()
+//                         )
+//                         .as_str(),
+//                     ) {
+//                         uninstall_command(package_name);
+//                         get_command(package_name);
+//                         println!("{}", "+ Package Upgrade finished!".bright_green());
+//                     } else {
+//                         println!("{}", "+ Transaction aborted".bright_green());
+//                     }
+//                 } else {
+//                     println!(
+//                         "{} The Package '{}-{}' is up-to-date!",
+//                         "+".bright_green(),
+//                         installed_package["name"].as_str().unwrap(),
+//                         installed_package["version"].as_str().unwrap()
+//                     );
+//                 }
+//             } else {
+//                 println!("{}", format!("- The Package '{}' is not found in the Package Repository! Try syncing the Repository by running:\n    $ aati sync", package_name).as_str().bright_red());
+//             }
+//         } else {
+//             println!("{}", format!("- The Package '{}' isn't even installed! You can install it by running:\n    $ aati get {}", package_name, package_name).as_str().bright_red());
+//         }
+//     } else {
+//         let mut to_be_upgraded: Vec<&str> = Vec::new();
 
-            if !to_be_upgraded.is_empty() {
-                if prompt_yn("/ Are you sure you want to continue this Transaction?") {
-                    for package in to_be_upgraded {
-                        uninstall_command(package);
-                        get_command(package);
-                    }
+//         let repos = aati_config["sources"]["repos"].as_array().unwrap();
 
-                    println!("{}", "+ Finished upgrading!".bright_green());
-                } else {
-                    println!("{}", "+ Transaction aborted".bright_green());
-                }
-            } else {
-                println!("{}", "+   None!".bright_green());
-                println!("{}", "+ It's all up-to-date!".bright_green());
-            }
-        } else {
-            println!("{}", "+   None!".bright_green());
-            println!(
-                "{}",
-                "- You have no packages installed to upgrade!".bright_red()
-            );
-        }
-    }
-}
+//         println!("{}", "+ Packages to be upgraded:".bright_green());
+
+//         if !installed_packages.is_empty() {
+//             for installed_package in installed_packages {
+//                 // for repo in repos
+//                     for available_package in available_packages {
+//                         if installed_package["name"].as_str().unwrap()
+//                             == available_package["name"].as_str().unwrap()
+//                             && installed_package["version"].as_str().unwrap()
+//                                 != available_package["current"].as_str().unwrap()
+//                             && available_package["arch"].as_str().unwrap() == get_arch()
+//                         {
+//                             to_be_upgraded.push(available_package["name"].as_str().unwrap());
+//                             println!(
+//                                 "{}   {}-{} -> {}",
+//                                 "+".bright_green(),
+//                                 installed_package["name"].as_str().unwrap(),
+//                                 installed_package["version"].as_str().unwrap(),
+//                                 available_package["current"].as_str().unwrap(),
+//                             );
+//                         }
+//                     }
+//             }
+
+//             if !to_be_upgraded.is_empty() {
+//                 if prompt_yn("/ Are you sure you want to continue this Transaction?") {
+//                     for package in to_be_upgraded {
+//                         uninstall_command(package);
+//                         get_command(package);
+//                     }
+
+//                     println!("{}", "+ Finished upgrading!".bright_green());
+//                 } else {
+//                     println!("{}", "+ Transaction aborted".bright_green());
+//                 }
+//             } else {
+//                 println!("{}", "+   None!".bright_green());
+//                 println!("{}", "+ It's all up-to-date!".bright_green());
+//             }
+//         } else {
+//             println!("{}", "+   None!".bright_green());
+//             println!(
+//                 "{}",
+//                 "- You have no packages installed to upgrade!".bright_red()
+//             );
+//         }
+//     }
+// }
 
 pub fn uninstall_command(package_name: &str) {
     let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
@@ -337,7 +354,7 @@ pub fn uninstall_command(package_name: &str) {
     if package_name != "--all" {
         let mut is_installed = false;
         let mut package: &toml::Value =
-            &toml::Value::from("name = \"dummy-package\"\nversion = \"0.1.0\"");
+            &toml::Value::from("name = \"dummy-package\"\nsource = \"$unprovided$\"\nversion = \"0.1.0\"");
 
         for installed_package in installed_packages {
             if installed_package["name"].as_str().unwrap() == package_name {
@@ -436,38 +453,53 @@ pub fn uninstall_command(package_name: &str) {
 }
 
 pub fn list_command(choice_option: Option<&str>) {
+    let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+    let repos = aati_config["sources"]["repos"].as_array().unwrap();
+
     let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
-    let repo_toml: toml::Value = get_repo_config().unwrap().parse().unwrap();
+    let installed_packages = aati_lock["package"].as_array().unwrap();
 
     if let Some(choice) = choice_option {
         if choice.to_ascii_lowercase() == "installed" {
-            let installed_packages = aati_lock["package"].as_array().unwrap();
-            let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
-
             println!("{}", "+ Installed Packages:".bright_green());
 
             if !installed_packages.is_empty() {
-                for installed_package in installed_packages {
-                    for available_package in available_packages {
-                        if installed_package["name"].as_str().unwrap()
-                            == available_package["name"].as_str().unwrap()
-                            && available_package["arch"].as_str().unwrap() == get_arch()
-                        {
-                            if installed_package["version"].as_str().unwrap()
-                                != available_package["current"].as_str().unwrap()
+                for repo in repos {
+                    let repo_toml: toml::Value = get_repo_config(repo["name"].as_str().unwrap())
+                        .unwrap()
+                        .parse()
+                        .unwrap();
+                    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+
+                    println!(
+                        "{}   {}/",
+                        "+".bright_green(),
+                        repo["name"].as_str().unwrap()
+                    );
+                    for installed_package in installed_packages {
+                        for available_package in available_packages {
+                            if installed_package["name"].as_str().unwrap()
+                                == available_package["name"].as_str().unwrap()
+                                && available_package["arch"].as_str().unwrap() == get_arch()
+                                && installed_package["source"].as_str().unwrap()
+                                    == repo["name"].as_str().unwrap()
                             {
-                                println!(
-                                    "    {}-{} {}",
-                                    installed_package["name"].as_str().unwrap(),
-                                    installed_package["version"].as_str().unwrap(),
-                                    "[outdated]".yellow()
-                                );
-                            } else {
-                                println!(
-                                    "    {}-{}",
-                                    installed_package["name"].as_str().unwrap(),
-                                    installed_package["version"].as_str().unwrap()
-                                );
+                                if installed_package["version"].as_str().unwrap()
+                                    != available_package["current"].as_str().unwrap()
+                                {
+                                    println!(
+                                        "      {}-{} {}",
+                                        installed_package["name"].as_str().unwrap(),
+                                        installed_package["version"].as_str().unwrap(),
+                                        "[outdated]".yellow()
+                                    );
+                                } else {
+                                    println!(
+                                        "      {}-{}",
+                                        installed_package["name"].as_str().unwrap(),
+                                        installed_package["version"].as_str().unwrap()
+                                    );
+                                }
                             }
                         }
                     }
@@ -477,48 +509,50 @@ pub fn list_command(choice_option: Option<&str>) {
             }
         } else if choice.to_ascii_lowercase() == "available" {
             let installed_packages = aati_lock["package"].as_array().unwrap();
-            let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
-            let repo_name = repo_toml["repo"]["name"].as_str().unwrap();
 
-            println!(
-                "{}",
-                format!(
-                    "+ Available Packages ({}):",
-                    available_packages
-                        .iter()
-                        .filter(|pkg| pkg["arch"].as_str().unwrap() == get_arch())
-                        .count()
-                )
-                .as_str()
-                .bright_green()
-            );
+            println!("{}", "+ Available Packages:".bright_green());
 
-            if !available_packages.is_empty() {
-                for package in available_packages {
-                    if package["arch"].as_str().unwrap() == get_arch() {
-                        println!("    {}/{}:", repo_name, package["name"].as_str().unwrap());
-                        let versions = package["versions"].as_array().unwrap();
+            if !repos.is_empty() {
+                for repo in repos {
+                    let repo_name = repo["name"].as_str().unwrap();
 
-                        let mut reversed_versions = versions.clone();
-                        reversed_versions.reverse();
+                    let repo_toml: toml::Value =
+                        get_repo_config(repo_name).unwrap().parse().unwrap();
+                    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
-                        for version in reversed_versions {
-                            let tag = version["tag"].as_str().unwrap();
-                            let is_installed = installed_packages.iter().any(|installed_pkg| {
-                                installed_pkg["name"].as_str().unwrap()
-                                    == package["name"].as_str().unwrap()
-                                    && installed_pkg["version"].as_str().unwrap() == tag
-                            });
+                    println!("{}   {}/", "+".bright_green(), repo_name);
 
-                            if !is_installed {
-                                println!("      {}-{}", package["name"].as_str().unwrap(), tag);
-                            } else {
-                                println!(
-                                    "      {}-{} {}",
-                                    package["name"].as_str().unwrap(),
-                                    tag,
-                                    "[installed]".bright_green()
-                                );
+                    for package in available_packages {
+                        if package["arch"].as_str().unwrap() == get_arch() {
+                            println!("      {}:", package["name"].as_str().unwrap());
+                            let versions = package["versions"].as_array().unwrap();
+
+                            let mut reversed_versions = versions.clone();
+                            reversed_versions.reverse();
+
+                            for version in reversed_versions {
+                                let tag = version["tag"].as_str().unwrap();
+                                let is_installed = installed_packages.iter().any(|installed_pkg| {
+                                    installed_pkg["name"].as_str().unwrap()
+                                        == package["name"].as_str().unwrap()
+                                        && installed_pkg["version"].as_str().unwrap() == tag
+                                        && installed_pkg["source"].as_str().unwrap() == repo_name
+                                });
+
+                                if !is_installed {
+                                    println!(
+                                        "        {}-{}",
+                                        package["name"].as_str().unwrap(),
+                                        tag
+                                    );
+                                } else {
+                                    println!(
+                                        "        {}-{} {}",
+                                        package["name"].as_str().unwrap(),
+                                        tag,
+                                        "[installed]".bright_green()
+                                    );
+                                }
                             }
                         }
                     }
@@ -526,23 +560,32 @@ pub fn list_command(choice_option: Option<&str>) {
 
                 println!("{}", "\n+ Unsupported packages:".bright_yellow());
 
-                for package in available_packages {
-                    if package["arch"].as_str().unwrap() != get_arch() {
-                        println!(
-                            "    {}/{} ({}):",
-                            repo_name,
-                            package["name"].as_str().unwrap(),
-                            package["arch"].as_str().unwrap()
-                        );
-                        let versions = package["versions"].as_array().unwrap();
+                for repo in repos {
+                    let repo_name = repo["name"].as_str().unwrap();
 
-                        let mut reversed_versions = versions.clone();
-                        reversed_versions.reverse();
+                    let repo_toml: toml::Value =
+                        get_repo_config(repo_name).unwrap().parse().unwrap();
+                    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
-                        for version in reversed_versions {
-                            let tag = version["tag"].as_str().unwrap();
+                    println!("{}   {}/", "+".yellow(), repo_name);
 
-                            println!("      {}-{}", package["name"].as_str().unwrap(), tag);
+                    for package in available_packages {
+                        if package["arch"].as_str().unwrap() != get_arch() {
+                            println!(
+                                "      {} ({}):",
+                                package["name"].as_str().unwrap(),
+                                package["arch"].as_str().unwrap()
+                            );
+                            let versions = package["versions"].as_array().unwrap();
+
+                            let mut reversed_versions = versions.clone();
+                            reversed_versions.reverse();
+
+                            for version in reversed_versions {
+                                let tag = version["tag"].as_str().unwrap();
+
+                                println!("        {}-{}", package["name"].as_str().unwrap(), tag);
+                            }
                         }
                     }
                 }
@@ -553,96 +596,130 @@ pub fn list_command(choice_option: Option<&str>) {
             println!("{}", format!("- Unknown choice: {}", choice).bright_red());
         }
     } else {
-        let installed_packages = aati_lock["package"].as_array().unwrap();
-        let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
-
         println!("{}", "+ Installed Packages:".bright_green());
 
         if !installed_packages.is_empty() {
-            for installed_package in installed_packages {
-                for available_package in available_packages {
-                    if installed_package["name"].as_str().unwrap()
-                        == available_package["name"].as_str().unwrap()
-                        && available_package["arch"].as_str().unwrap() == get_arch()
-                    {
-                        if installed_package["version"].as_str().unwrap()
-                            != available_package["current"].as_str().unwrap()
+            for repo in repos {
+                let repo_toml: toml::Value = get_repo_config(repo["name"].as_str().unwrap())
+                    .unwrap()
+                    .parse()
+                    .unwrap();
+                let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+
+                println!(
+                    "{}   {}/",
+                    "+".bright_green(),
+                    repo["name"].as_str().unwrap()
+                );
+                for installed_package in installed_packages {
+                    for available_package in available_packages {
+                        if installed_package["name"].as_str().unwrap()
+                            == available_package["name"].as_str().unwrap()
+                            && available_package["arch"].as_str().unwrap() == get_arch()
+                            && installed_package["source"].as_str().unwrap()
+                                == repo["name"].as_str().unwrap()
                         {
-                            println!(
-                                "    {}-{} {}",
-                                installed_package["name"].as_str().unwrap(),
-                                installed_package["version"].as_str().unwrap(),
-                                "[outdated]".yellow()
-                            );
-                        } else {
-                            println!(
-                                "    {}-{}",
-                                installed_package["name"].as_str().unwrap(),
-                                installed_package["version"].as_str().unwrap()
-                            );
+                            if installed_package["version"].as_str().unwrap()
+                                != available_package["current"].as_str().unwrap()
+                            {
+                                println!(
+                                    "      {}-{} {}",
+                                    installed_package["name"].as_str().unwrap(),
+                                    installed_package["version"].as_str().unwrap(),
+                                    "[outdated]".yellow()
+                                );
+                            } else {
+                                println!(
+                                    "      {}-{}",
+                                    installed_package["name"].as_str().unwrap(),
+                                    installed_package["version"].as_str().unwrap()
+                                );
+                            }
                         }
                     }
                 }
             }
         } else {
-            println!("    None! Install Packages using: $ aati get <package>");
+            println!("  None! Install Packages using: $ aati get <package>");
         }
     }
 }
 
 pub fn sync_command() {
+    let home_dir = dirs::home_dir().unwrap();
     let aati_config: toml::Value = get_aati_config()
         .unwrap()
         .parse()
         .expect("- UNABLE TO PARSE ~/.config/aati/rc.toml!");
 
     match aati_config
-        .get("repo")
-        .and_then(|repo| repo.get("url"))
-        .and_then(|url| url.as_str())
+        .get("sources")
+        .and_then(|sources| sources.get("repos"))
+        .and_then(|repos| repos.as_array())
     {
-        Some(url) => {
-            let requested_url = format!("{}/repo.toml", url);
+        Some(repos) => {
+            for repo in repos {
+                let url = repo["url"].as_str().unwrap();
+                let requested_url = format!("{}/repo.toml", url);
 
-            println!(
-                "{}",
-                format!("+ Requesting ({})", requested_url)
-                    .as_str()
-                    .bright_green()
-            );
+                println!(
+                    "{}",
+                    format!("+ Requesting ({})", requested_url).bright_green()
+                );
 
-            match ureq::get(requested_url.as_str()).call() {
-                Ok(repo_toml) => {
-                    let repo_toml = repo_toml.into_string().unwrap();
+                match ureq::get(requested_url.as_str()).call() {
+                    Ok(repo_toml) => {
+                        let repo_toml = repo_toml.into_string().unwrap();
 
-                    let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
-                    let repo_config_path_buf = home_dir.join(".config/aati/repo.toml");
+                        let repo_value: toml::Value = repo_toml.parse().unwrap();
 
-                    let mut repo_config = File::create(repo_config_path_buf)
-                        .expect("- UNABLE TO CREATE ~/.config/aati/repo.toml!");
+                        let repo_name = repo_value["repo"]["name"].as_str().unwrap();
 
-                    println!(
-                        "{}",
-                        "+ Writing Repo Config to ~/.config/aati/repo.toml".bright_green()
-                    );
-                    writeln!(repo_config, "{}", repo_toml.as_str()).unwrap();
+                        check_config_dir();
 
-                    println!("{}", "+ Done syncing with the Repo!".bright_green());
-                }
+                        let repo_config_path_buf =
+                            home_dir.join(format!(".config/aati/repos/{}.toml", repo_name));
 
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- UNABLE TO REQUEST ({})! ERROR[5]: {}",
-                            requested_url, error
-                        )
-                        .as_str()
-                        .bright_red()
-                    );
-                    exit(1);
+                        let mut repo_config = File::create(repo_config_path_buf).expect(
+                            format!(
+                                "- UNABLE TO CREATE ~/.config/aati/repos/{}.toml!",
+                                repo_name
+                            )
+                            .as_str(),
+                        );
+
+                        println!(
+                            "{}",
+                            format!(
+                                "+   Writing Repo Config to ~/.config/aati/repos/{}.toml",
+                                repo_name
+                            )
+                            .bright_green()
+                        );
+
+                        writeln!(repo_config, "{}", repo_toml).unwrap();
+
+                        println!(
+                            "{}",
+                            format!("+   Synced with ({}) successfully!", url).bright_green()
+                        );
+                    }
+
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- UNABLE TO REQUEST ({})! ERROR[5]: {}",
+                                requested_url, error
+                            )
+                            .bright_red()
+                        );
+                        exit(1);
+                    }
                 }
             }
+
+            println!("{}", "+ Done syncing!".bright_green());
         }
 
         None => {
@@ -857,7 +934,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                 if is_added {
                     if prompt_yn(format!("Are you sure you want to remove '{}' from your added package repositories?", second_argument).as_str()) {
                         println!("{}", format!("+ Removing {} from the Config File...", second_argument).bright_green());
-                        
+
                         let config_file_str =
                             fs::read_to_string(aati_config_path_buf.clone()).unwrap();
                         let mut config_file: structs::ConfigFile =
@@ -904,119 +981,119 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             }
         }
     } else {
-        let aati_config = get_aati_config().unwrap();
-        let aati_toml: toml::Value = aati_config
-            .parse()
-            .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
+        // let aati_config = get_aati_config().unwrap();
+        // let aati_toml: toml::Value = aati_config
+        //     .parse()
+        //     .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
 
-        let repo_config = get_repo_config().unwrap();
-        let repo_toml: toml::Value = repo_config
-            .parse()
-            .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
+        // let repo_config = get_repo_config().unwrap();
+        // let repo_toml: toml::Value = repo_config
+        //     .parse()
+        //     .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
 
-        let url = aati_toml["repo"]["url"].as_str().unwrap();
-        let maintainer = repo_toml["repo"]["maintainer"].as_str().unwrap();
-        let description = repo_toml["repo"]["description"].as_str().unwrap();
-        let packages_number = repo_toml["index"]["packages"].as_array().unwrap().len();
+        // let url = aati_toml["repo"]["url"].as_str().unwrap();
+        // let maintainer = repo_toml["repo"]["maintainer"].as_str().unwrap();
+        // let description = repo_toml["repo"]["description"].as_str().unwrap();
+        // let packages_number = repo_toml["index"]["packages"].as_array().unwrap().len();
 
-        println!(
-            "+ Repository Information:\n    URL: {}\n    Maintainer: {}\n    Number of Packages: {}\n    Description:\n      {}",
-            url, maintainer, packages_number, description
-        );
+        // println!(
+        //     "+ Repository Information:\n    URL: {}\n    Maintainer: {}\n    Number of Packages: {}\n    Description:\n      {}",
+        //     url, maintainer, packages_number, description
+        // );
     }
 }
 
-pub fn info_command(package_name: &str) {
-    let mut is_installed = false;
-    let mut installed_package_version = "0.0.0";
-    let mut is_up_to_date = false;
+// pub fn info_command(package_name: &str) {
+//     let mut is_installed = false;
+//     let mut installed_package_version = "0.0.0";
+//     let mut is_up_to_date = false;
 
-    let repo_config = get_repo_config().unwrap();
+//     let repo_config = get_repo_config().unwrap();
 
-    let repo_toml: toml::Value = repo_config
-        .parse()
-        .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
+//     let repo_toml: toml::Value = repo_config
+//         .parse()
+//         .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
 
-    match repo_toml["index"]["packages"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|pkg| pkg["name"] == package_name.into() && pkg["arch"] == get_arch().into())
-        //                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-        //                                                      This has a drawback, which is that
-        //                                                      if a user runs aati info <package>
-        //                                                      he won't receive any info if it's
-        //                                                      a package written for another arch
-    {
-        Some(package) => {
-            let aati_lock = get_aati_lock().unwrap();
+//     match repo_toml["index"]["packages"]
+//         .as_array()
+//         .unwrap()
+//         .iter()
+//         .find(|pkg| pkg["name"] == package_name.into() && pkg["arch"] == get_arch().into())
+//         //                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//         //                                                      This has a drawback, which is that
+//         //                                                      if a user runs aati info <package>
+//         //                                                      he won't receive any info if it's
+//         //                                                      a package written for another arch
+//     {
+//         Some(package) => {
+//             let aati_lock = get_aati_lock().unwrap();
 
-            let lock_toml: toml::Value = aati_lock
-                .parse()
-                .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
+//             let lock_toml: toml::Value = aati_lock
+//                 .parse()
+//                 .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
 
-            let installed_packages = lock_toml["package"].as_array().unwrap();
+//             let installed_packages = lock_toml["package"].as_array().unwrap();
 
-            if !installed_packages.is_empty() {
-                for installed_package in installed_packages {
-                    if installed_package["name"].as_str().unwrap() == package_name {
-                        is_installed = true;
-                        installed_package_version = installed_package["version"].as_str().unwrap();
-                        if installed_package_version == package["current"].as_str().unwrap() {
-                            is_up_to_date = true;
-                        }
-                    }
-                }
-            }
+//             if !installed_packages.is_empty() {
+//                 for installed_package in installed_packages {
+//                     if installed_package["name"].as_str().unwrap() == package_name {
+//                         is_installed = true;
+//                         installed_package_version = installed_package["version"].as_str().unwrap();
+//                         if installed_package_version == package["current"].as_str().unwrap() {
+//                             is_up_to_date = true;
+//                         }
+//                     }
+//                 }
+//             }
 
-            let name = package["name"].as_str().unwrap();
-            let version = package["current"].as_str().unwrap();
+//             let name = package["name"].as_str().unwrap();
+//             let version = package["current"].as_str().unwrap();
 
-            let versions = package["versions"].as_array().unwrap();
-            let mut tags: Vec<&str> = vec![];
-            for version in versions {
-                tags.push(version["tag"].as_str().unwrap())
-            }
+//             let versions = package["versions"].as_array().unwrap();
+//             let mut tags: Vec<&str> = vec![];
+//             for version in versions {
+//                 tags.push(version["tag"].as_str().unwrap())
+//             }
 
-            let author = package["author"].as_str().unwrap();
-            let arch = package["arch"].as_str().unwrap();
-            let url = package["url"].as_str().unwrap();
-            let description = package["description"].as_str().unwrap();
+//             let author = package["author"].as_str().unwrap();
+//             let arch = package["arch"].as_str().unwrap();
+//             let url = package["url"].as_str().unwrap();
+//             let description = package["description"].as_str().unwrap();
 
-            println!(
-                "{}\n    Name: {}\n    Author: {}\n    Architecture: {}",
-                "+ Package Information:".bright_green(),
-                name,
-                author,
-                arch
-            );
+//             println!(
+//                 "{}\n    Name: {}\n    Author: {}\n    Architecture: {}",
+//                 "+ Package Information:".bright_green(),
+//                 name,
+//                 author,
+//                 arch
+//             );
 
-            match is_installed {
-                true => match is_up_to_date {
-                    true => println!("    Version: {} {}", version, "[installed]".bright_green()),
-                    false => println!(
-                        "    Version: {} {}",
-                        version,
-                        format!("[{} is installed]", installed_package_version).yellow()
-                    ),
-                },
-                false => println!("    Version: {}", version),
-            };
+//             match is_installed {
+//                 true => match is_up_to_date {
+//                     true => println!("    Version: {} {}", version, "[installed]".bright_green()),
+//                     false => println!(
+//                         "    Version: {} {}",
+//                         version,
+//                         format!("[{} is installed]", installed_package_version).yellow()
+//                     ),
+//                 },
+//                 false => println!("    Version: {}", version),
+//             };
 
-            println!(
-                "    Available Versions:\n      - {}\n    URL: {}\n    Description:\n      {}",
-                tags.join("\n      - "),
-                url,
-                description
-            );
-        }
+//             println!(
+//                 "    Available Versions:\n      - {}\n    URL: {}\n    Description:\n      {}",
+//                 tags.join("\n      - "),
+//                 url,
+//                 description
+//             );
+//         }
 
-        None => {
-            println!("{}", "- ERROR[9]: PACKAGE NOT FOUND (AT LEAST FOR YOUR ISA)! TRY: $ aati sync".bright_red());
-            exit(1);
-        }
-    }
-}
+//         None => {
+//             println!("{}", "- ERROR[9]: PACKAGE NOT FOUND (AT LEAST FOR YOUR ISA)! TRY: $ aati sync".bright_red());
+//             exit(1);
+//         }
+//     }
+// }
 
 pub fn package_command(filename: &str) {
     let source = PathBuf::from(filename);
