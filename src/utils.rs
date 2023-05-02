@@ -209,6 +209,33 @@ pub fn extract_package(text: &String) -> Vec<String> {
                             }
                         }
                     }
+                } else if !version.chars().next().unwrap().is_ascii_digit() {
+                    name = text;
+
+                    for added_repo in added_repos {
+                        let repo_str =
+                            get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();
+                        let repo_toml: toml::Value = repo_str.parse().unwrap();
+                        let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+
+                        for available_package in available_packages {
+                            if available_package["name"].as_str().unwrap() == text {
+                                if available_package["arch"].as_str().unwrap() == get_arch() {
+                                    results.push(structs::Package {
+                                        name: available_package["name"]
+                                            .as_str()
+                                            .unwrap()
+                                            .to_string(),
+                                        version: available_package["current"]
+                                            .as_str()
+                                            .unwrap()
+                                            .to_string(),
+                                        source: added_repo["name"].as_str().unwrap().to_string(),
+                                    })
+                                }
+                            }
+                        }
+                    }
                 } else {
                     for added_repo in added_repos {
                         let repo_str =
@@ -244,6 +271,33 @@ pub fn extract_package(text: &String) -> Vec<String> {
                 }
             } else {
                 if name == version {
+                    for added_repo in added_repos {
+                        let repo_str =
+                            get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();
+                        let repo_toml: toml::Value = repo_str.parse().unwrap();
+                        let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+
+                        for available_package in available_packages {
+                            if available_package["name"].as_str().unwrap() == text_to_be_extracted {
+                                if available_package["arch"].as_str().unwrap() == get_arch() {
+                                    results.push(structs::Package {
+                                        name: available_package["name"]
+                                            .as_str()
+                                            .unwrap()
+                                            .to_string(),
+                                        version: available_package["current"]
+                                            .as_str()
+                                            .unwrap()
+                                            .to_string(),
+                                        source: added_repo["name"].as_str().unwrap().to_string(),
+                                    })
+                                }
+                            }
+                        }
+                    }
+                } else if !version.chars().next().unwrap().is_ascii_digit() {
+                    name = text;
+
                     for added_repo in added_repos {
                         let repo_str =
                             get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();

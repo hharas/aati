@@ -229,6 +229,8 @@ pub fn get_command(package_name: &str) {
                             exit(1);
                         }
                     };
+                } else {
+                    println!("{}", "+ Transaction aborted".bright_green());
                 }
             }
 
@@ -237,8 +239,6 @@ pub fn get_command(package_name: &str) {
                 exit(1);
             }
         }
-    } else {
-        println!("{}", "+ Transaction aborted".bright_green());
     }
 }
 
@@ -368,7 +368,8 @@ pub fn uninstall_command(package_name: &str) {
         if is_installed {
             if prompt_yn(
                 format!(
-                    "/ Are you sure you want to completely uninstall {}-{}?",
+                    "/ Are you sure you want to completely uninstall {}/{}-{}?",
+                    package["source"].as_str().unwrap(),
                     package_name,
                     package["version"].as_str().unwrap()
                 )
@@ -435,10 +436,7 @@ pub fn uninstall_command(package_name: &str) {
                 println!("{}", "+ Transaction aborted".bright_green());
             }
         } else {
-            println!(
-                "{}",
-                "- This Package is not installed!".bright_red()
-            );
+            println!("{}", "- This Package is not installed!".bright_red());
             exit(0);
         }
     } else if !installed_packages.is_empty() {
@@ -981,27 +979,40 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             } else {
                 println!("{}", "- No repo name?".bright_red());
             }
+        } else if first_argument == "info" {
+            if let Some(second_argument) = second_argument_option {
+                let aati_config = get_aati_config().unwrap();
+                let aati_toml: toml::Value = aati_config.parse().unwrap();
+
+                let repos = aati_toml["sources"]["repos"].as_array().unwrap();
+
+                let repo_config = get_repo_config(second_argument).unwrap();
+                let repo_toml: toml::Value = repo_config.parse().unwrap();
+
+                let url = repos
+                    .iter()
+                    .find(|r| r["name"].as_str().unwrap() == second_argument)
+                    .unwrap()["url"]
+                    .as_str()
+                    .unwrap();
+
+                let maintainer = repo_toml["repo"]["maintainer"].as_str().unwrap();
+                let description = repo_toml["repo"]["description"].as_str().unwrap();
+                let packages_number = repo_toml["index"]["packages"].as_array().unwrap().len();
+
+                println!(
+                    "+ Repository Information:\n    Name: {}\n    URL: {}\n    Maintainer: {}\n    Number of Packages: {}\n    Description:\n      {}",
+                    second_argument, url, maintainer, packages_number, description
+                );
+            } else {
+                println!("{}", "- No repository name?".bright_red());
+                exit(1);
+            }
+        } else {
+            println!("{}", "- Unknown Argument!".bright_red());
+            exit(1);
         }
     } else {
-        // let aati_config = get_aati_config().unwrap();
-        // let aati_toml: toml::Value = aati_config
-        //     .parse()
-        //     .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
-
-        // let repo_config = get_repo_config().unwrap();
-        // let repo_toml: toml::Value = repo_config
-        //     .parse()
-        //     .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
-
-        // let url = aati_toml["repo"]["url"].as_str().unwrap();
-        // let maintainer = repo_toml["repo"]["maintainer"].as_str().unwrap();
-        // let description = repo_toml["repo"]["description"].as_str().unwrap();
-        // let packages_number = repo_toml["index"]["packages"].as_array().unwrap().len();
-
-        // println!(
-        //     "+ Repository Information:\n    URL: {}\n    Maintainer: {}\n    Number of Packages: {}\n    Description:\n      {}",
-        //     url, maintainer, packages_number, description
-        // );
     }
 }
 
