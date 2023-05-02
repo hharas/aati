@@ -456,43 +456,38 @@ pub fn list_command(choice_option: Option<&str>) {
             println!("{}", "+ Installed Packages:".bright_green());
 
             if !installed_packages.is_empty() {
-                for repo in repos {
-                    let repo_toml: toml::Value = get_repo_config(repo["name"].as_str().unwrap())
+                for installed_package in installed_packages {
+                    match get_repo_config(installed_package["source"].as_str().unwrap())
                         .unwrap()
-                        .parse()
-                        .unwrap();
-                    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+                        .parse::<toml::Value>()
+                        .unwrap()["index"]["packages"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .find(|pkg| {
+                            pkg["name"] == installed_package["name"]
+                                && pkg["arch"].as_str().unwrap() == get_arch()
+                                && pkg["current"] != installed_package["version"]
+                        }) {
+                        Some(_) => {
+                            println!(
+                                "{}   {}/{}-{} {}",
+                                "+".bright_green(),
+                                installed_package["source"].as_str().unwrap(),
+                                installed_package["name"].as_str().unwrap(),
+                                installed_package["version"].as_str().unwrap(),
+                                "[outdated]".yellow()
+                            );
+                        }
 
-                    println!(
-                        "{}   {}/",
-                        "+".bright_green(),
-                        repo["name"].as_str().unwrap()
-                    );
-                    for installed_package in installed_packages {
-                        for available_package in available_packages {
-                            if installed_package["name"].as_str().unwrap()
-                                == available_package["name"].as_str().unwrap()
-                                && available_package["arch"].as_str().unwrap() == get_arch()
-                                && installed_package["source"].as_str().unwrap()
-                                    == repo["name"].as_str().unwrap()
-                            {
-                                if installed_package["version"].as_str().unwrap()
-                                    != available_package["current"].as_str().unwrap()
-                                {
-                                    println!(
-                                        "      {}-{} {}",
-                                        installed_package["name"].as_str().unwrap(),
-                                        installed_package["version"].as_str().unwrap(),
-                                        "[outdated]".yellow()
-                                    );
-                                } else {
-                                    println!(
-                                        "      {}-{}",
-                                        installed_package["name"].as_str().unwrap(),
-                                        installed_package["version"].as_str().unwrap()
-                                    );
-                                }
-                            }
+                        None => {
+                            println!(
+                                "{}   {}/{}-{}",
+                                "+".bright_green(),
+                                installed_package["source"].as_str().unwrap(),
+                                installed_package["name"].as_str().unwrap(),
+                                installed_package["version"].as_str().unwrap()
+                            );
                         }
                     }
                 }
@@ -591,43 +586,38 @@ pub fn list_command(choice_option: Option<&str>) {
         println!("{}", "+ Installed Packages:".bright_green());
 
         if !installed_packages.is_empty() {
-            for repo in repos {
-                let repo_toml: toml::Value = get_repo_config(repo["name"].as_str().unwrap())
+            for installed_package in installed_packages {
+                match get_repo_config(installed_package["source"].as_str().unwrap())
                     .unwrap()
-                    .parse()
-                    .unwrap();
-                let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+                    .parse::<toml::Value>()
+                    .unwrap()["index"]["packages"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|pkg| {
+                        pkg["name"] == installed_package["name"]
+                            && pkg["arch"].as_str().unwrap() == get_arch()
+                            && pkg["current"] != installed_package["version"]
+                    }) {
+                    Some(_) => {
+                        println!(
+                            "{}   {}/{}-{} {}",
+                            "+".bright_green(),
+                            installed_package["source"].as_str().unwrap(),
+                            installed_package["name"].as_str().unwrap(),
+                            installed_package["version"].as_str().unwrap(),
+                            "[outdated]".yellow()
+                        );
+                    }
 
-                println!(
-                    "{}   {}/",
-                    "+".bright_green(),
-                    repo["name"].as_str().unwrap()
-                );
-                for installed_package in installed_packages {
-                    for available_package in available_packages {
-                        if installed_package["name"].as_str().unwrap()
-                            == available_package["name"].as_str().unwrap()
-                            && available_package["arch"].as_str().unwrap() == get_arch()
-                            && installed_package["source"].as_str().unwrap()
-                                == repo["name"].as_str().unwrap()
-                        {
-                            if installed_package["version"].as_str().unwrap()
-                                != available_package["current"].as_str().unwrap()
-                            {
-                                println!(
-                                    "      {}-{} {}",
-                                    installed_package["name"].as_str().unwrap(),
-                                    installed_package["version"].as_str().unwrap(),
-                                    "[outdated]".yellow()
-                                );
-                            } else {
-                                println!(
-                                    "      {}-{}",
-                                    installed_package["name"].as_str().unwrap(),
-                                    installed_package["version"].as_str().unwrap()
-                                );
-                            }
-                        }
+                    None => {
+                        println!(
+                            "{}   {}/{}-{}",
+                            "+".bright_green(),
+                            installed_package["source"].as_str().unwrap(),
+                            installed_package["name"].as_str().unwrap(),
+                            installed_package["version"].as_str().unwrap()
+                        );
                     }
                 }
             }
@@ -1107,11 +1097,12 @@ pub fn info_command(text: &str, repo_name: Option<&str>) {
                 for installed_package in installed_packages {
                     if installed_package["name"] == package["name"] {
                         if installed_package["source"].as_str().unwrap() == repo_name {
+                            installed_package_version =
+                                installed_package["version"].as_str().unwrap();
+
                             is_installed = true;
                             if installed_package["version"] == package["current"] {
                                 is_up_to_date = true;
-                                installed_package_version =
-                                    installed_package["version"].as_str().unwrap()
                             }
                         }
                     }
