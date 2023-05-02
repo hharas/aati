@@ -550,11 +550,3 @@ pub fn display_package(
         description
     );
 }
-
-pub fn find_package(package_name: &str) -> Option<structs::Package> {
-    Some(structs::Package {
-        name: package_name.to_string(),
-        source: "hi".to_string(),
-        version: "hi".to_string(),
-    })
-}

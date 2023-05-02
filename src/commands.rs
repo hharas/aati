@@ -246,72 +246,43 @@ pub fn upgrade_command(choice: Option<&str>) {
     let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
     let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
 
+    let repos = aati_config["sources"]["repos"].as_array().unwrap();
+    let mut repos_toml: Vec<toml::Value> = Vec::new();
+
+    for repo in repos {
+        repos_toml.push(
+            get_repo_config(repo["name"].as_str().unwrap())
+                .unwrap()
+                .parse::<toml::Value>()
+                .unwrap(),
+        )
+    }
+
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     if let Some(package_name) = choice {
-        let found_package = find_package(package_name).unwrap();
+        let extracted_package = extract_package(&package_name.to_string());
 
-        let repo_toml: toml::Value = get_repo_config(&found_package.source)
-            .unwrap()
-            .parse()
-            .unwrap();
-        let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+        let mut is_up_to_date = true;
 
-        if let Some(installed_package) = installed_packages
-            .iter()
-            .find(|pkg| pkg["name"].as_str().unwrap() == package_name)
-        {
-            if let Some(available_package) = available_packages
-                .iter()
-                .find(|pkg| pkg["name"].as_str().unwrap() == package_name)
+        for installed_package in installed_packages {
+            if installed_package["name"].as_str().unwrap() == extracted_package[1]
+                && installed_package["source"].as_str().unwrap() == extracted_package[0]
+                && installed_package["version"].as_str().unwrap() != extracted_package[2]
             {
-                if installed_package["version"].as_str().unwrap()
-                    != available_package["current"].as_str().unwrap()
-                    && available_package["arch"].as_str().unwrap() == get_arch()
-                {
-                    if prompt_yn(
-                        format!(
-                            "/ Are you sure you want to upgrade {}-{} -> {}?",
-                            installed_package["name"].as_str().unwrap(),
-                            installed_package["version"].as_str().unwrap(),
-                            available_package["current"].as_str().unwrap()
-                        )
-                        .as_str(),
-                    ) {
-                        uninstall_command(package_name);
-                        get_command(package_name);
-                        println!("{}", "+ Package Upgrade finished!".bright_green());
-                    } else {
-                        println!("{}", "+ Transaction aborted".bright_green());
-                    }
-                } else {
-                    println!(
-                        "{} The Package '{}-{}' is up-to-date!",
-                        "+".bright_green(),
-                        installed_package["name"].as_str().unwrap(),
-                        installed_package["version"].as_str().unwrap()
-                    );
-                }
-            } else {
-                println!("{}", format!("- The Package '{}' is not found in the Package Repository! Try syncing the Repository by running:\n    $ aati sync", package_name).as_str().bright_red());
+                is_up_to_date = false;
             }
+        }
+
+        if !is_up_to_date {
+            uninstall_command(package_name);
+            get_command(package_name);
         } else {
-            println!("{}", format!("- The Package '{}' isn't even installed! You can install it by running:\n    $ aati get {}", package_name, package_name).as_str().bright_red());
+            println!("{}", "+ That Package is already up to date!".bright_green());
+            exit(1);
         }
     } else {
         let mut to_be_upgraded: Vec<&str> = Vec::new();
-
-        let repos = aati_config["sources"]["repos"].as_array().unwrap();
-        let mut repos_toml: Vec<toml::Value> = Vec::new();
-
-        for repo in repos {
-            repos_toml.push(
-                get_repo_config(repo["name"].as_str().unwrap())
-                    .unwrap()
-                    .parse::<toml::Value>()
-                    .unwrap(),
-            )
-        }
 
         println!("{}", "+ Packages to be upgraded:".bright_green());
 
