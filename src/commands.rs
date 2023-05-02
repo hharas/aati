@@ -242,111 +242,132 @@ pub fn get_command(package_name: &str) {
     }
 }
 
-// pub fn upgrade_command(choice: Option<&str>) {
-//     let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
+pub fn upgrade_command(choice: Option<&str>) {
+    let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+    let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
 
-//     let installed_packages = aati_lock["package"].as_array().unwrap();
+    let installed_packages = aati_lock["package"].as_array().unwrap();
 
-//     if let Some(package_name) = choice {
-//         let found_package = find_package(package_name).unwrap();
+    if let Some(package_name) = choice {
+        let found_package = find_package(package_name).unwrap();
 
-//         let repo_toml: toml::Value = get_repo_config(&found_package.source).unwrap().parse().unwrap();
-//         let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+        let repo_toml: toml::Value = get_repo_config(&found_package.source)
+            .unwrap()
+            .parse()
+            .unwrap();
+        let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
-//         if let Some(installed_package) = installed_packages
-//             .iter()
-//             .find(|pkg| pkg["name"].as_str().unwrap() == package_name)
-//         {
-//             if let Some(available_package) = available_packages
-//                 .iter()
-//                 .find(|pkg| pkg["name"].as_str().unwrap() == package_name)
-//             {
-//                 if installed_package["version"].as_str().unwrap()
-//                     != available_package["current"].as_str().unwrap()
-//                     && available_package["arch"].as_str().unwrap() == get_arch()
-//                 {
-//                     if prompt_yn(
-//                         format!(
-//                             "/ Are you sure you want to upgrade {}-{} -> {}?",
-//                             installed_package["name"].as_str().unwrap(),
-//                             installed_package["version"].as_str().unwrap(),
-//                             available_package["current"].as_str().unwrap()
-//                         )
-//                         .as_str(),
-//                     ) {
-//                         uninstall_command(package_name);
-//                         get_command(package_name);
-//                         println!("{}", "+ Package Upgrade finished!".bright_green());
-//                     } else {
-//                         println!("{}", "+ Transaction aborted".bright_green());
-//                     }
-//                 } else {
-//                     println!(
-//                         "{} The Package '{}-{}' is up-to-date!",
-//                         "+".bright_green(),
-//                         installed_package["name"].as_str().unwrap(),
-//                         installed_package["version"].as_str().unwrap()
-//                     );
-//                 }
-//             } else {
-//                 println!("{}", format!("- The Package '{}' is not found in the Package Repository! Try syncing the Repository by running:\n    $ aati sync", package_name).as_str().bright_red());
-//             }
-//         } else {
-//             println!("{}", format!("- The Package '{}' isn't even installed! You can install it by running:\n    $ aati get {}", package_name, package_name).as_str().bright_red());
-//         }
-//     } else {
-//         let mut to_be_upgraded: Vec<&str> = Vec::new();
+        if let Some(installed_package) = installed_packages
+            .iter()
+            .find(|pkg| pkg["name"].as_str().unwrap() == package_name)
+        {
+            if let Some(available_package) = available_packages
+                .iter()
+                .find(|pkg| pkg["name"].as_str().unwrap() == package_name)
+            {
+                if installed_package["version"].as_str().unwrap()
+                    != available_package["current"].as_str().unwrap()
+                    && available_package["arch"].as_str().unwrap() == get_arch()
+                {
+                    if prompt_yn(
+                        format!(
+                            "/ Are you sure you want to upgrade {}-{} -> {}?",
+                            installed_package["name"].as_str().unwrap(),
+                            installed_package["version"].as_str().unwrap(),
+                            available_package["current"].as_str().unwrap()
+                        )
+                        .as_str(),
+                    ) {
+                        uninstall_command(package_name);
+                        get_command(package_name);
+                        println!("{}", "+ Package Upgrade finished!".bright_green());
+                    } else {
+                        println!("{}", "+ Transaction aborted".bright_green());
+                    }
+                } else {
+                    println!(
+                        "{} The Package '{}-{}' is up-to-date!",
+                        "+".bright_green(),
+                        installed_package["name"].as_str().unwrap(),
+                        installed_package["version"].as_str().unwrap()
+                    );
+                }
+            } else {
+                println!("{}", format!("- The Package '{}' is not found in the Package Repository! Try syncing the Repository by running:\n    $ aati sync", package_name).as_str().bright_red());
+            }
+        } else {
+            println!("{}", format!("- The Package '{}' isn't even installed! You can install it by running:\n    $ aati get {}", package_name, package_name).as_str().bright_red());
+        }
+    } else {
+        let mut to_be_upgraded: Vec<&str> = Vec::new();
 
-//         let repos = aati_config["sources"]["repos"].as_array().unwrap();
+        let repos = aati_config["sources"]["repos"].as_array().unwrap();
+        let mut repos_toml: Vec<toml::Value> = Vec::new();
 
-//         println!("{}", "+ Packages to be upgraded:".bright_green());
+        for repo in repos {
+            repos_toml.push(
+                get_repo_config(repo["name"].as_str().unwrap())
+                    .unwrap()
+                    .parse::<toml::Value>()
+                    .unwrap(),
+            )
+        }
 
-//         if !installed_packages.is_empty() {
-//             for installed_package in installed_packages {
-//                 // for repo in repos
-//                     for available_package in available_packages {
-//                         if installed_package["name"].as_str().unwrap()
-//                             == available_package["name"].as_str().unwrap()
-//                             && installed_package["version"].as_str().unwrap()
-//                                 != available_package["current"].as_str().unwrap()
-//                             && available_package["arch"].as_str().unwrap() == get_arch()
-//                         {
-//                             to_be_upgraded.push(available_package["name"].as_str().unwrap());
-//                             println!(
-//                                 "{}   {}-{} -> {}",
-//                                 "+".bright_green(),
-//                                 installed_package["name"].as_str().unwrap(),
-//                                 installed_package["version"].as_str().unwrap(),
-//                                 available_package["current"].as_str().unwrap(),
-//                             );
-//                         }
-//                     }
-//             }
+        println!("{}", "+ Packages to be upgraded:".bright_green());
 
-//             if !to_be_upgraded.is_empty() {
-//                 if prompt_yn("/ Are you sure you want to continue this Transaction?") {
-//                     for package in to_be_upgraded {
-//                         uninstall_command(package);
-//                         get_command(package);
-//                     }
+        if !installed_packages.is_empty() {
+            for installed_package in installed_packages {
+                let available_packages = repos_toml
+                    .iter()
+                    .find(|r| r["repo"]["name"] == installed_package["source"])
+                    .unwrap()["index"]["packages"]
+                    .as_array()
+                    .unwrap();
 
-//                     println!("{}", "+ Finished upgrading!".bright_green());
-//                 } else {
-//                     println!("{}", "+ Transaction aborted".bright_green());
-//                 }
-//             } else {
-//                 println!("{}", "+   None!".bright_green());
-//                 println!("{}", "+ It's all up-to-date!".bright_green());
-//             }
-//         } else {
-//             println!("{}", "+   None!".bright_green());
-//             println!(
-//                 "{}",
-//                 "- You have no packages installed to upgrade!".bright_red()
-//             );
-//         }
-//     }
-// }
+                for available_package in available_packages {
+                    if installed_package["name"] == available_package["name"]
+                        && available_package["arch"].as_str().unwrap() == get_arch()
+                        && installed_package["version"] != available_package["current"]
+                    {
+                        to_be_upgraded.push(available_package["name"].as_str().unwrap());
+
+                        println!(
+                            "{}   {}/{}-{} -> {}",
+                            "+".bright_green(),
+                            installed_package["source"].as_str().unwrap(),
+                            installed_package["name"].as_str().unwrap(),
+                            installed_package["version"].as_str().unwrap(),
+                            available_package["current"].as_str().unwrap(),
+                        );
+                    }
+                }
+            }
+
+            if !to_be_upgraded.is_empty() {
+                if prompt_yn("/ Are you sure you want to continue this Transaction?") {
+                    for package in to_be_upgraded {
+                        uninstall_command(package);
+                        get_command(package);
+                    }
+
+                    println!("{}", "+ Finished upgrading!".bright_green());
+                } else {
+                    println!("{}", "+ Transaction aborted".bright_green());
+                }
+            } else {
+                println!("{}", "+   None!".bright_green());
+                println!("{}", "+ It's all up-to-date!".bright_green());
+            }
+        } else {
+            println!("{}", "+   None!".bright_green());
+            println!(
+                "{}",
+                "- You have no packages installed to upgrade!".bright_red()
+            );
+            exit(1);
+        }
+    }
+}
 
 pub fn uninstall_command(package_name: &str) {
     let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
@@ -1001,7 +1022,8 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                 let packages_number = repo_toml["index"]["packages"].as_array().unwrap().len();
 
                 println!(
-                    "+ Repository Information:\n    Name: {}\n    URL: {}\n    Maintainer: {}\n    Number of Packages: {}\n    Description:\n      {}",
+                    "{}\n    Name: {}\n    URL: {}\n    Maintainer: {}\n    Number of Packages: {}\n    Description:\n      {}",
+                    "+ Repository Information:".bright_green(),
                     second_argument, url, maintainer, packages_number, description
                 );
             } else {

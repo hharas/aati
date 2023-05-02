@@ -63,15 +63,15 @@ fn main() {
                 }
             },
 
-            // Some("upgrade") => {
-            //     if let Some(arg) = args.get(2) {
-            //         let choice = arg;
-            //         commands::upgrade_command(Some(choice));
-            //     } else {
-            //         commands::upgrade_command(None);
-            //     }
-            // }
-            
+            Some("upgrade") => {
+                if let Some(arg) = args.get(2) {
+                    let choice = arg;
+                    commands::upgrade_command(Some(choice));
+                } else {
+                    commands::upgrade_command(None);
+                }
+            }
+
             Some("uninstall") | Some("remove") => match args.get(2) {
                 Some(package_name) => {
                     commands::uninstall_command(package_name);
