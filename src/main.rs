@@ -27,10 +27,14 @@ fn main() {
                 println!("    get <package>               Download a package from the Repository and install it");
                 println!("    upgrade [package]           Upgrade a package or all packages");
                 println!("    uninstall <package>         Uninstall a package");
-                println!("    remove <package>            Alias of uninstall");
+                println!("    remove <package>/<-all>     Alias of uninstall");
                 println!("    list [installed/available]  List installed or available packages");
-                println!("    sync                        Update packages index");
-                println!("    repo [url://to/repo]/[init] Display repo info, set a default repo or initialise a repo");
+                println!("    sync                        Update package index");
+                println!("    repo                        Package Repository Management");
+                println!("      add <url://to/repo>       Add a package repository");
+                println!("      remove <repo name>        Remove a package repository");
+                println!("      list                      List all added package repositories");
+                println!("      info <repo name>          Show an overview of a repository");
                 println!("    info <package>              Show a package's info");
                 println!("    package <path/to/binary>    Compress a binary into LZ4");
                 println!();
@@ -38,17 +42,13 @@ fn main() {
                 println!("    -V, --version Print version info");
                 println!("        --help    Show this help message");
                 println!();
-                println!(
-                    "{}",
-                    "Amad Project: https://codeberg.org/amad".bright_white()
-                );
+                println!("Amad Project: https://codeberg.org/amad");
             }
 
             Some("-V") | Some("--version") => {
                 println!(
-                    "aati v{}\n\n{}",
+                    "aati v{}\n\nAmad Project: https://codeberg.org/amad",
                     constants::CURRENT_VERSION,
-                    "Amad Project: https://codeberg.org/amad".bright_white()
                 );
             }
 
