@@ -71,7 +71,6 @@ fn main() {
             //         commands::upgrade_command(None);
             //     }
             // }
-            
             Some("uninstall") | Some("remove") => match args.get(2) {
                 Some(package_name) => {
                     commands::uninstall_command(package_name);
@@ -106,16 +105,17 @@ fn main() {
                 }
             }
 
-            // Some("info") => match args.get(2) {
-            //     Some(package_name) => {
-            //         commands::info_command(package_name);
-            //     }
+            Some("info") => match args.get(2) {
+                Some(package_name) => {
+                    commands::info_command(package_name);
+                }
 
-            //     None => {
-            //         println!("{}", "- No package name?".bright_red());
-            //         exit(1);
-            //     }
-            // },
+                None => {
+                    println!("{}", "- No package name?".bright_red());
+                    exit(1);
+                }
+            },
+
             Some("package") => match args.get(2) {
                 Some(package_name) => {
                     commands::package_command(package_name);

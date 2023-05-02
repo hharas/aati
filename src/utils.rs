@@ -152,6 +152,7 @@ pub fn prompt_yn(prompt_text: &str) -> bool {
     input.trim().is_empty() || input.trim().to_lowercase() == "y"
 }
 
+// This function goes hard. Feel free to copy & paste.
 pub fn extract_package(text: &String) -> Vec<String> {
     let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
     let added_repos = aati_config["sources"]["repos"].as_array().unwrap();
@@ -202,10 +203,7 @@ pub fn extract_package(text: &String) -> Vec<String> {
                                             .as_str()
                                             .unwrap()
                                             .to_string(),
-                                        source: added_repo["name"]
-                                            .as_str()
-                                            .unwrap()
-                                            .to_string(),
+                                        source: added_repo["name"].as_str().unwrap().to_string(),
                                     })
                                 }
                             }
@@ -264,10 +262,7 @@ pub fn extract_package(text: &String) -> Vec<String> {
                                             .as_str()
                                             .unwrap()
                                             .to_string(),
-                                        source: added_repo["name"]
-                                            .as_str()
-                                            .unwrap()
-                                            .to_string(),
+                                        source: added_repo["name"].as_str().unwrap().to_string(),
                                     })
                                 }
                             }
@@ -380,7 +375,7 @@ pub fn extract_package(text: &String) -> Vec<String> {
                         );
                     }
 
-                    let input = prompt("* Enter the number of the package you want to install:");
+                    let input = prompt("* Enter the number of the package you choose:");
 
                     match input.parse::<usize>() {
                         Ok(response) => {

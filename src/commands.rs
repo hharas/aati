@@ -353,8 +353,9 @@ pub fn uninstall_command(package_name: &str) {
 
     if package_name != "--all" {
         let mut is_installed = false;
-        let mut package: &toml::Value =
-            &toml::Value::from("name = \"dummy-package\"\nsource = \"$unprovided$\"\nversion = \"0.1.0\"");
+        let mut package: &toml::Value = &toml::Value::from(
+            "name = \"dummy-package\"\nsource = \"$unprovided$\"\nversion = \"0.1.0\"",
+        );
 
         for installed_package in installed_packages {
             if installed_package["name"].as_str().unwrap() == package_name {
@@ -1003,97 +1004,9 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
     }
 }
 
-// pub fn info_command(package_name: &str) {
-//     let mut is_installed = false;
-//     let mut installed_package_version = "0.0.0";
-//     let mut is_up_to_date = false;
-
-//     let repo_config = get_repo_config().unwrap();
-
-//     let repo_toml: toml::Value = repo_config
-//         .parse()
-//         .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
-
-//     match repo_toml["index"]["packages"]
-//         .as_array()
-//         .unwrap()
-//         .iter()
-//         .find(|pkg| pkg["name"] == package_name.into() && pkg["arch"] == get_arch().into())
-//         //                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//         //                                                      This has a drawback, which is that
-//         //                                                      if a user runs aati info <package>
-//         //                                                      he won't receive any info if it's
-//         //                                                      a package written for another arch
-//     {
-//         Some(package) => {
-//             let aati_lock = get_aati_lock().unwrap();
-
-//             let lock_toml: toml::Value = aati_lock
-//                 .parse()
-//                 .expect("- CAN NOT PARSE ~/.config/aati/repo.toml!");
-
-//             let installed_packages = lock_toml["package"].as_array().unwrap();
-
-//             if !installed_packages.is_empty() {
-//                 for installed_package in installed_packages {
-//                     if installed_package["name"].as_str().unwrap() == package_name {
-//                         is_installed = true;
-//                         installed_package_version = installed_package["version"].as_str().unwrap();
-//                         if installed_package_version == package["current"].as_str().unwrap() {
-//                             is_up_to_date = true;
-//                         }
-//                     }
-//                 }
-//             }
-
-//             let name = package["name"].as_str().unwrap();
-//             let version = package["current"].as_str().unwrap();
-
-//             let versions = package["versions"].as_array().unwrap();
-//             let mut tags: Vec<&str> = vec![];
-//             for version in versions {
-//                 tags.push(version["tag"].as_str().unwrap())
-//             }
-
-//             let author = package["author"].as_str().unwrap();
-//             let arch = package["arch"].as_str().unwrap();
-//             let url = package["url"].as_str().unwrap();
-//             let description = package["description"].as_str().unwrap();
-
-//             println!(
-//                 "{}\n    Name: {}\n    Author: {}\n    Architecture: {}",
-//                 "+ Package Information:".bright_green(),
-//                 name,
-//                 author,
-//                 arch
-//             );
-
-//             match is_installed {
-//                 true => match is_up_to_date {
-//                     true => println!("    Version: {} {}", version, "[installed]".bright_green()),
-//                     false => println!(
-//                         "    Version: {} {}",
-//                         version,
-//                         format!("[{} is installed]", installed_package_version).yellow()
-//                     ),
-//                 },
-//                 false => println!("    Version: {}", version),
-//             };
-
-//             println!(
-//                 "    Available Versions:\n      - {}\n    URL: {}\n    Description:\n      {}",
-//                 tags.join("\n      - "),
-//                 url,
-//                 description
-//             );
-//         }
-
-//         None => {
-//             println!("{}", "- ERROR[9]: PACKAGE NOT FOUND (AT LEAST FOR YOUR ISA)! TRY: $ aati sync".bright_red());
-//             exit(1);
-//         }
-//     }
-// }
+pub fn info_command(package_name: &str) {
+    // Rewriting this from scratch
+}
 
 pub fn package_command(filename: &str) {
     let source = PathBuf::from(filename);
