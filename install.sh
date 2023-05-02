@@ -3,12 +3,11 @@
 set -e
 
 echo "+ Checking for repository updates..."
-echo "+ Running ($ git pull origin master --no-rebase)"
-
+echo "+ Running (git pull origin master --no-rebase)"
 git pull origin master --no-rebase
 
 echo "+ Building Aati..."
-echo "+ Running ($ cargo build --release)..."
+echo "+ Running (cargo build --release)..."
 cargo build --release
 
 if [ $? -ne 0 ]; then
@@ -26,8 +25,8 @@ echo "+ Building finished!"
 # fi
 
 echo "+ Copying Aati to the /usr/local/bin/ directory..."
-echo "+ Running (# cp ./target/release/aati /usr/local/bin/aati)..."
-sudo cp ./target/release/aati /usr/local/bin/aati
+echo "+ Running (cp ./target/release/aati /usr/local/bin/aati)..."
+cp ./target/release/aati /usr/local/bin/aati
 
 if [ $? -ne 0 ]; then
   echo "- Failed to copy Aati to /usr/local/bin/."
