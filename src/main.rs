@@ -71,6 +71,7 @@ fn main() {
             //         commands::upgrade_command(None);
             //     }
             // }
+            
             Some("uninstall") | Some("remove") => match args.get(2) {
                 Some(package_name) => {
                     commands::uninstall_command(package_name);
@@ -107,7 +108,7 @@ fn main() {
 
             Some("info") => match args.get(2) {
                 Some(package_name) => {
-                    commands::info_command(package_name);
+                    commands::info_command(package_name, None);
                 }
 
                 None => {
