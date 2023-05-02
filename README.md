@@ -9,11 +9,8 @@ Minimal package manager written in Rust
 
 ### As a user:
 
-First off, install Aati by running the `./install.sh` script, or build Aati on your own.
-
-Now, you need to set a default package repository. Although I'm willing to add support for multiple repositories, Aati currently supports single repositories only, and might act weird when you switch repositories.
-
-In order to set a repository, you need to run `aati repo <repo url>`. You can add the [Amad Project Package Repository](https://codeberg.org/amad/repo/raw/branch/main) if you want to try it out. Afterwards, if you run `aati list available`, you will see the available packages in the repo and their versions that you can install. If you wish to install the latest version of a package, you can run:
+First off, install Aati by running the `./install.sh` script, or build Aati on your own.  
+Aati relies on Aati Package Repositories (APRs), and so you need to add one in order to you use it. In order to set a repository, you need to run `aati repo <repo url>`. You can add the [Amad Project Package Repository](https://codeberg.org/amad/repo/raw/branch/stable) if you want to try it out. Afterwards, if you run `aati list available`, you will see the available packages in the repo and their versions that you can install. If you wish to install the latest version of a package, you can run:
 
 ```bash
 aati get <package name>
@@ -60,6 +57,7 @@ aati_repo/
 
 ```toml
 [repo]
+name = "<name>"
 maintainer = "<maintainer>"
 description = "<description>"
 
@@ -92,7 +90,7 @@ If you want to test things out only, then do the following:
 1. `$ aati repo init`
 2. `$ cd aati_repo`
 3. `$ python -m http.server`
-4. `$ aati repo http://localhost:8000`
+4. `$ aati repo add http://localhost:8000`
 5. Now you're all set. Try installing the dummy package.
 6. `$ aati get dummy-package`
 7. `$ dummy-package`

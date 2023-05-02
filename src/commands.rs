@@ -109,8 +109,8 @@ pub fn get_command(package_name: &str) {
 
                 if prompt_yn(
                     format!(
-                        "/ Are you sure you want to install {}-{} ({})?",
-                        name, version, human_readable_size
+                        "/ Are you sure you want to install {}/{}-{} ({})?",
+                        extracted_package[0], name, version, human_readable_size
                     )
                     .as_str(),
                 ) {
@@ -803,7 +803,23 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             fs::remove_file(dummy3_path).unwrap();
             fs::remove_file(dummy4_path).unwrap();
 
-            let contents = format!("[repo]\nname = \"{}\"\nmaintainer = \"{}\"\ndescription = \"{}\"\n\n[index]\npackages = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"x86-64\", versions = [\n    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"aarch64\", versions = [\n        {{ tag = \"0.1.0\", checksum = \"4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac\" }},\n        {{ tag = \"0.1.1\", checksum = \"eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},\n        {{ tag = \"0.1.0\", checksum = \"ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95\" }},\n        {{ tag = \"0.1.1\", checksum = \"64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a\" }},\n    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }}]\n", repo_name, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
+            let contents = format!("[repo]
+name = \"{}\"
+maintainer = \"{}\"
+description = \"{}\"
+
+[index]
+packages = [
+    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"aarch64\", versions = [
+        {{ tag = \"0.1.0\", checksum = \"4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac\" }},
+        {{ tag = \"0.1.1\", checksum = \"eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4\" }},
+    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},
+    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"x86-64\", versions = [
+        {{ tag = \"0.1.0\", checksum = \"ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95\" }},
+        {{ tag = \"0.1.1\", checksum = \"64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a\" }},
+    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }}
+]
+", repo_name, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
 
             file.write_all(contents.as_bytes()).unwrap();
 
