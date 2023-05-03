@@ -168,9 +168,14 @@ pub fn extract_package(text: &String) -> Vec<String> {
         version = found_version;
     } else {
         let (source, text_to_be_splitted) = text.split_once('/').unwrap();
-        let (found_name, found_version) = text_to_be_splitted
+        let (mut found_name, mut found_version) = text_to_be_splitted
             .rsplit_once('-')
             .unwrap_or((text_to_be_splitted, text_to_be_splitted));
+
+        if !found_version.chars().next().unwrap().is_ascii_digit() {
+            found_name = text_to_be_splitted;
+            found_version = text_to_be_splitted;
+        }
 
         name = found_name;
         version = found_version;
@@ -210,7 +215,7 @@ pub fn extract_package(text: &String) -> Vec<String> {
                         }
                     }
                 } else if !version.chars().next().unwrap().is_ascii_digit() {
-                    name = text;
+                    name = text_to_be_extracted;
 
                     for added_repo in added_repos {
                         let repo_str =
@@ -296,7 +301,7 @@ pub fn extract_package(text: &String) -> Vec<String> {
                         }
                     }
                 } else if !version.chars().next().unwrap().is_ascii_digit() {
-                    name = text;
+                    name = text_to_be_extracted;
 
                     for added_repo in added_repos {
                         let repo_str =

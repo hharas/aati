@@ -1,7 +1,6 @@
 // بسم الله الرحمن الرحيم
 
 mod commands;
-mod constants;
 mod structs;
 mod utils;
 
@@ -46,9 +45,13 @@ fn main() {
             }
 
             Some("-V") | Some("--version") => {
+                let metadata = cargo_metadata::MetadataCommand::new().exec().unwrap();
+
+                let current_version = metadata.packages[0].version.to_string();
+
                 println!(
                     "aati v{}\n\nAmad Project: https://codeberg.org/amad",
-                    constants::CURRENT_VERSION,
+                    current_version,
                 );
             }
 

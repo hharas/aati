@@ -263,22 +263,30 @@ pub fn upgrade_command(choice: Option<&str>) {
     if let Some(package_name) = choice {
         let extracted_package = extract_package(&package_name.to_string());
 
+        let mut is_installed = false;
         let mut is_up_to_date = true;
 
         for installed_package in installed_packages {
             if installed_package["name"].as_str().unwrap() == extracted_package[1]
                 && installed_package["source"].as_str().unwrap() == extracted_package[0]
-                && installed_package["version"].as_str().unwrap() != extracted_package[2]
             {
-                is_up_to_date = false;
+                is_installed = true;
+                if installed_package["version"].as_str().unwrap() != extracted_package[2] {
+                    is_up_to_date = false;
+                }
             }
         }
 
-        if !is_up_to_date {
-            uninstall_command(package_name);
-            get_command(package_name);
+        if is_installed {
+            if !is_up_to_date {
+                uninstall_command(package_name);
+                get_command(package_name);
+            } else {
+                println!("{}", "+ That Package is already up to date!".bright_green());
+                exit(1);
+            }
         } else {
-            println!("{}", "+ That Package is already up to date!".bright_green());
+            println!("{}", "- Package not installed!".bright_red());
             exit(1);
         }
     } else {
