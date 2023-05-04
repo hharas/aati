@@ -56,7 +56,7 @@ pub fn get_command(package_name: &str) {
             if available_package["name"].as_str().unwrap() == extracted_package[1] {
                 for package_version in available_package["versions"].as_array().unwrap() {
                     if package_version["tag"].as_str().unwrap() == extracted_package[2].clone()
-                        && available_package["arch"].as_str().unwrap() == get_arch()
+                        && available_package["target"].as_str().unwrap() == get_target()
                     {
                         is_found = true;
                         checksum = package_version["checksum"].as_str().unwrap();
@@ -92,7 +92,7 @@ pub fn get_command(package_name: &str) {
                 .unwrap()["url"]
                 .as_str()
                 .unwrap(),
-            get_arch(),
+            get_target(),
             name,
             name,
             version
@@ -331,7 +331,7 @@ pub fn upgrade_command(choice: Option<&str>) {
 
                     for available_package in available_packages {
                         if installed_package["name"] == available_package["name"]
-                            && available_package["arch"].as_str().unwrap() == get_arch()
+                            && available_package["target"].as_str().unwrap() == get_target()
                             && installed_package["version"] != available_package["current"]
                         {
                             to_be_upgraded.push(available_package["name"].as_str().unwrap());
@@ -518,7 +518,7 @@ pub fn list_command(choice_option: Option<&str>) {
                             .iter()
                             .find(|pkg| {
                                 pkg["name"] == installed_package["name"]
-                                    && pkg["arch"].as_str().unwrap() == get_arch()
+                                    && pkg["target"].as_str().unwrap() == get_target()
                                     && pkg["current"] != installed_package["version"]
                             }) {
                             Some(_) => {
@@ -585,7 +585,7 @@ pub fn list_command(choice_option: Option<&str>) {
                     println!("{}   {}/", "+".bright_green(), repo_name);
 
                     for package in available_packages {
-                        if package["arch"].as_str().unwrap() == get_arch() {
+                        if package["target"].as_str().unwrap() == get_target() {
                             println!("      {}:", package["name"].as_str().unwrap());
                             let versions = package["versions"].as_array().unwrap();
 
@@ -632,11 +632,11 @@ pub fn list_command(choice_option: Option<&str>) {
                     println!("{}   {}/", "+".yellow(), repo_name);
 
                     for package in available_packages {
-                        if package["arch"].as_str().unwrap() != get_arch() {
+                        if package["target"].as_str().unwrap() != get_target() {
                             println!(
                                 "      {} ({}):",
                                 package["name"].as_str().unwrap(),
-                                package["arch"].as_str().unwrap()
+                                package["target"].as_str().unwrap()
                             );
                             let versions = package["versions"].as_array().unwrap();
 
@@ -672,7 +672,7 @@ pub fn list_command(choice_option: Option<&str>) {
                         .iter()
                         .find(|pkg| {
                             pkg["name"] == installed_package["name"]
-                                && pkg["arch"].as_str().unwrap() == get_arch()
+                                && pkg["target"].as_str().unwrap() == get_target()
                                 && pkg["current"] != installed_package["version"]
                         }) {
                         Some(_) => {
@@ -815,7 +815,13 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
         let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
         let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
 
-        let aati_config_path_buf = home_dir.join(".config/aati/rc.toml");
+        let aati_config_path_buf;
+
+        if is_unix() {
+            aati_config_path_buf = home_dir.join(".config/aati/rc.toml")
+        } else {
+            aati_config_path_buf = PathBuf::from("C:\\Program Files\\Aati\\Config.toml");
+        }
 
         if first_argument == "init" {
             let repo_name = prompt("* What will be the Repository's name (i.e. <name>/package)?");
@@ -825,43 +831,59 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             fs::create_dir_all("aati_repo").unwrap();
             let mut file = File::create("aati_repo/repo.toml").unwrap();
 
-            fs::create_dir_all("aati_repo/x86-64").unwrap();
-            fs::create_dir_all("aati_repo/x86-64/dummy-package").unwrap();
-            fs::create_dir_all("aati_repo/aarch64").unwrap();
-            fs::create_dir_all("aati_repo/aarch64/dummy-package").unwrap();
+            fs::create_dir_all("aati_repo/x86-64-unix").unwrap();
+            fs::create_dir_all("aati_repo/x86-64-unix/dummy-package").unwrap();
+            fs::create_dir_all("aati_repo/aarch64-unix").unwrap();
+            fs::create_dir_all("aati_repo/aarch64-unix/dummy-package").unwrap();
+            fs::create_dir_all("aati_repo/x86-64-windows").unwrap();
+            fs::create_dir_all("aati_repo/x86-64-windows/dummy-package").unwrap();
 
-            let dummy1_path = PathBuf::from("aati_repo/x86-64/dummy-package/dummy-package-0.1.0");
-            let dummy2_path = PathBuf::from("aati_repo/x86-64/dummy-package/dummy-package-0.1.1");
-            let dummy3_path = PathBuf::from("aati_repo/aarch64/dummy-package/dummy-package-0.1.0");
-            let dummy4_path = PathBuf::from("aati_repo/aarch64/dummy-package/dummy-package-0.1.1");
+            let dummy1_path = PathBuf::from("aati_repo/x86-64-unix/dummy-package/dummy-package-0.1.0");
+            let dummy2_path = PathBuf::from("aati_repo/x86-64-unix/dummy-package/dummy-package-0.1.1");
+            let dummy3_path = PathBuf::from("aati_repo/aarch64-unix/dummy-package/dummy-package-0.1.0");
+            let dummy4_path = PathBuf::from("aati_repo/aarch64-unix/dummy-package/dummy-package-0.1.1");
+            let dummy5_path = PathBuf::from("aati_repo/x86-64-windows/dummy-package/dummy-package-0.1.0");
+            let dummy6_path = PathBuf::from("aati_repo/x86-64-windows/dummy-package/dummy-package-0.1.1");
 
             let mut dummy1 = File::create(dummy1_path.clone()).unwrap();
             let mut dummy2 = File::create(dummy2_path.clone()).unwrap();
             let mut dummy3 = File::create(dummy3_path.clone()).unwrap();
             let mut dummy4 = File::create(dummy4_path.clone()).unwrap();
+            let mut dummy5 = File::create(dummy4_path.clone()).unwrap();
+            let mut dummy6 = File::create(dummy4_path.clone()).unwrap();
 
             dummy1
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86-64 machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86-64 Unix-like machines\"")
                 .unwrap();
             dummy2
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86-64 machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86-64 Unix-like machines\"")
                 .unwrap();
             dummy3
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for aarch64 machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for aarch64 Unix-like machines\"")
                 .unwrap();
             dummy4
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for aarch64 machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for aarch64 Unix-like machines\"")
+                .unwrap();
+            dummy5
+                .write_all(b"echo \"This is Aati Dummy Package 0.1.0 for x86-64 Windows machines\"")
+                .unwrap();
+            dummy6
+                .write_all(b"echo \"This is Aati Dummy Package 0.1.1 for x86-64 Windows machines\"")
                 .unwrap();
 
             package_command(format!("{}", dummy1_path.display()).as_str());
             package_command(format!("{}", dummy2_path.display()).as_str());
             package_command(format!("{}", dummy3_path.display()).as_str());
             package_command(format!("{}", dummy4_path.display()).as_str());
+            package_command(format!("{}", dummy5_path.display()).as_str());
+            package_command(format!("{}", dummy6_path.display()).as_str());
 
             fs::remove_file(dummy1_path).unwrap();
             fs::remove_file(dummy2_path).unwrap();
             fs::remove_file(dummy3_path).unwrap();
             fs::remove_file(dummy4_path).unwrap();
+            fs::remove_file(dummy5_path).unwrap();
+            fs::remove_file(dummy6_path).unwrap();
 
             let contents = format!("[repo]
 name = \"{}\"
@@ -870,16 +892,20 @@ description = \"{}\"
 
 [index]
 packages = [
-    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"aarch64\", versions = [
+    {{ name = \"dummy-package\", current = \"0.1.1\", target = \"aarch64-unix\", versions = [
         {{ tag = \"0.1.0\", checksum = \"4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac\" }},
         {{ tag = \"0.1.1\", checksum = \"eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4\" }},
     ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},
-    {{ name = \"dummy-package\", current = \"0.1.1\", arch = \"x86-64\", versions = [
+    {{ name = \"dummy-package\", current = \"0.1.1\", target = \"x86-64-unix\", versions = [
         {{ tag = \"0.1.0\", checksum = \"ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95\" }},
         {{ tag = \"0.1.1\", checksum = \"64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a\" }},
-    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }}
+    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},
+    {{ name = \"dummy-package\", current = \"0.1.1\", target = \"x86-64-windows\", versions = [
+        {{ tag = \"0.1.0\", checksum = \"ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95\" }},
+        {{ tag = \"0.1.1\", checksum = \"64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a\" }},
+    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},
 ]
-", repo_name, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
+", repo_name, repo_maintainer, repo_description, repo_maintainer, repo_maintainer, repo_maintainer);
 
             file.write_all(contents.as_bytes()).unwrap();
 
@@ -1043,7 +1069,7 @@ packages = [
 
                 if is_added {
                     if prompt_yn(format!("Are you sure you want to remove '{}' from your added package repositories?", second_argument).as_str()) {
-                        println!("{}", format!("+ Removing {} from the Config File...", second_argument).bright_green());
+                        println!("{}", format!("+ Removing '{}' from the Config File...", second_argument).bright_green());
 
                         let config_file_str =
                             fs::read_to_string(aati_config_path_buf.clone()).unwrap();
@@ -1064,9 +1090,17 @@ packages = [
                         let toml_str = toml::to_string_pretty(&config_file).unwrap();
                         file.write_all(toml_str.as_bytes()).unwrap();
 
-                        println!("{}", format!("+ Deleting '{}'...", home_dir.join(format!(".config/aati/repos/{}.toml", second_argument)).display()).bright_green());
+                        let repo_path_buf;
+                        
+                        if is_unix() {
+                            repo_path_buf = home_dir.join(format!(".config/aati/repos/{}.toml", second_argument))
+                        } else {
+                            repo_path_buf = PathBuf::from(format!("C:\\Program Files\\Aati\\Repositories\\{}.toml", second_argument));
+                        }
+                        
+                        println!("{}", format!("+ Deleting '{}'...", repo_path_buf.display()).bright_green());
 
-                        fs::remove_file(home_dir.join(format!(".config/aati/repos/{}.toml", second_argument))).unwrap();
+                        fs::remove_file(repo_path_buf).unwrap();
 
                         println!(
                             "{}",
@@ -1149,7 +1183,7 @@ pub fn info_command(text: &str, repo_name: Option<&str>) {
 
             for available_package in available_packages {
                 if available_package["name"].as_str().unwrap() == text {
-                    if available_package["arch"].as_str().unwrap() == get_arch() {
+                    if available_package["target"].as_str().unwrap() == get_target() {
                         results.push(vec![
                             available_package.clone(),
                             toml::Value::from_str(
@@ -1179,7 +1213,7 @@ pub fn info_command(text: &str, repo_name: Option<&str>) {
 
                 for available_package in available_packages {
                     if available_package["name"].as_str().unwrap() == text {
-                        if available_package["arch"].as_str().unwrap() == get_arch() {
+                        if available_package["target"].as_str().unwrap() == get_target() {
                             results.push(vec![
                                 available_package.clone(),
                                 toml::Value::from_str(

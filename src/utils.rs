@@ -16,11 +16,23 @@ pub fn is_unix() -> bool {
     std::env::consts::FAMILY == "unix"
 }
 
-pub fn get_arch() -> String {
+pub fn get_target() -> String {
     if cfg!(target_arch = "x86_64") {
-        "x86-64".to_string()
+        if cfg!(target_family = "windows") {
+            "x86-64-windows".to_string()
+        } else if cfg!(target_family = "unix") {
+            "x86-64-unix".to_string()
+        } else {
+            "x86-64-unknown".to_string()
+        }
     } else if cfg!(target_arch = "aarch64") {
-        "aarch64".to_string()
+        if cfg!(target_family = "windows") {
+            "aarch64-windows".to_string()
+        } else if cfg!(target_family = "unix") {
+            "aarch64-unix".to_string()
+        } else {
+            "aarch64-unknown".to_string()
+        }
     } else {
         "unknown".to_string()
     }
@@ -243,7 +255,7 @@ pub fn extract_package(text: &String) -> Vec<String> {
 
                         for available_package in available_packages {
                             if available_package["name"].as_str().unwrap() == text {
-                                if available_package["arch"].as_str().unwrap() == get_arch() {
+                                if available_package["target"].as_str().unwrap() == get_target() {
                                     results.push(structs::Package {
                                         name: available_package["name"]
                                             .as_str()
@@ -270,7 +282,7 @@ pub fn extract_package(text: &String) -> Vec<String> {
 
                         for available_package in available_packages {
                             if available_package["name"].as_str().unwrap() == text {
-                                if available_package["arch"].as_str().unwrap() == get_arch() {
+                                if available_package["target"].as_str().unwrap() == get_target() {
                                     results.push(structs::Package {
                                         name: available_package["name"]
                                             .as_str()
@@ -299,7 +311,8 @@ pub fn extract_package(text: &String) -> Vec<String> {
                                     available_package["versions"].as_array().unwrap()
                                 {
                                     if package_version["tag"].as_str().unwrap() == version {
-                                        if available_package["arch"].as_str().unwrap() == get_arch()
+                                        if available_package["target"].as_str().unwrap()
+                                            == get_target()
                                         {
                                             results.push(structs::Package {
                                                 name: available_package["name"]
@@ -329,7 +342,7 @@ pub fn extract_package(text: &String) -> Vec<String> {
 
                         for available_package in available_packages {
                             if available_package["name"].as_str().unwrap() == text_to_be_extracted {
-                                if available_package["arch"].as_str().unwrap() == get_arch() {
+                                if available_package["target"].as_str().unwrap() == get_target() {
                                     results.push(structs::Package {
                                         name: available_package["name"]
                                             .as_str()
@@ -356,7 +369,7 @@ pub fn extract_package(text: &String) -> Vec<String> {
 
                         for available_package in available_packages {
                             if available_package["name"].as_str().unwrap() == text_to_be_extracted {
-                                if available_package["arch"].as_str().unwrap() == get_arch() {
+                                if available_package["target"].as_str().unwrap() == get_target() {
                                     results.push(structs::Package {
                                         name: available_package["name"]
                                             .as_str()
@@ -385,7 +398,8 @@ pub fn extract_package(text: &String) -> Vec<String> {
                                     available_package["versions"].as_array().unwrap()
                                 {
                                     if package_version["tag"].as_str().unwrap() == version {
-                                        if available_package["arch"].as_str().unwrap() == get_arch()
+                                        if available_package["target"].as_str().unwrap()
+                                            == get_target()
                                         {
                                             results.push(structs::Package {
                                                 name: available_package["name"]
@@ -436,7 +450,7 @@ pub fn extract_package(text: &String) -> Vec<String> {
 
                     for available_package in available_packages {
                         if available_package["name"].as_str().unwrap() == text
-                            && available_package["arch"].as_str().unwrap() == get_arch()
+                            && available_package["target"].as_str().unwrap() == get_target()
                         {
                             version = available_package["current"].as_str().unwrap();
                         }
@@ -565,7 +579,7 @@ pub fn display_package(
         tags.push(version["tag"].as_str().unwrap())
     }
     let author = package["author"].as_str().unwrap();
-    let arch = package["arch"].as_str().unwrap();
+    let arch = package["target"].as_str().unwrap();
     let url = package["url"].as_str().unwrap();
     let description = package["description"].as_str().unwrap();
 
