@@ -1309,68 +1309,79 @@ pub fn install_command(filename: &str) {
     let name = parsed_package[1];
     let version = parsed_package[2];
 
-    match File::open(filename_path_buf.clone()) {
-        Ok(input_file) => {
-            if prompt_yn(
-                format!(
-                    "/ Are you sure you want to locally install {}-{}?",
-                    name, version
-                )
-                .as_str(),
-            ) {
-                println!("{}", "+ Decoding LZ4...".bright_green());
+    let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
+    let installed_packages = aati_lock["package"].as_array().unwrap();
 
-                let home_dir = dirs::home_dir().unwrap();
-                let installation_path_buf = home_dir.join(format!(".local/bin/{}", name));
+    if !installed_packages
+        .iter()
+        .any(|pkg| pkg["name"].as_str().unwrap() == name)
+    {
+        match File::open(filename_path_buf.clone()) {
+            Ok(input_file) => {
+                if prompt_yn(
+                    format!(
+                        "/ Are you sure you want to locally install {}-{}?",
+                        name, version
+                    )
+                    .as_str(),
+                ) {
+                    println!("{}", "+ Decoding LZ4...".bright_green());
 
-                let mut new_file = File::create(installation_path_buf.clone()).unwrap();
+                    let home_dir = dirs::home_dir().unwrap();
+                    let installation_path_buf = home_dir.join(format!(".local/bin/{}", name));
 
-                let mut decoder = Decoder::new(input_file).unwrap();
+                    let mut new_file = File::create(installation_path_buf.clone()).unwrap();
 
-                println!("{}", "+ Copying package executable...".bright_green());
+                    let mut decoder = Decoder::new(input_file).unwrap();
 
-                copy(&mut decoder, &mut new_file).unwrap();
+                    println!("{}", "+ Copying package executable...".bright_green());
 
-                println!("{}", "+ Adding package to the Lockfile...".bright_green());
+                    copy(&mut decoder, &mut new_file).unwrap();
 
-                let aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
+                    println!("{}", "+ Adding package to the Lockfile...".bright_green());
 
-                let lock_file_str = fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
-                let mut lock_file: structs::LockFile = toml::from_str(&lock_file_str).unwrap();
+                    let aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
 
-                let package = structs::Package {
-                    name: name.to_string(),
-                    source: source.to_string(),
-                    version: version.to_string(),
-                };
+                    let lock_file_str = fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
+                    let mut lock_file: structs::LockFile = toml::from_str(&lock_file_str).unwrap();
 
-                lock_file.package.push(package);
+                    let package = structs::Package {
+                        name: name.to_string(),
+                        source: source.to_string(),
+                        version: version.to_string(),
+                    };
 
-                let mut file = OpenOptions::new()
-                    .write(true)
-                    .truncate(true)
-                    .open(aati_lock_path_buf)
-                    .unwrap();
+                    lock_file.package.push(package);
 
-                let toml_str = toml::to_string(&lock_file).unwrap();
-                file.write_all(toml_str.as_bytes()).unwrap();
+                    let mut file = OpenOptions::new()
+                        .write(true)
+                        .truncate(true)
+                        .open(aati_lock_path_buf)
+                        .unwrap();
 
-                println!("{}", "+ Changing Permissions...".bright_green());
+                    let toml_str = toml::to_string(&lock_file).unwrap();
+                    file.write_all(toml_str.as_bytes()).unwrap();
 
-                let metadata = fs::metadata(installation_path_buf.clone()).unwrap();
-                let mut permissions = metadata.permissions();
-                permissions.set_mode(0o755);
-                fs::set_permissions(installation_path_buf, permissions).unwrap();
+                    println!("{}", "+ Changing Permissions...".bright_green());
 
-                println!("{}", "+ Installation is complete!".bright_green());
-            } else {
-                println!("{}", "+ Transaction aborted".bright_green());
+                    let metadata = fs::metadata(installation_path_buf.clone()).unwrap();
+                    let mut permissions = metadata.permissions();
+                    permissions.set_mode(0o755);
+                    fs::set_permissions(installation_path_buf, permissions).unwrap();
+
+                    println!("{}", "+ Installation is complete!".bright_green());
+                } else {
+                    println!("{}", "+ Transaction aborted".bright_green());
+                }
+            }
+
+            Err(error) => {
+                println!("{}", format!("- ERROR[11]: {}", error).bright_red());
+                exit(1);
             }
         }
-
-        Err(error) => {
-            println!("{}", format!("- ERROR[11]: {}", error).bright_red());
-            exit(1);
-        }
+    } else {
+        println!("{}", "- A Package with the same name is already installed!");
+        exit(1);
     }
 }
