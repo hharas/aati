@@ -204,14 +204,19 @@ pub fn get_command(package_name: &str) {
                                 let toml_str = toml::to_string(&lock_file).unwrap();
                                 file.write_all(toml_str.as_bytes()).unwrap();
 
-                                println!("{}", "+ Changing Permissions...".bright_green());
+                                #[cfg(not(target_os = "windows"))]
+                                {
+                                    println!("{}", "+ Changing Permissions...".bright_green());
 
-                                // 10. Turn it into an executable file, simply: chmod +x ~/.local/bin/<package name>
+                                    // 10. (non-windows only) Turn it into an executable file, simply: chmod +x ~/.local/bin/<package name>
 
-                                let metadata = fs::metadata(installation_path_buf.clone()).unwrap();
-                                let mut permissions = metadata.permissions();
-                                permissions.set_mode(0o755);
-                                fs::set_permissions(installation_path_buf, permissions).unwrap();
+                                    let metadata =
+                                        fs::metadata(installation_path_buf.clone()).unwrap();
+                                    let mut permissions = metadata.permissions();
+                                    permissions.set_mode(0o755);
+                                    fs::set_permissions(installation_path_buf, permissions)
+                                        .unwrap();
+                                }
 
                                 println!("{}", "+ Installation is complete!".bright_green());
                             } else {
@@ -1364,12 +1369,15 @@ pub fn install_command(filename: &str) {
                     let toml_str = toml::to_string(&lock_file).unwrap();
                     file.write_all(toml_str.as_bytes()).unwrap();
 
-                    println!("{}", "+ Changing Permissions...".bright_green());
+                    #[cfg(not(target_os = "windows"))]
+                    {
+                        println!("{}", "+ Changing Permissions...".bright_green());
 
-                    let metadata = fs::metadata(installation_path_buf.clone()).unwrap();
-                    let mut permissions = metadata.permissions();
-                    permissions.set_mode(0o755);
-                    fs::set_permissions(installation_path_buf, permissions).unwrap();
+                        let metadata = fs::metadata(installation_path_buf.clone()).unwrap();
+                        let mut permissions = metadata.permissions();
+                        permissions.set_mode(0o755);
+                        fs::set_permissions(installation_path_buf, permissions).unwrap();
+                    }
 
                     println!("{}", "+ Installation is complete!".bright_green());
                 } else {
