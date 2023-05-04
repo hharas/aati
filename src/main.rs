@@ -3,6 +3,7 @@
 mod commands;
 mod structs;
 mod utils;
+mod version;
 
 use std::{env, process::exit};
 
@@ -46,13 +47,11 @@ fn main() {
             }
 
             Some("-V") | Some("--version") => {
-                let metadata = cargo_metadata::MetadataCommand::new().exec().unwrap();
-
-                let current_version = metadata.packages[0].version.to_string();
+                let aati_version = version::VERSION;
 
                 println!(
-                    "aati v{}\n\nAmad Project: https://codeberg.org/amad",
-                    current_version,
+                    "aati {}\n\nAmad Project: https://codeberg.org/amad",
+                    aati_version,
                 );
             }
 
