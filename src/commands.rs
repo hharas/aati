@@ -430,7 +430,14 @@ pub fn uninstall_command(package_name: &str) {
                         );
 
                         let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
-                        let aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
+                        let aati_lock_path_buf;
+
+                        if is_unix() {
+                            aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
+                        } else {
+                            aati_lock_path_buf =
+                                PathBuf::from("C:\\Program Files\\Aati\\Lock.toml");
+                        }
 
                         let lock_file_str = fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
                         let mut lock_file: structs::LockFile =
