@@ -620,7 +620,7 @@ pub fn list_command(choice_option: Option<&str>) {
                     }
                 }
 
-                println!("{}", "\n+ Unsupported packages:".bright_yellow());
+                println!("{}", "\n+ Unsupported packages:".yellow());
 
                 for repo in repos {
                     let repo_name = repo["name"].as_str().unwrap();
