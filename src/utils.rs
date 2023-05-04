@@ -30,7 +30,7 @@ pub fn check_config_dir() {
     let config_dir = if is_unix() {
         dirs::home_dir().unwrap().join(".config")
     } else {
-        PathBuf::from("C:\\Program Files\\Aati")
+        PathBuf::from("C:\\Program Files\\Aati\\Binaries")
     };
     let aati_config_dir = if is_unix() {
         dirs::home_dir().unwrap().join(".config/aati")

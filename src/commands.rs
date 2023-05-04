@@ -131,9 +131,9 @@ pub fn get_command(package_name: &str) {
 
                             let home_dir =
                                 dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
-                            let download_path = home_dir.join(
-                                std::env::temp_dir().join(format!("{}-{}.lz4", name, version)),
-                            );
+                            
+                            let download_path =
+                                std::env::temp_dir().join(format!("{}-{}.lz4", name, version));
 
                             let mut downloaded_file = OpenOptions::new()
                                 .create(true)
@@ -163,8 +163,18 @@ pub fn get_command(package_name: &str) {
                             if verify_checksum(&body, checksum.to_string()) {
                                 println!("{}", "+ Checksums match!".bright_green());
 
-                                let installation_path_buf =
-                                    home_dir.join(format!(".local/bin/{}", name));
+                                let installation_path_buf;
+
+                                if is_unix() {
+                                    installation_path_buf =
+                                        home_dir.join(format!(".local/bin/{}", name));
+                                } else {
+                                    installation_path_buf = PathBuf::from(format!(
+                                        "C:\\Program Files\\Aati\\Binaries\\{}.exe",
+                                        name
+                                    ));
+                                }
+
                                 let mut new_file =
                                     File::create(installation_path_buf.clone()).unwrap();
 
@@ -183,7 +193,14 @@ pub fn get_command(package_name: &str) {
 
                                 // 9. Add this Package to the Lockfile
 
-                                let aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
+                                let aati_lock_path_buf;
+
+                                if is_unix() {
+                                    aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
+                                } else {
+                                    aati_lock_path_buf =
+                                        PathBuf::from("C:\\Program Files\\Aati\\Lock.toml");
+                                }
 
                                 let lock_file_str =
                                     fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
