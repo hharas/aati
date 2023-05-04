@@ -296,28 +296,30 @@ pub fn upgrade_command(choice: Option<&str>) {
 
         if !installed_packages.is_empty() {
             for installed_package in installed_packages {
-                let available_packages = repos_toml
-                    .iter()
-                    .find(|r| r["repo"]["name"] == installed_package["source"])
-                    .unwrap()["index"]["packages"]
-                    .as_array()
-                    .unwrap();
+                if installed_package["source"].as_str().unwrap() != "local" {
+                    let available_packages = repos_toml
+                        .iter()
+                        .find(|r| r["repo"]["name"] == installed_package["source"])
+                        .unwrap()["index"]["packages"]
+                        .as_array()
+                        .unwrap();
 
-                for available_package in available_packages {
-                    if installed_package["name"] == available_package["name"]
-                        && available_package["arch"].as_str().unwrap() == get_arch()
-                        && installed_package["version"] != available_package["current"]
-                    {
-                        to_be_upgraded.push(available_package["name"].as_str().unwrap());
+                    for available_package in available_packages {
+                        if installed_package["name"] == available_package["name"]
+                            && available_package["arch"].as_str().unwrap() == get_arch()
+                            && installed_package["version"] != available_package["current"]
+                        {
+                            to_be_upgraded.push(available_package["name"].as_str().unwrap());
 
-                        println!(
-                            "{}   {}/{}-{} -> {}",
-                            "+".bright_green(),
-                            installed_package["source"].as_str().unwrap(),
-                            installed_package["name"].as_str().unwrap(),
-                            installed_package["version"].as_str().unwrap(),
-                            available_package["current"].as_str().unwrap(),
-                        );
+                            println!(
+                                "{}   {}/{}-{} -> {}",
+                                "+".bright_green(),
+                                installed_package["source"].as_str().unwrap(),
+                                installed_package["name"].as_str().unwrap(),
+                                installed_package["version"].as_str().unwrap(),
+                                available_package["current"].as_str().unwrap(),
+                            );
+                        }
                     }
                 }
             }
