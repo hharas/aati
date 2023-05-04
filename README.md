@@ -32,16 +32,16 @@ After installing aati, you must initialise an Aati Package Repository. You can d
 aati repo init
 ```
 
-After answering the prompts, you will be left with this folder structure:
+After answering the prompts, you will be left with this tree structure:
 
 ```
 aati_repo/
     repo.toml
-    aarch64/
+    aarch64-unix/
         dummy-package/
             dummy-package-0.1.0.lz4
             dummy-package-0.1.1.lz4
-    x86-64/
+    x86-64-unix/
         dummy-package/
             dummy-package-0.1.0.lz4
             dummy-package-0.1.1.lz4
@@ -49,8 +49,8 @@ aati_repo/
 
 - `aati_repo/`: your repository's folder, in it you can initialise a git repository and host it somewhere, like on Codeberg or Gitlab.
 - `repo.toml`: the file that contains the data needed to be able to host this package repository.
-- `x86-64`: where amd64 packages are located
-- `aarch64`: where ARMv8 packages are located
+- `x86-64-unix`: where amd64 Unix packages are located. Windows packages, for example, would be under a directory named `x86-64-windows`.
+- `aarch64-unix`: where ARMv8 Unix packages are located.
 - `dummy-package/`: a folder that contains LZ4 compressed packages of the default dummy package.
 
 `repo.toml` is the most important file. It contains the following template at first:
@@ -76,13 +76,13 @@ packages = [
 
 Under `[repo]` there's general information about the Repository. Under `[index]` is where the `packages` array is located. The `packages` array contains an array that consists of the following package scheme:
 ```toml
-{ name = "<package name>", current = "<package's current version>", arch = "<target architecture>", versions = [
+{ name = "<package name>", current = "<package's current version>", target = "<target architecture>-<target family>", versions = [
     { tag = "version's tag", checksum = "file's sha256sum" }
 ], author = "<package author>", description = "<package description>", url = "<package url>" }
 ```
 
 In order to add a package, you need to perform two actions:
-1. Add your Package to the file structure by creating a directory under `aati_repo/<architecture>/` named after your package's name. In it you will be putting your binaries in the following format: `package-name-x.x.x`. Afterwards you will run `aati package package-name-x.x.x` in order to compress your binary using LZ4, then delete the original binary.
+1. Add your Package to the file structure by creating a directory under `aati_repo/<target>/` named after your package's name. In it you will be putting your binaries in the following format: `package-name-x.x.x`. Afterwards you will run `aati package package-name-x.x.x` in order to compress your binary using LZ4, then delete the original binary.
 
 2. Add your package to the `repo.toml` file. Although this step will be replaced by adding a main `index.toml` file for this job, however this hasn't been implemented yet. In order to add it to the `repo.toml` file, you need to generate a sha256 hash of your LZ4 compressed package, then add that as a package entry to the `packages` array. If you're adding a new version to your program, then add it to the `versions` array inside your package's object.
 
