@@ -465,30 +465,54 @@ pub fn list_command(choice_option: Option<&str>) {
 
             if !installed_packages.is_empty() {
                 for installed_package in installed_packages {
-                    match get_repo_config(installed_package["source"].as_str().unwrap())
-                        .unwrap()
-                        .parse::<toml::Value>()
-                        .unwrap()["index"]["packages"]
-                        .as_array()
-                        .unwrap()
-                        .iter()
-                        .find(|pkg| {
-                            pkg["name"] == installed_package["name"]
-                                && pkg["arch"].as_str().unwrap() == get_arch()
-                                && pkg["current"] != installed_package["version"]
-                        }) {
-                        Some(_) => {
-                            println!(
-                                "{}   {}/{}-{} {}",
-                                "+".bright_green(),
-                                installed_package["source"].as_str().unwrap(),
-                                installed_package["name"].as_str().unwrap(),
-                                installed_package["version"].as_str().unwrap(),
-                                "[outdated]".yellow()
-                            );
-                        }
+                    if installed_package["source"].as_str().unwrap() != "local" {
+                        match get_repo_config(installed_package["source"].as_str().unwrap())
+                            .unwrap()
+                            .parse::<toml::Value>()
+                            .unwrap()["index"]["packages"]
+                            .as_array()
+                            .unwrap()
+                            .iter()
+                            .find(|pkg| {
+                                pkg["name"] == installed_package["name"]
+                                    && pkg["arch"].as_str().unwrap() == get_arch()
+                                    && pkg["current"] != installed_package["version"]
+                            }) {
+                            Some(_) => {
+                                println!(
+                                    "{}   {}/{}-{} {}",
+                                    "+".bright_green(),
+                                    installed_package["source"].as_str().unwrap(),
+                                    installed_package["name"].as_str().unwrap(),
+                                    installed_package["version"].as_str().unwrap(),
+                                    "[outdated]".yellow()
+                                );
+                            }
 
-                        None => {
+                            None => {
+                                println!(
+                                    "{}   {}/{}-{}",
+                                    "+".bright_green(),
+                                    installed_package["source"].as_str().unwrap(),
+                                    installed_package["name"].as_str().unwrap(),
+                                    installed_package["version"].as_str().unwrap()
+                                );
+                            }
+                        }
+                    }
+                }
+
+                if installed_packages
+                    .iter()
+                    .any(|pkg| pkg["source"].as_str().unwrap() == "local")
+                {
+                    println!(
+                        "{}",
+                        "+ Packages installed from LZ4 Archives:".bright_green()
+                    );
+
+                    for installed_package in installed_packages {
+                        if installed_package["source"].as_str().unwrap() == "local" {
                             println!(
                                 "{}   {}/{}-{}",
                                 "+".bright_green(),
@@ -595,30 +619,54 @@ pub fn list_command(choice_option: Option<&str>) {
 
         if !installed_packages.is_empty() {
             for installed_package in installed_packages {
-                match get_repo_config(installed_package["source"].as_str().unwrap())
-                    .unwrap()
-                    .parse::<toml::Value>()
-                    .unwrap()["index"]["packages"]
-                    .as_array()
-                    .unwrap()
-                    .iter()
-                    .find(|pkg| {
-                        pkg["name"] == installed_package["name"]
-                            && pkg["arch"].as_str().unwrap() == get_arch()
-                            && pkg["current"] != installed_package["version"]
-                    }) {
-                    Some(_) => {
-                        println!(
-                            "{}   {}/{}-{} {}",
-                            "+".bright_green(),
-                            installed_package["source"].as_str().unwrap(),
-                            installed_package["name"].as_str().unwrap(),
-                            installed_package["version"].as_str().unwrap(),
-                            "[outdated]".yellow()
-                        );
-                    }
+                if installed_package["source"].as_str().unwrap() != "local" {
+                    match get_repo_config(installed_package["source"].as_str().unwrap())
+                        .unwrap()
+                        .parse::<toml::Value>()
+                        .unwrap()["index"]["packages"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .find(|pkg| {
+                            pkg["name"] == installed_package["name"]
+                                && pkg["arch"].as_str().unwrap() == get_arch()
+                                && pkg["current"] != installed_package["version"]
+                        }) {
+                        Some(_) => {
+                            println!(
+                                "{}   {}/{}-{} {}",
+                                "+".bright_green(),
+                                installed_package["source"].as_str().unwrap(),
+                                installed_package["name"].as_str().unwrap(),
+                                installed_package["version"].as_str().unwrap(),
+                                "[outdated]".yellow()
+                            );
+                        }
 
-                    None => {
+                        None => {
+                            println!(
+                                "{}   {}/{}-{}",
+                                "+".bright_green(),
+                                installed_package["source"].as_str().unwrap(),
+                                installed_package["name"].as_str().unwrap(),
+                                installed_package["version"].as_str().unwrap()
+                            );
+                        }
+                    }
+                }
+            }
+
+            if installed_packages
+                .iter()
+                .any(|pkg| pkg["source"].as_str().unwrap() == "local")
+            {
+                println!(
+                    "{}",
+                    "+ Packages installed from LZ4 Archives:".bright_green()
+                );
+
+                for installed_package in installed_packages {
+                    if installed_package["source"].as_str().unwrap() == "local" {
                         println!(
                             "{}   {}/{}-{}",
                             "+".bright_green(),
@@ -1248,6 +1296,80 @@ pub fn package_command(filename: &str) {
 
         Err(error) => {
             println!("{}", format!("- ERROR[7]: {}", error).bright_red());
+            exit(1);
+        }
+    }
+}
+
+pub fn install_command(filename: &str) {
+    let filename_path_buf = PathBuf::from(filename);
+
+    let parsed_package = parse_filename(filename_path_buf.file_name().unwrap().to_str().unwrap());
+    let source = parsed_package[0];
+    let name = parsed_package[1];
+    let version = parsed_package[2];
+
+    match File::open(filename_path_buf.clone()) {
+        Ok(input_file) => {
+            if prompt_yn(
+                format!(
+                    "/ Are you sure you want to locally install {}-{}?",
+                    name, version
+                )
+                .as_str(),
+            ) {
+                println!("{}", "+ Decoding LZ4...".bright_green());
+
+                let home_dir = dirs::home_dir().unwrap();
+                let installation_path_buf = home_dir.join(format!(".local/bin/{}", name));
+
+                let mut new_file = File::create(installation_path_buf.clone()).unwrap();
+
+                let mut decoder = Decoder::new(input_file).unwrap();
+
+                println!("{}", "+ Copying package executable...".bright_green());
+
+                copy(&mut decoder, &mut new_file).unwrap();
+
+                println!("{}", "+ Adding package to the Lockfile...".bright_green());
+
+                let aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
+
+                let lock_file_str = fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
+                let mut lock_file: structs::LockFile = toml::from_str(&lock_file_str).unwrap();
+
+                let package = structs::Package {
+                    name: name.to_string(),
+                    source: source.to_string(),
+                    version: version.to_string(),
+                };
+
+                lock_file.package.push(package);
+
+                let mut file = OpenOptions::new()
+                    .write(true)
+                    .truncate(true)
+                    .open(aati_lock_path_buf)
+                    .unwrap();
+
+                let toml_str = toml::to_string(&lock_file).unwrap();
+                file.write_all(toml_str.as_bytes()).unwrap();
+
+                println!("{}", "+ Changing Permissions...".bright_green());
+
+                let metadata = fs::metadata(installation_path_buf.clone()).unwrap();
+                let mut permissions = metadata.permissions();
+                permissions.set_mode(0o755);
+                fs::set_permissions(installation_path_buf, permissions).unwrap();
+
+                println!("{}", "+ Installation is complete!".bright_green());
+            } else {
+                println!("{}", "+ Transaction aborted".bright_green());
+            }
+        }
+
+        Err(error) => {
+            println!("{}", format!("- ERROR[11]: {}", error).bright_red());
             exit(1);
         }
     }

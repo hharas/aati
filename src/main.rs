@@ -24,6 +24,7 @@ fn main() {
                 println!();
                 println!("Commands:");
                 println!("    get <package>               Download a package from the Repository and install it");
+                println!("    install <path/to/archive>   Install a package from an LZ4 Archive");
                 println!("    upgrade [package]           Upgrade a package or all packages");
                 println!("    uninstall <package>         Uninstall a package");
                 println!("    remove <package>/<-all>     Alias of uninstall");
@@ -127,6 +128,17 @@ fn main() {
 
                 None => {
                     println!("{}", "- No package name?".bright_red());
+                    exit(1);
+                }
+            },
+
+            Some("install") => match args.get(2) {
+                Some(package_name) => {
+                    commands::install_command(package_name);
+                }
+
+                None => {
+                    println!("{}", "- No archive name?".bright_red());
                     exit(1);
                 }
             },
