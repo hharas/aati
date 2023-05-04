@@ -9,7 +9,7 @@ Minimal package manager written in Rust
 
 ### As a user:
 
-First off, install Aati by running the `./install.sh` script, or build Aati on your own.  
+First off, install Aati by running the `./install.sh` script, or build Aati on your own (if you wish to install Aati on Windows, see [this section](#installation-guide-for-windows-users)).  
 Aati relies on Aati Package Repositories (APRs), and so you need to add one in order to you use it. In order to set a repository, you need to run `aati repo add <repo url>`. You can add the [Amad Project Package Repository](https://codeberg.org/amad/repo/raw/branch/stable) if you want to try it out. Afterwards, if you run `aati list available`, you will see the available packages in the repo and their versions that you can install. If you wish to install the latest version of a package, you can run:
 
 ```bash
@@ -96,6 +96,32 @@ If you want to test things out only, then do the following:
 7. `$ dummy-package`
 
 Here you go! You set up a local Aati repository that you can use to test things out.
+
+### Installation Guide for Windows Users:
+
+Since Batch Code and PowerShell Scripts suck (I had a serious struggle writing installation scripts using them) I decided to write an Installation Guide myself, so here we go!
+
+1. Clone the Repository & cd into it:
+
+```batch
+git clone https://codeberg.org/amad/aati.git && cd aati
+```
+
+2. Build Aati from source with the `--release` profile:
+
+```batch
+cargo build --release
+```
+
+3. Make a Directory named `Aati\` under `C:\Program Files\`, another directory named `Binaries\` under `Aati\` and copy the released executable into it:
+
+```batch
+mkdir "C:\Program Files\Aati" && mkdir "C:\Program Files\Aati\Binaries" && copy target/release/aati.exe "C:\Program Files\Aati\Binaries\aati.exe"
+```
+
+4. Add `C:\Program Files\Aati\Binaries` to `%PATH%`, since that's where all of your installed packages (including `aati.exe` itself) will be located.
+
+5. Open your Terminal as Administrator and run any Aati command you wish.
 
 # But why?
 
