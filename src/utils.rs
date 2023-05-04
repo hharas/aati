@@ -97,11 +97,17 @@ pub fn get_aati_lock() -> Option<String> {
 pub fn get_repo_config(repo_name: &str) -> Option<String> {
     check_config_dir();
 
-    let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
+    let repo_config_path_buf;
 
-    let repo_config_path_buf = home_dir.join(format!(".config/aati/repos/{}.toml", repo_name));
+    if is_unix() {
+        let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
 
-    if !Path::exists(&repo_config_path_buf) {
+        repo_config_path_buf = home_dir.join(format!(".config/aati/repos/{}.toml", repo_name));
+    } else {
+        repo_config_path_buf = PathBuf::from(format!("C:\\Program Files\\Aati\\Repositories\\{}.toml", repo_name));
+    }
+
+    if !repo_config_path_buf.exists() {
         println!(
             "{}",
             "- NO REPO CONFIG FOUND! PLEASE RUN: $ aati repo <repo url>".bright_red()
@@ -110,7 +116,7 @@ pub fn get_repo_config(repo_name: &str) -> Option<String> {
     }
 
     let repo_config =
-        read_to_string(repo_config_path_buf).expect("UNABLE TO READ ~/.config/aati/repo.toml!");
+        read_to_string(repo_config_path_buf).unwrap();
 
     Some(repo_config.trim().to_string())
 }
