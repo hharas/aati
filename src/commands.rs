@@ -11,10 +11,12 @@ use std::fs::OpenOptions;
 use std::io;
 use std::io::Read;
 use std::io::{copy, Write};
-use std::os::unix::prelude::PermissionsExt;
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
+
+#[cfg(not(target_family = "windows"))]
+use std::os::unix::prelude::PermissionsExt;
 
 pub fn get_command(package_name: &str) {
     // Initialise some variables
