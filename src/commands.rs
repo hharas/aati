@@ -849,8 +849,8 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             let mut dummy2 = File::create(dummy2_path.clone()).unwrap();
             let mut dummy3 = File::create(dummy3_path.clone()).unwrap();
             let mut dummy4 = File::create(dummy4_path.clone()).unwrap();
-            let mut dummy5 = File::create(dummy4_path.clone()).unwrap();
-            let mut dummy6 = File::create(dummy4_path.clone()).unwrap();
+            let mut dummy5 = File::create(dummy5_path.clone()).unwrap();
+            let mut dummy6 = File::create(dummy6_path.clone()).unwrap();
 
             dummy1
                 .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86-64 Unix-like machines\"")
