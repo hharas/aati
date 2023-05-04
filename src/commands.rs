@@ -1383,8 +1383,17 @@ pub fn install_command(filename: &str) {
                 ) {
                     println!("{}", "+ Decoding LZ4...".bright_green());
 
-                    let home_dir = dirs::home_dir().unwrap();
-                    let installation_path_buf = home_dir.join(format!(".local/bin/{}", name));
+                    let installation_path_buf;
+
+                    if is_unix() {
+                        let home_dir = dirs::home_dir().unwrap();
+                        installation_path_buf = home_dir.join(format!(".local/bin/{}", name));
+                    } else {
+                        installation_path_buf = PathBuf::from(format!(
+                            "C:\\Program Files\\Aati\\Binaries\\{}.exe",
+                            name
+                        ));
+                    }
 
                     let mut new_file = File::create(installation_path_buf.clone()).unwrap();
 
@@ -1396,7 +1405,14 @@ pub fn install_command(filename: &str) {
 
                     println!("{}", "+ Adding package to the Lockfile...".bright_green());
 
-                    let aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
+                    let aati_lock_path_buf;
+
+                    if is_unix() {
+                        let home_dir = dirs::home_dir().unwrap();
+                        aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
+                    } else {
+                        aati_lock_path_buf = PathBuf::from("C:\\Program Files\\Aati\\Lock.toml");
+                    }
 
                     let lock_file_str = fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
                     let mut lock_file: structs::LockFile = toml::from_str(&lock_file_str).unwrap();
