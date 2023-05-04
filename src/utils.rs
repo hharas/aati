@@ -562,18 +562,22 @@ pub fn parse_filename(mut filename: &str) -> Vec<&str> {
     filename = filename.trim();
 
     if filename.ends_with(".lz4") {
-        let ( package, _ ) = filename.rsplit_once(".lz4").unwrap();
+        let (package, _) = filename.rsplit_once(".lz4").unwrap();
 
         // package's value is now: dummy-package-0.1.0
 
-        let ( name, version ) = package.rsplit_once("-").unwrap();
+        let (name, version) = package.rsplit_once("-").unwrap();
 
         // Now: name = "dummy-package", version = "0.1.0"
 
         vec!["local", name, version]
         //    ^^^^^ That's the name of the repo containing locally installed packages.
     } else {
-        println!("{}\n  {}", "- Unidentified file extension!".bright_red(), "Note: Only LZ4 archives are installable.".bright_blue());
+        println!(
+            "{}\n  {}",
+            "- Unidentified file extension!".bright_red(),
+            "Note: Only LZ4 archives are installable.".bright_blue()
+        );
         exit(1);
     }
 }
