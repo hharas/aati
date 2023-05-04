@@ -835,22 +835,16 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             fs::create_dir_all("aati_repo/x86-64-unix/dummy-package").unwrap();
             fs::create_dir_all("aati_repo/aarch64-unix").unwrap();
             fs::create_dir_all("aati_repo/aarch64-unix/dummy-package").unwrap();
-            fs::create_dir_all("aati_repo/x86-64-windows").unwrap();
-            fs::create_dir_all("aati_repo/x86-64-windows/dummy-package").unwrap();
 
             let dummy1_path = PathBuf::from("aati_repo/x86-64-unix/dummy-package/dummy-package-0.1.0");
             let dummy2_path = PathBuf::from("aati_repo/x86-64-unix/dummy-package/dummy-package-0.1.1");
             let dummy3_path = PathBuf::from("aati_repo/aarch64-unix/dummy-package/dummy-package-0.1.0");
             let dummy4_path = PathBuf::from("aati_repo/aarch64-unix/dummy-package/dummy-package-0.1.1");
-            let dummy5_path = PathBuf::from("aati_repo/x86-64-windows/dummy-package/dummy-package-0.1.0");
-            let dummy6_path = PathBuf::from("aati_repo/x86-64-windows/dummy-package/dummy-package-0.1.1");
 
             let mut dummy1 = File::create(dummy1_path.clone()).unwrap();
             let mut dummy2 = File::create(dummy2_path.clone()).unwrap();
             let mut dummy3 = File::create(dummy3_path.clone()).unwrap();
             let mut dummy4 = File::create(dummy4_path.clone()).unwrap();
-            let mut dummy5 = File::create(dummy5_path.clone()).unwrap();
-            let mut dummy6 = File::create(dummy6_path.clone()).unwrap();
 
             dummy1
                 .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86-64 Unix-like machines\"")
@@ -864,26 +858,16 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             dummy4
                 .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for aarch64 Unix-like machines\"")
                 .unwrap();
-            dummy5
-                .write_all(b"echo \"This is Aati Dummy Package 0.1.0 for x86-64 Windows machines\"")
-                .unwrap();
-            dummy6
-                .write_all(b"echo \"This is Aati Dummy Package 0.1.1 for x86-64 Windows machines\"")
-                .unwrap();
 
             package_command(format!("{}", dummy1_path.display()).as_str());
             package_command(format!("{}", dummy2_path.display()).as_str());
             package_command(format!("{}", dummy3_path.display()).as_str());
             package_command(format!("{}", dummy4_path.display()).as_str());
-            package_command(format!("{}", dummy5_path.display()).as_str());
-            package_command(format!("{}", dummy6_path.display()).as_str());
 
             fs::remove_file(dummy1_path).unwrap();
             fs::remove_file(dummy2_path).unwrap();
             fs::remove_file(dummy3_path).unwrap();
             fs::remove_file(dummy4_path).unwrap();
-            fs::remove_file(dummy5_path).unwrap();
-            fs::remove_file(dummy6_path).unwrap();
 
             let contents = format!("[repo]
 name = \"{}\"
@@ -900,12 +884,8 @@ packages = [
         {{ tag = \"0.1.0\", checksum = \"ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95\" }},
         {{ tag = \"0.1.1\", checksum = \"64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a\" }},
     ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},
-    {{ name = \"dummy-package\", current = \"0.1.1\", target = \"x86-64-windows\", versions = [
-        {{ tag = \"0.1.0\", checksum = \"ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95\" }},
-        {{ tag = \"0.1.1\", checksum = \"64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a\" }},
-    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},
 ]
-", repo_name, repo_maintainer, repo_description, repo_maintainer, repo_maintainer, repo_maintainer);
+", repo_name, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
 
             file.write_all(contents.as_bytes()).unwrap();
 
