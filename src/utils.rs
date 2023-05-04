@@ -12,8 +12,8 @@ use ring::digest;
 
 use crate::structs;
 
-pub fn is_windows() -> bool {
-    std::env::consts::FAMILY == "windows"
+pub fn is_unix() -> bool {
+    std::env::consts::FAMILY == "unix"
 }
 
 pub fn get_arch() -> String {
@@ -27,17 +27,17 @@ pub fn get_arch() -> String {
 }
 
 pub fn check_config_dir() {
-    let config_dir = if !is_windows() {
+    let config_dir = if is_unix() {
         dirs::home_dir().unwrap().join(".config")
     } else {
         PathBuf::from("C:\\Program Files\\Aati")
     };
-    let aati_config_dir = if !is_windows() {
+    let aati_config_dir = if is_unix() {
         dirs::home_dir().unwrap().join(".config/aati")
     } else {
         PathBuf::from("C:\\Program Files\\Aati")
     };
-    let repos_dir = if !is_windows() {
+    let repos_dir = if is_unix() {
         dirs::home_dir().unwrap().join(".config/aati/repos")
     } else {
         PathBuf::from("C:\\Program Files\\Aati\\Repositories")
@@ -59,23 +59,37 @@ pub fn check_config_dir() {
 pub fn get_aati_lock() -> Option<String> {
     check_config_dir();
 
-    let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
-    let aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
+    let mut aati_lock_path_buf = PathBuf::from("nothingness");
+    let mut aati_lock_path = aati_lock_path_buf.as_path();
 
-    let aati_lock_path = Path::new(&aati_lock_path_buf);
+    if is_unix() {
+        let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
+        aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
 
-    if !Path::exists(aati_lock_path) {
-        let mut aati_lock_file =
-            File::create(aati_lock_path).expect("- UNABLE TO CREATE ~/.config/aati/lock.toml");
+        aati_lock_path = aati_lock_path_buf.as_path();
+    } else {
+        aati_lock_path_buf = PathBuf::from("C:\\Program Files\\Aati\\Lock.toml");
 
-        let default_config = "package = []";
-        writeln!(aati_lock_file, "{}", default_config)
-            .expect("- CAN'T WRITE INTO ~/.config/aati/lock.toml");
-        println!("  * Make sure to add ~/.local/bin to PATH. You can do this by appending this at the end of our .bashrc file:\n\n    export PATH=\"$HOME/.local/bin:$PATH\"");
+        aati_lock_path = aati_lock_path_buf.as_path();
     }
 
-    let aati_lock =
-        read_to_string(aati_lock_path).expect("UNABLE TO READ ~/.config/aati/lock.toml!");
+    if !aati_lock_path.exists() {
+        let mut aati_lock_file = File::create(aati_lock_path).unwrap();
+
+        let default_config = "package = []";
+        writeln!(aati_lock_file, "{}", default_config).unwrap();
+
+        if is_unix() {
+            println!("{}", "+ Make sure to add ~/.local/bin to PATH. You can do this by appending this at the end of our .bashrc file:\n\n    export PATH=\"$HOME/.local/bin:$PATH\"".yellow());
+        } else {
+            println!(
+                "{}",
+                "+ Make sure to add C:\\Program Files\\Aati to PATH.".yellow()
+            );
+        }
+    }
+
+    let aati_lock = read_to_string(aati_lock_path).unwrap();
 
     Some(aati_lock.trim().to_string())
 }
