@@ -947,10 +947,19 @@ packages = [
 
                             config_file.sources.repos.push(repo);
 
+                            let aati_config_path_buf;
+
+                            if is_unix() {
+                                aati_config_path_buf = home_dir.join(".config/aati/rc.toml")
+                            } else {
+                                aati_config_path_buf =
+                                    PathBuf::from("C:\\Program Files\\Aati\\Config.toml");
+                            }
+
                             let mut file = OpenOptions::new()
                                 .write(true)
                                 .truncate(true)
-                                .open(home_dir.join(".config/aati/rc.toml"))
+                                .open(aati_config_path_buf)
                                 .unwrap();
 
                             let toml_str = toml::to_string(&config_file).unwrap();
