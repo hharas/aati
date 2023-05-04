@@ -84,7 +84,7 @@ pub fn get_aati_lock() -> Option<String> {
         } else {
             println!(
                 "{}",
-                "+ Make sure to add C:\\Program Files\\Aati to PATH.".yellow()
+                "+ Make sure to add C:\\Program Files\\Aati\\Binaries to PATH.".yellow()
             );
         }
     }

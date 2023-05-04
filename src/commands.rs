@@ -131,7 +131,7 @@ pub fn get_command(package_name: &str) {
 
                             let home_dir =
                                 dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
-                            
+
                             let download_path =
                                 std::env::temp_dir().join(format!("{}-{}.lz4", name, version));
 
@@ -409,9 +409,18 @@ pub fn uninstall_command(package_name: &str) {
                         .bright_green()
                 );
 
-                let path = dirs::home_dir()
-                    .unwrap()
-                    .join(format!(".local/bin/{}", package_name));
+                let path;
+
+                if is_unix() {
+                    path = dirs::home_dir()
+                        .unwrap()
+                        .join(format!(".local/bin/{}", package_name));
+                } else {
+                    path = PathBuf::from(format!(
+                        "C:\\Program Files\\Aati\\Binaries\\{}.exe",
+                        package_name
+                    ));
+                }
 
                 match fs::remove_file(path) {
                     Ok(_) => {
