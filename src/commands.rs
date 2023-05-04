@@ -131,8 +131,9 @@ pub fn get_command(package_name: &str) {
 
                             let home_dir =
                                 dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
-                            let download_path =
-                                home_dir.join(format!("/tmp/{}-{}.lz4", name, version));
+                            let download_path = home_dir.join(
+                                std::env::temp_dir().join(format!("{}-{}.lz4", name, version)),
+                            );
 
                             let mut downloaded_file = OpenOptions::new()
                                 .create(true)
