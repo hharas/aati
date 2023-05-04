@@ -905,22 +905,26 @@ packages = [
 
                             check_config_dir();
 
-                            let repo_config_path_buf =
-                                home_dir.join(format!(".config/aati/repos/{}.toml", repo_name));
+                            let repo_config_path_buf;
 
-                            let mut repo_config = File::create(repo_config_path_buf).expect(
-                                format!(
-                                    "- UNABLE TO CREATE ~/.config/aati/repos/{}.toml!",
+                            if is_unix() {
+                                repo_config_path_buf =
+                                    home_dir.join(format!(".config/aati/repos/{}.toml", repo_name));
+                            } else {
+                                repo_config_path_buf = PathBuf::from(format!(
+                                    "C:\\Program Files\\Aati\\Repositories\\{}.toml",
                                     repo_name
-                                )
-                                .as_str(),
-                            );
+                                ));
+                            }
+
+                            let mut repo_config =
+                                File::create(repo_config_path_buf.clone()).unwrap();
 
                             println!(
                                 "{}",
                                 format!(
-                                    "+ Writing Repo Config to ~/.config/aati/repos/{}.toml",
-                                    repo_name
+                                    "+ Writing Repo Config to {}",
+                                    repo_config_path_buf.display()
                                 )
                                 .bright_green()
                             );
