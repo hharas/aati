@@ -508,7 +508,7 @@ pub fn list_command(choice_option: Option<&str>) {
                 {
                     println!(
                         "{}",
-                        "+ Packages installed from LZ4 Archives:".bright_green()
+                        "+ Packages installed from local files:".bright_green()
                     );
 
                     for installed_package in installed_packages {
@@ -662,7 +662,7 @@ pub fn list_command(choice_option: Option<&str>) {
             {
                 println!(
                     "{}",
-                    "+ Packages installed from LZ4 Archives:".bright_green()
+                    "+ Packages installed from local files:".bright_green()
                 );
 
                 for installed_package in installed_packages {
