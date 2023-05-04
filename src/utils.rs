@@ -556,7 +556,7 @@ pub fn display_package(
     );
 }
 
-pub fn parse_filename(mut filename: &str) -> Vec<&str> {
+pub fn parse_filename(mut filename: &str) -> structs::Package {
     // Example Usage: parse_filename("dummy-package-0.1.0.lz4");
 
     filename = filename.trim();
@@ -570,8 +570,11 @@ pub fn parse_filename(mut filename: &str) -> Vec<&str> {
 
         // Now: name = "dummy-package", version = "0.1.0"
 
-        vec!["local", name, version]
-        //    ^^^^^ That's the name of the repo containing locally installed packages.
+        structs::Package {
+            name: name.to_string(),
+            version: version.to_string(),
+            source: "local".to_string(),
+        } //         ^^^^^ That's the name of the repo containing locally installed packages.
     } else {
         println!(
             "{}\n  {}",

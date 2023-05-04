@@ -1307,9 +1307,9 @@ pub fn install_command(filename: &str) {
     let filename_path_buf = PathBuf::from(filename);
 
     let parsed_package = parse_filename(filename_path_buf.file_name().unwrap().to_str().unwrap());
-    let source = parsed_package[0];
-    let name = parsed_package[1];
-    let version = parsed_package[2];
+    let source = parsed_package.source.as_str();
+    let name = parsed_package.name.as_str();
+    let version = parsed_package.version.as_str();
 
     let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
