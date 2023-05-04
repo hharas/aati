@@ -4,12 +4,17 @@ use std::fs::File;
 use std::io;
 use std::io::Write;
 use std::path::Path;
+use std::path::PathBuf;
 use std::process::exit;
 
 use colored::Colorize;
 use ring::digest;
 
 use crate::structs;
+
+pub fn is_windows() -> bool {
+    std::env::consts::FAMILY == "windows"
+}
 
 pub fn get_arch() -> String {
     if cfg!(target_arch = "x86_64") {
@@ -22,9 +27,21 @@ pub fn get_arch() -> String {
 }
 
 pub fn check_config_dir() {
-    let config_dir = dirs::home_dir().unwrap().join(".config");
-    let aati_config_dir = dirs::home_dir().unwrap().join(".config/aati");
-    let repos_dir = dirs::home_dir().unwrap().join(".config/aati/repos");
+    let config_dir = if !is_windows() {
+        dirs::home_dir().unwrap().join(".config")
+    } else {
+        PathBuf::from("C:\\Program Files\\Aati")
+    };
+    let aati_config_dir = if !is_windows() {
+        dirs::home_dir().unwrap().join(".config/aati")
+    } else {
+        PathBuf::from("C:\\Program Files\\Aati")
+    };
+    let repos_dir = if !is_windows() {
+        dirs::home_dir().unwrap().join(".config/aati/repos")
+    } else {
+        PathBuf::from("C:\\Program Files\\Aati\\Repositories")
+    };
 
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir).unwrap();
@@ -43,7 +60,6 @@ pub fn get_aati_lock() -> Option<String> {
     check_config_dir();
 
     let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
-
     let aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
 
     let aati_lock_path = Path::new(&aati_lock_path_buf);

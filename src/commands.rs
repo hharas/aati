@@ -204,7 +204,7 @@ pub fn get_command(package_name: &str) {
                                 let toml_str = toml::to_string(&lock_file).unwrap();
                                 file.write_all(toml_str.as_bytes()).unwrap();
 
-                                #[cfg(not(target_os = "windows"))]
+                                #[cfg(not(target_family = "windows"))]
                                 {
                                     println!("{}", "+ Changing Permissions...".bright_green());
 
@@ -1369,7 +1369,7 @@ pub fn install_command(filename: &str) {
                     let toml_str = toml::to_string(&lock_file).unwrap();
                     file.write_all(toml_str.as_bytes()).unwrap();
 
-                    #[cfg(not(target_os = "windows"))]
+                    #[cfg(not(target_family = "windows"))]
                     {
                         println!("{}", "+ Changing Permissions...".bright_green());
 
