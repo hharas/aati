@@ -59,8 +59,8 @@ pub fn check_config_dir() {
 pub fn get_aati_lock() -> Option<String> {
     check_config_dir();
 
-    let mut aati_lock_path_buf = PathBuf::from("nothingness");
-    let mut aati_lock_path = aati_lock_path_buf.as_path();
+    let aati_lock_path_buf;
+    let aati_lock_path;
 
     if is_unix() {
         let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
