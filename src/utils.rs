@@ -104,7 +104,10 @@ pub fn get_repo_config(repo_name: &str) -> Option<String> {
 
         repo_config_path_buf = home_dir.join(format!(".config/aati/repos/{}.toml", repo_name));
     } else {
-        repo_config_path_buf = PathBuf::from(format!("C:\\Program Files\\Aati\\Repositories\\{}.toml", repo_name));
+        repo_config_path_buf = PathBuf::from(format!(
+            "C:\\Program Files\\Aati\\Repositories\\{}.toml",
+            repo_name
+        ));
     }
 
     if !repo_config_path_buf.exists() {
@@ -115,8 +118,7 @@ pub fn get_repo_config(repo_name: &str) -> Option<String> {
         exit(1)
     }
 
-    let repo_config =
-        read_to_string(repo_config_path_buf).unwrap();
+    let repo_config = read_to_string(repo_config_path_buf).unwrap();
 
     Some(repo_config.trim().to_string())
 }
@@ -124,22 +126,29 @@ pub fn get_repo_config(repo_name: &str) -> Option<String> {
 pub fn get_aati_config() -> Option<String> {
     check_config_dir();
 
-    let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
+    let aati_config_path_buf;
+    let aati_config_path;
 
-    let aati_config_path_buf = home_dir.join(".config/aati/rc.toml");
+    if is_unix() {
+        let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
 
-    let aati_config_path = Path::new(&aati_config_path_buf);
+        aati_config_path_buf = home_dir.join(".config/aati/rc.toml");
 
-    if !Path::exists(aati_config_path) {
+        aati_config_path = Path::new(&aati_config_path_buf);
+    } else {
+        aati_config_path_buf = PathBuf::from("C:\\Program Files\\Aati\\Config.toml");
+
+        aati_config_path = Path::new(&aati_config_path_buf);
+    }
+
+    if !aati_config_path.exists() {
         let mut aati_config_file = File::create(aati_config_path_buf.clone()).unwrap();
 
         let default_config = "[sources]\nrepos = []";
-        writeln!(aati_config_file, "{}", default_config)
-            .expect("- CAN'T WRITE INTO ~/.config/aati/rc.toml");
+        writeln!(aati_config_file, "{}", default_config).unwrap();
     }
 
-    let aati_config =
-        read_to_string(aati_config_path).expect("UNABLE TO READ ~/.config/aati/repo.toml!");
+    let aati_config = read_to_string(aati_config_path).unwrap();
 
     Some(aati_config.trim().to_string())
 }
