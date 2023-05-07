@@ -3,11 +3,12 @@
 </p>
 
 # The Aati Package Manager
+
 Minimal package manager written in Rust
 
 ## How can I use it?
 
-### As a user:
+### As a user
 
 First off, install Aati by running the `./scripts/install.sh` script, or build Aati on your own (if you wish to install Aati on Windows, see [this section](#installation-guide-for-windows-users)).  
 Aati relies on Aati Package Repositories (APRs), and so you need to add one in order to you use it. In order to set a repository, you need to run `aati repo add <repo url>`. You can add the [Amad Project Package Repository](https://codeberg.org/amad/repo/raw/branch/stable) if you want to try it out. Afterwards, if you run `aati list available`, you will see the available packages in the repo and their versions that you can install. If you wish to install the latest version of a package, you can run:
@@ -24,7 +25,7 @@ aati get <name>-<version>
 
 if you wish to install a specific version. If you wish to uninstall a package, you should run `aati remove <name>`. In order to stay in sync with the online repository, you should run `aati sync`, and in case a package got flagged as outdated, you should run `aati upgrade` or `aati upgrade <package>` to upgrade your packages.
 
-### As a repository maintainer:
+### As a repository maintainer
 
 After installing aati, you must initialise an Aati Package Repository. You can do that by running:
 
@@ -75,6 +76,7 @@ packages = [
 ```
 
 Under `[repo]` there's general information about the Repository. Under `[index]` is where the `packages` array is located. The `packages` array contains an array that consists of the following package scheme:
+
 ```toml
 { name = "<package name>", current = "<package's current version>", target = "<target architecture>-<target family>", versions = [
     { tag = "version's tag", checksum = "file's sha256sum" }
@@ -82,11 +84,13 @@ Under `[repo]` there's general information about the Repository. Under `[index]`
 ```
 
 In order to add a package, you need to perform two actions:
+
 1. Add your Package to the file structure by creating a directory under `aati_repo/<target>/` named after your package's name. In it you will be putting your binaries in the following format: `package-name-x.x.x`. Afterwards you will run `aati package package-name-x.x.x` in order to compress your binary using LZ4, then delete the original binary.
 
 2. Add your package to the `repo.toml` file. Although this step will be replaced by adding a main `index.toml` file for this job, however this hasn't been implemented yet. In order to add it to the `repo.toml` file, you need to generate a sha256 hash of your LZ4 compressed package, then add that as a package entry to the `packages` array. If you're adding a new version to your program, then add it to the `versions` array inside your package's object.
 
 If you want to test things out only, then do the following:
+
 1. `$ aati repo init`
 2. `$ cd aati_repo`
 3. `$ python -m http.server`
@@ -97,7 +101,7 @@ If you want to test things out only, then do the following:
 
 Here you go! You set up a local Aati repository that you can use to test things out.
 
-### Installation Guide for Windows Users:
+### Installation Guide for Windows Users
 
 Since Batch Code and PowerShell Scripts suck (I had a serious struggle writing installation scripts using them) I decided to write an Installation Guide myself, so here we go!
 
