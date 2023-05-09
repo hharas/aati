@@ -109,18 +109,16 @@ pub fn get_aati_lock() -> Option<String> {
 pub fn get_repo_config(repo_name: &str) -> Option<String> {
     check_config_dir();
 
-    let repo_config_path_buf;
-
-    if is_unix() {
+    let repo_config_path_buf = if is_unix() {
         let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
 
-        repo_config_path_buf = home_dir.join(format!(".config/aati/repos/{}.toml", repo_name));
+        home_dir.join(format!(".config/aati/repos/{}.toml", repo_name))
     } else {
-        repo_config_path_buf = PathBuf::from(format!(
+        PathBuf::from(format!(
             "C:\\Program Files\\Aati\\Repositories\\{}.toml",
             repo_name
-        ));
-    }
+        ))
+    };
 
     if !repo_config_path_buf.exists() {
         println!(
@@ -254,20 +252,17 @@ pub fn extract_package(text: &String) -> Vec<String> {
                         let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
                         for available_package in available_packages {
-                            if available_package["name"].as_str().unwrap() == text {
-                                if available_package["target"].as_str().unwrap() == get_target() {
-                                    results.push(structs::Package {
-                                        name: available_package["name"]
-                                            .as_str()
-                                            .unwrap()
-                                            .to_string(),
-                                        version: available_package["current"]
-                                            .as_str()
-                                            .unwrap()
-                                            .to_string(),
-                                        source: added_repo["name"].as_str().unwrap().to_string(),
-                                    })
-                                }
+                            if available_package["name"].as_str().unwrap() == text
+                                && available_package["target"].as_str().unwrap() == get_target()
+                            {
+                                results.push(structs::Package {
+                                    name: available_package["name"].as_str().unwrap().to_string(),
+                                    version: available_package["current"]
+                                        .as_str()
+                                        .unwrap()
+                                        .to_string(),
+                                    source: added_repo["name"].as_str().unwrap().to_string(),
+                                })
                             }
                         }
                     }
@@ -281,20 +276,17 @@ pub fn extract_package(text: &String) -> Vec<String> {
                         let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
                         for available_package in available_packages {
-                            if available_package["name"].as_str().unwrap() == text {
-                                if available_package["target"].as_str().unwrap() == get_target() {
-                                    results.push(structs::Package {
-                                        name: available_package["name"]
-                                            .as_str()
-                                            .unwrap()
-                                            .to_string(),
-                                        version: available_package["current"]
-                                            .as_str()
-                                            .unwrap()
-                                            .to_string(),
-                                        source: added_repo["name"].as_str().unwrap().to_string(),
-                                    })
-                                }
+                            if available_package["name"].as_str().unwrap() == text
+                                && available_package["target"].as_str().unwrap() == get_target()
+                            {
+                                results.push(structs::Package {
+                                    name: available_package["name"].as_str().unwrap().to_string(),
+                                    version: available_package["current"]
+                                        .as_str()
+                                        .unwrap()
+                                        .to_string(),
+                                    source: added_repo["name"].as_str().unwrap().to_string(),
+                                })
                             }
                         }
                     }
@@ -310,110 +302,86 @@ pub fn extract_package(text: &String) -> Vec<String> {
                                 for package_version in
                                     available_package["versions"].as_array().unwrap()
                                 {
-                                    if package_version["tag"].as_str().unwrap() == version {
-                                        if available_package["target"].as_str().unwrap()
+                                    if package_version["tag"].as_str().unwrap() == version
+                                        && available_package["target"].as_str().unwrap()
                                             == get_target()
-                                        {
-                                            results.push(structs::Package {
-                                                name: available_package["name"]
-                                                    .as_str()
-                                                    .unwrap()
-                                                    .to_string(),
-                                                version: version.to_string(),
-                                                source: added_repo["name"]
-                                                    .as_str()
-                                                    .unwrap()
-                                                    .to_string(),
-                                            })
-                                        }
+                                    {
+                                        results.push(structs::Package {
+                                            name: available_package["name"]
+                                                .as_str()
+                                                .unwrap()
+                                                .to_string(),
+                                            version: version.to_string(),
+                                            source: added_repo["name"]
+                                                .as_str()
+                                                .unwrap()
+                                                .to_string(),
+                                        })
                                     }
                                 }
                             }
                         }
                     }
                 }
+            } else if name == version {
+                for added_repo in added_repos {
+                    let repo_str = get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();
+                    let repo_toml: toml::Value = repo_str.parse().unwrap();
+                    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+
+                    for available_package in available_packages {
+                        if available_package["name"].as_str().unwrap() == text_to_be_extracted
+                            && available_package["target"].as_str().unwrap() == get_target()
+                        {
+                            results.push(structs::Package {
+                                name: available_package["name"].as_str().unwrap().to_string(),
+                                version: available_package["current"].as_str().unwrap().to_string(),
+                                source: added_repo["name"].as_str().unwrap().to_string(),
+                            })
+                        }
+                    }
+                }
+            } else if !version.chars().next().unwrap().is_ascii_digit() {
+                name = text_to_be_extracted;
+
+                for added_repo in added_repos {
+                    let repo_str = get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();
+                    let repo_toml: toml::Value = repo_str.parse().unwrap();
+                    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+
+                    for available_package in available_packages {
+                        if available_package["name"].as_str().unwrap() == text_to_be_extracted
+                            && available_package["target"].as_str().unwrap() == get_target()
+                        {
+                            results.push(structs::Package {
+                                name: available_package["name"].as_str().unwrap().to_string(),
+                                version: available_package["current"].as_str().unwrap().to_string(),
+                                source: added_repo["name"].as_str().unwrap().to_string(),
+                            })
+                        }
+                    }
+                }
             } else {
-                if name == version {
-                    for added_repo in added_repos {
-                        let repo_str =
-                            get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();
-                        let repo_toml: toml::Value = repo_str.parse().unwrap();
-                        let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+                for added_repo in added_repos {
+                    let repo_str = get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();
+                    let repo_toml: toml::Value = repo_str.parse().unwrap();
+                    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
-                        for available_package in available_packages {
-                            if available_package["name"].as_str().unwrap() == text_to_be_extracted {
-                                if available_package["target"].as_str().unwrap() == get_target() {
-                                    results.push(structs::Package {
-                                        name: available_package["name"]
-                                            .as_str()
-                                            .unwrap()
-                                            .to_string(),
-                                        version: available_package["current"]
-                                            .as_str()
-                                            .unwrap()
-                                            .to_string(),
-                                        source: added_repo["name"].as_str().unwrap().to_string(),
-                                    })
-                                }
-                            }
-                        }
-                    }
-                } else if !version.chars().next().unwrap().is_ascii_digit() {
-                    name = text_to_be_extracted;
-
-                    for added_repo in added_repos {
-                        let repo_str =
-                            get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();
-                        let repo_toml: toml::Value = repo_str.parse().unwrap();
-                        let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
-
-                        for available_package in available_packages {
-                            if available_package["name"].as_str().unwrap() == text_to_be_extracted {
-                                if available_package["target"].as_str().unwrap() == get_target() {
-                                    results.push(structs::Package {
-                                        name: available_package["name"]
-                                            .as_str()
-                                            .unwrap()
-                                            .to_string(),
-                                        version: available_package["current"]
-                                            .as_str()
-                                            .unwrap()
-                                            .to_string(),
-                                        source: added_repo["name"].as_str().unwrap().to_string(),
-                                    })
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    for added_repo in added_repos {
-                        let repo_str =
-                            get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();
-                        let repo_toml: toml::Value = repo_str.parse().unwrap();
-                        let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
-
-                        for available_package in available_packages {
-                            if available_package["name"].as_str().unwrap() == name {
-                                for package_version in
-                                    available_package["versions"].as_array().unwrap()
+                    for available_package in available_packages {
+                        if available_package["name"].as_str().unwrap() == name {
+                            for package_version in available_package["versions"].as_array().unwrap()
+                            {
+                                if package_version["tag"].as_str().unwrap() == version
+                                    && available_package["target"].as_str().unwrap() == get_target()
                                 {
-                                    if package_version["tag"].as_str().unwrap() == version {
-                                        if available_package["target"].as_str().unwrap()
-                                            == get_target()
-                                        {
-                                            results.push(structs::Package {
-                                                name: available_package["name"]
-                                                    .as_str()
-                                                    .unwrap()
-                                                    .to_string(),
-                                                version: version.to_string(),
-                                                source: added_repo["name"]
-                                                    .as_str()
-                                                    .unwrap()
-                                                    .to_string(),
-                                            })
-                                        }
-                                    }
+                                    results.push(structs::Package {
+                                        name: available_package["name"]
+                                            .as_str()
+                                            .unwrap()
+                                            .to_string(),
+                                        version: version.to_string(),
+                                        source: added_repo["name"].as_str().unwrap().to_string(),
+                                    })
                                 }
                             }
                         }
@@ -461,87 +429,74 @@ pub fn extract_package(text: &String) -> Vec<String> {
                 let version_string = version.to_string();
 
                 vec![repo_name.to_string(), name_string, version_string]
-            } else {
-                if repo_name == "$unprovided$" {
-                    let conflicts: Vec<_> = results
-                        .iter()
-                        .enumerate()
-                        .map(|(i, pkg)| {
-                            [
-                                (i + 1).to_string(),
-                                pkg.name.clone(),
-                                pkg.version.clone(),
-                                pkg.source.clone(),
-                            ]
-                        })
-                        .collect();
-
+            } else if repo_name == "$unprovided$" {
+                let conflicts: Vec<_> = results
+                    .iter()
+                    .enumerate()
+                    .map(|(i, pkg)| {
+                        [
+                            (i + 1).to_string(),
+                            pkg.name.clone(),
+                            pkg.version.clone(),
+                            pkg.source.clone(),
+                        ]
+                    })
+                    .collect();
+                println!(
+                    "{}",
+                    "+ This Package exists with the same name in multiple repositories:".yellow()
+                );
+                for conflict in conflicts.clone() {
                     println!(
-                        "{}",
-                        "+ This Package exists with the same name in multiple repositories:"
-                            .yellow()
+                        "{}    ({}) {}/{}-{}",
+                        "+".yellow(),
+                        conflict[0],
+                        conflict[3],
+                        conflict[1],
+                        conflict[2]
                     );
-
-                    for conflict in conflicts.clone() {
-                        println!(
-                            "{}    ({}) {}/{}-{}",
-                            "+".yellow(),
-                            conflict[0],
-                            conflict[3],
-                            conflict[1],
-                            conflict[2]
-                        );
-                    }
-
-                    let input = prompt("* Enter the number of the package you choose:");
-
-                    match input.parse::<usize>() {
-                        Ok(response) => {
-                            let mut is_valid = false;
-
-                            for conflict in conflicts.clone() {
-                                if conflict[0] == response.to_string() {
-                                    is_valid = true;
-                                }
-                            }
-
-                            if is_valid {
-                                let result_package = conflicts[response - 1].clone();
-
-                                vec![
-                                    result_package[3].clone(),
-                                    result_package[1].clone(),
-                                    result_package[2].clone(),
-                                ]
-                            } else {
-                                println!("{}", "- INVALID CHOICE!".bright_red());
-                                exit(1);
+                }
+                let input = prompt("* Enter the number of the package you choose:");
+                match input.parse::<usize>() {
+                    Ok(response) => {
+                        let mut is_valid = false;
+                        for conflict in conflicts.clone() {
+                            if conflict[0] == response.to_string() {
+                                is_valid = true;
                             }
                         }
-
-                        Err(error) => {
-                            println!(
-                                "{}",
-                                format!("- UNABLE TO PARSE INPUT! ERROR[10]: {}", error)
-                                    .bright_red()
-                            );
-                            exit(1);
-                        }
-                    }
-                } else {
-                    match results.iter().find(|pkg| pkg.source == repo_name) {
-                        Some(result_package) => {
+                        if is_valid {
+                            let result_package = conflicts[response - 1].clone();
                             vec![
-                                result_package.source.clone(),
-                                result_package.name.clone(),
-                                result_package.version.clone(),
+                                result_package[3].clone(),
+                                result_package[1].clone(),
+                                result_package[2].clone(),
                             ]
-                        }
-
-                        None => {
-                            println!("{}", "- PACKAGE REPOSITORY NOT FOUND!".bright_red());
+                        } else {
+                            println!("{}", "- INVALID CHOICE!".bright_red());
                             exit(1);
                         }
+                    }
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!("- UNABLE TO PARSE INPUT! ERROR[10]: {}", error).bright_red()
+                        );
+                        exit(1);
+                    }
+                }
+            } else {
+                match results.iter().find(|pkg| pkg.source == repo_name) {
+                    Some(result_package) => {
+                        vec![
+                            result_package.source.clone(),
+                            result_package.name.clone(),
+                            result_package.version.clone(),
+                        ]
+                    }
+                    None => {
+                        println!("{}", "- PACKAGE REPOSITORY NOT FOUND!".bright_red());
+                        exit(1);
                     }
                 }
             }
@@ -625,7 +580,7 @@ pub fn parse_filename(mut filename: &str) -> structs::Package {
 
         // package's value is now: dummy-package-0.1.0
 
-        let (name, version) = package.rsplit_once("-").unwrap();
+        let (name, version) = package.rsplit_once('-').unwrap();
 
         // Now: name = "dummy-package", version = "0.1.0"
 
