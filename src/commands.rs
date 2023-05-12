@@ -129,9 +129,6 @@ pub fn get_command(package_name: &str) {
                         Ok(response) => {
                             let mut reader = response.into_reader();
 
-                            let home_dir =
-                                dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
-
                             let download_path =
                                 std::env::temp_dir().join(format!("{}-{}.lz4", name, version));
 
@@ -163,14 +160,7 @@ pub fn get_command(package_name: &str) {
                             if verify_checksum(&body, checksum.to_string()) {
                                 println!("{}", "+ Checksums match!".bright_green());
 
-                                let installation_path_buf = if is_unix() {
-                                        home_dir.join(format!(".local/bin/{}", name))
-                                } else {
-                                    PathBuf::from(format!(
-                                        "C:\\Program Files\\Aati\\Binaries\\{}.exe",
-                                        name
-                                    ))
-                                };
+                                let installation_path_buf = get_installation_path_buf(&name);
 
                                 let mut new_file =
                                     File::create(installation_path_buf.clone()).unwrap();
@@ -190,11 +180,7 @@ pub fn get_command(package_name: &str) {
 
                                 // 9. Add this Package to the Lockfile
 
-                                let aati_lock_path_buf = if is_unix() {
-                                    home_dir.join(".config/aati/lock.toml")
-                                } else {
-                                    PathBuf::from("C:\\Program Files\\Aati\\Lock.toml")
-                                };
+                                let aati_lock_path_buf = get_aati_lock_path_buf();
 
                                 let lock_file_str =
                                     fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
@@ -403,16 +389,7 @@ pub fn uninstall_command(package_name: &str) {
                         .bright_green()
                 );
 
-                let path = if is_unix() {
-                    dirs::home_dir()
-                        .unwrap()
-                        .join(format!(".local/bin/{}", package_name))
-                } else {
-                    PathBuf::from(format!(
-                        "C:\\Program Files\\Aati\\Binaries\\{}.exe",
-                        package_name
-                    ))
-                };
+                let path = get_installation_path_buf(package_name);
 
                 match fs::remove_file(path) {
                     Ok(_) => {
@@ -421,12 +398,7 @@ pub fn uninstall_command(package_name: &str) {
                             "+ Removing package from the Lockfile...".bright_green()
                         );
 
-                        let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
-                        let aati_lock_path_buf = if is_unix() {
-                            home_dir.join(".config/aati/lock.toml")
-                        } else {
-                            PathBuf::from("C:\\Program Files\\Aati\\Lock.toml")
-                        };
+                        let aati_lock_path_buf = get_aati_lock_path_buf();
 
                         let lock_file_str = fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
                         let mut lock_file: structs::LockFile =
@@ -750,8 +722,13 @@ pub fn sync_command() {
                         let repo_config_path_buf =
                             home_dir.join(format!(".config/aati/repos/{}.toml", repo_name));
 
-                        let mut repo_config = File::create(repo_config_path_buf).unwrap_or_else(|_| panic!("- UNABLE TO CREATE ~/.config/aati/repos/{}.toml!",
-                                repo_name));
+                        let mut repo_config =
+                            File::create(repo_config_path_buf).unwrap_or_else(|_| {
+                                panic!(
+                                    "- UNABLE TO CREATE ~/.config/aati/repos/{}.toml!",
+                                    repo_name
+                                )
+                            });
 
                         println!(
                             "{}",
@@ -797,13 +774,8 @@ pub fn sync_command() {
 pub fn repo_command(first_argument_option: Option<&str>, second_argument_option: Option<&str>) {
     if let Some(first_argument) = first_argument_option {
         let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
-        let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
 
-        let aati_config_path_buf = if is_unix() {
-            home_dir.join(".config/aati/rc.toml")
-        } else {
-            PathBuf::from("C:\\Program Files\\Aati\\Config.toml")
-        };
+        let aati_config_path_buf = get_aati_config_path_buf();
 
         if first_argument == "init" {
             let repo_name = prompt("* What will be the Repository's name (i.e. <name>/package)?");
@@ -818,10 +790,14 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             fs::create_dir_all("aati_repo/aarch64-unix").unwrap();
             fs::create_dir_all("aati_repo/aarch64-unix/dummy-package").unwrap();
 
-            let dummy1_path = PathBuf::from("aati_repo/x86-64-unix/dummy-package/dummy-package-0.1.0");
-            let dummy2_path = PathBuf::from("aati_repo/x86-64-unix/dummy-package/dummy-package-0.1.1");
-            let dummy3_path = PathBuf::from("aati_repo/aarch64-unix/dummy-package/dummy-package-0.1.0");
-            let dummy4_path = PathBuf::from("aati_repo/aarch64-unix/dummy-package/dummy-package-0.1.1");
+            let dummy1_path =
+                PathBuf::from("aati_repo/x86-64-unix/dummy-package/dummy-package-0.1.0");
+            let dummy2_path =
+                PathBuf::from("aati_repo/x86-64-unix/dummy-package/dummy-package-0.1.1");
+            let dummy3_path =
+                PathBuf::from("aati_repo/aarch64-unix/dummy-package/dummy-package-0.1.0");
+            let dummy4_path =
+                PathBuf::from("aati_repo/aarch64-unix/dummy-package/dummy-package-0.1.1");
 
             let mut dummy1 = File::create(dummy1_path.clone()).unwrap();
             let mut dummy2 = File::create(dummy2_path.clone()).unwrap();
@@ -927,14 +903,7 @@ packages = [
 
                             check_config_dir();
 
-                            let repo_config_path_buf = if is_unix() {
-                                    home_dir.join(format!(".config/aati/repos/{}.toml", repo_name))
-                            } else {
-                                PathBuf::from(format!(
-                                    "C:\\Program Files\\Aati\\Repositories\\{}.toml",
-                                    repo_name
-                                ))
-                            };
+                            let repo_config_path_buf = get_repo_config_path_buf(repo_name);
 
                             let mut repo_config =
                                 File::create(repo_config_path_buf.clone()).unwrap();
@@ -966,11 +935,7 @@ packages = [
 
                             config_file.sources.repos.push(repo);
 
-                            let aati_config_path_buf = if is_unix() {
-                                home_dir.join(".config/aati/rc.toml")
-                            } else {
-                                PathBuf::from("C:\\Program Files\\Aati\\Config.toml")
-                            };
+                            let aati_config_path_buf = get_aati_config_path_buf();
 
                             let mut file = OpenOptions::new()
                                 .write(true)
@@ -1046,12 +1011,8 @@ packages = [
                         let toml_str = toml::to_string_pretty(&config_file).unwrap();
                         file.write_all(toml_str.as_bytes()).unwrap();
 
-                        let repo_path_buf = if is_unix() {
-                            home_dir.join(format!(".config/aati/repos/{}.toml", second_argument))
-                        } else {
-                            PathBuf::from(format!("C:\\Program Files\\Aati\\Repositories\\{}.toml", second_argument))
-                        };
-                        
+                        let repo_path_buf = get_repo_config_path_buf(second_argument);
+
                         println!("{}", format!("+ Deleting '{}'...", repo_path_buf.display()).bright_green());
 
                         fs::remove_file(repo_path_buf).unwrap();
@@ -1136,25 +1097,27 @@ pub fn info_command(text: &str, repo_name: Option<&str>) {
             let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
             for available_package in available_packages {
-                if available_package["name"].as_str().unwrap() == text && available_package["target"].as_str().unwrap() == get_target() {
-                     results.push(vec![
-                         available_package.clone(),
-                         toml::Value::from_str(
-                             format!(
-                                 "name = \"{}\"\nurl = \"{}\"",
-                                 repo_name,
-                                 repos
-                                     .iter()
-                                     .find(|r| r["name"].as_str().unwrap() == repo_name)
-                                     .unwrap()["url"]
-                                     .as_str()
-                                     .unwrap()
-                             )
-                             .as_str(),
-                         )
-                         .unwrap(),
-                     ]);
-                 }
+                if available_package["name"].as_str().unwrap() == text
+                    && available_package["target"].as_str().unwrap() == get_target()
+                {
+                    results.push(vec![
+                        available_package.clone(),
+                        toml::Value::from_str(
+                            format!(
+                                "name = \"{}\"\nurl = \"{}\"",
+                                repo_name,
+                                repos
+                                    .iter()
+                                    .find(|r| r["name"].as_str().unwrap() == repo_name)
+                                    .unwrap()["url"]
+                                    .as_str()
+                                    .unwrap()
+                            )
+                            .as_str(),
+                        )
+                        .unwrap(),
+                    ]);
+                }
             }
         } else {
             for repo in repos {
@@ -1164,7 +1127,9 @@ pub fn info_command(text: &str, repo_name: Option<&str>) {
                 let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
                 for available_package in available_packages {
-                    if available_package["name"].as_str().unwrap() == text && available_package["target"].as_str().unwrap() == get_target() {
+                    if available_package["name"].as_str().unwrap() == text
+                        && available_package["target"].as_str().unwrap() == get_target()
+                    {
                         results.push(vec![
                             available_package.clone(),
                             toml::Value::from_str(
@@ -1191,9 +1156,10 @@ pub fn info_command(text: &str, repo_name: Option<&str>) {
                 // Check if it's installed / up-to-date
 
                 for installed_package in installed_packages {
-                    if installed_package["name"] == package["name"] && installed_package["source"].as_str().unwrap() == repo_name {
-                        installed_package_version =
-                            installed_package["version"].as_str().unwrap();
+                    if installed_package["name"] == package["name"]
+                        && installed_package["source"].as_str().unwrap() == repo_name
+                    {
+                        installed_package_version = installed_package["version"].as_str().unwrap();
 
                         is_installed = true;
                         if installed_package["version"] == package["current"] {
@@ -1258,7 +1224,9 @@ pub fn info_command(text: &str, repo_name: Option<&str>) {
                             let repo_url = results[response - 1][1]["url"].as_str().unwrap();
 
                             for installed_package in installed_packages {
-                                if installed_package["name"] == package["name"] && installed_package["source"].as_str().unwrap() == repo_name {
+                                if installed_package["name"] == package["name"]
+                                    && installed_package["source"].as_str().unwrap() == repo_name
+                                {
                                     is_installed = true;
                                     if installed_package["version"] == package["current"] {
                                         is_up_to_date = true;
@@ -1363,15 +1331,7 @@ pub fn install_command(filename: &str) {
                 ) {
                     println!("{}", "+ Decoding LZ4...".bright_green());
 
-                    let installation_path_buf = if is_unix() {
-                        let home_dir = dirs::home_dir().unwrap();
-                        home_dir.join(format!(".local/bin/{}", name))
-                    } else {
-                        PathBuf::from(format!(
-                            "C:\\Program Files\\Aati\\Binaries\\{}.exe",
-                            name
-                        ))
-                    };
+                    let installation_path_buf = get_installation_path_buf(name);
 
                     let mut new_file = File::create(installation_path_buf.clone()).unwrap();
 
@@ -1383,12 +1343,7 @@ pub fn install_command(filename: &str) {
 
                     println!("{}", "+ Adding package to the Lockfile...".bright_green());
 
-                    let aati_lock_path_buf = if is_unix() {
-                        let home_dir = dirs::home_dir().unwrap();
-                        home_dir.join(".config/aati/lock.toml")
-                    } else {
-                        PathBuf::from("C:\\Program Files\\Aati\\Lock.toml")
-                    };
+                    let aati_lock_path_buf = get_aati_lock_path_buf();
 
                     let lock_file_str = fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
                     let mut lock_file: structs::LockFile = toml::from_str(&lock_file_str).unwrap();
@@ -1432,7 +1387,10 @@ pub fn install_command(filename: &str) {
             }
         }
     } else {
-        println!("{}", "- A Package with the same name is already installed!".bright_red());
+        println!(
+            "{}",
+            "- A Package with the same name is already installed!".bright_red()
+        );
         exit(1);
     }
 }

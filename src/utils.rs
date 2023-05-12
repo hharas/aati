@@ -598,3 +598,45 @@ pub fn parse_filename(mut filename: &str) -> structs::Package {
         exit(1);
     }
 }
+
+pub fn get_installation_path_buf(filename: &str) -> PathBuf {
+    let home_dir = dirs::home_dir().unwrap();
+    if is_unix() {
+        home_dir.join(format!(".local/bin/{}", filename))
+    } else {
+        PathBuf::from(format!(
+            "C:\\Program Files\\Aati\\Binaries\\{}.exe",
+            filename
+        ))
+    }
+}
+
+pub fn get_aati_config_path_buf() -> PathBuf {
+    if is_unix() {
+        let home_dir = dirs::home_dir().unwrap();
+        home_dir.join(".config/aati/rc.toml")
+    } else {
+        PathBuf::from("C:\\Program Files\\Aati\\Config.toml")
+    }
+}
+
+pub fn get_aati_lock_path_buf() -> PathBuf {
+    if is_unix() {
+        let home_dir = dirs::home_dir().unwrap();
+        home_dir.join(".config/aati/lock.toml")
+    } else {
+        PathBuf::from("C:\\Program Files\\Aati\\Lock.toml")
+    }
+}
+
+pub fn get_repo_config_path_buf(repo_name: &str) -> PathBuf {
+    if is_unix() {
+        let home_dir = dirs::home_dir().unwrap();
+        home_dir.join(format!(".config/aati/repos/{}.toml", repo_name))
+    } else {
+        PathBuf::from(format!(
+            "C:\\Program Files\\Aati\\Repositories\\{}.toml",
+            repo_name
+        ))
+    }
+}
