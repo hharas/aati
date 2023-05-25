@@ -208,7 +208,7 @@ pub fn prompt_yn(prompt_text: &str) -> bool {
 }
 
 // This function goes hard. Feel free to copy & paste.
-pub fn extract_package(text: &String) -> Vec<String> {
+pub fn extract_package(text: &String) -> Option<Vec<String>> {
     let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
     let added_repos = aati_config["sources"]["repos"].as_array().unwrap();
 
@@ -428,7 +428,7 @@ pub fn extract_package(text: &String) -> Vec<String> {
                 let name_string = name.to_string();
                 let version_string = version.to_string();
 
-                vec![repo_name.to_string(), name_string, version_string]
+                Some(vec![repo_name.to_string(), name_string, version_string])
             } else if repo_name == "$unprovided$" {
                 let conflicts: Vec<_> = results
                     .iter()
@@ -467,11 +467,11 @@ pub fn extract_package(text: &String) -> Vec<String> {
                         }
                         if is_valid {
                             let result_package = conflicts[response - 1].clone();
-                            vec![
+                            Some(vec![
                                 result_package[3].clone(),
                                 result_package[1].clone(),
                                 result_package[2].clone(),
-                            ]
+                            ])
                         } else {
                             println!("{}", "- INVALID CHOICE!".bright_red());
                             exit(1);
@@ -487,13 +487,11 @@ pub fn extract_package(text: &String) -> Vec<String> {
                 }
             } else {
                 match results.iter().find(|pkg| pkg.source == repo_name) {
-                    Some(result_package) => {
-                        vec![
-                            result_package.source.clone(),
-                            result_package.name.clone(),
-                            result_package.version.clone(),
-                        ]
-                    }
+                    Some(result_package) => Some(vec![
+                        result_package.source.clone(),
+                        result_package.name.clone(),
+                        result_package.version.clone(),
+                    ]),
                     None => {
                         println!("{}", "- PACKAGE REPOSITORY NOT FOUND!".bright_red());
                         exit(1);
@@ -501,8 +499,7 @@ pub fn extract_package(text: &String) -> Vec<String> {
                 }
             }
         } else {
-            println!("{}", "- PACKAGE NOT FOUND!".bright_red());
-            exit(1);
+            None
         }
     } else {
         println!("{}", "- UNEXPECTED BEHAVIOUR!".bright_red());

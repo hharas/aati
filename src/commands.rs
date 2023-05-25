@@ -24,225 +24,246 @@ pub fn get_command(package_name: &str) {
     let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
-    let extracted_package = extract_package(&package_name.to_string());
+    match extract_package(&package_name.to_string()) {
+        Some(extracted_package) => {
+            let repo_toml: toml::Value = get_repo_config(extracted_package[0].as_str())
+                .unwrap()
+                .parse()
+                .unwrap();
+            let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
-    let repo_toml: toml::Value = get_repo_config(extracted_package[0].as_str())
-        .unwrap()
-        .parse()
-        .unwrap();
-    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+            let mut is_installed = false;
+            let mut is_found = false;
+            let mut checksum = "";
 
-    let mut is_installed = false;
-    let mut is_found = false;
-    let mut checksum = "";
+            for installed_package in installed_packages {
+                if installed_package["name"].as_str().unwrap() == extracted_package[1] {
+                    is_installed = true;
+                }
+            }
 
-    for installed_package in installed_packages {
-        if installed_package["name"].as_str().unwrap() == extracted_package[1] {
-            is_installed = true;
-        }
-    }
+            // 1. Make sure this Package isn't installed already
 
-    // 1. Make sure this Package isn't installed already
+            if is_installed {
+                println!(
+                    "{}",
+                    "- This Package is already installed! Did you mean: $ aati upgrade <package>"
+                        .bright_red()
+                );
+                exit(0);
+            } else {
+                for available_package in available_packages {
+                    if available_package["name"].as_str().unwrap() == extracted_package[1] {
+                        for package_version in available_package["versions"].as_array().unwrap() {
+                            if package_version["tag"].as_str().unwrap()
+                                == extracted_package[2].clone()
+                                && available_package["target"].as_str().unwrap() == get_target()
+                            {
+                                is_found = true;
+                                checksum = package_version["checksum"].as_str().unwrap();
+                            }
+                        }
+                    }
+                }
+            }
 
-    if is_installed {
-        println!(
-            "{}",
-            "- This Package is already installed! Did you mean: $ aati upgrade <package>"
-                .bright_red()
-        );
-        exit(0);
-    } else {
-        for available_package in available_packages {
-            if available_package["name"].as_str().unwrap() == extracted_package[1] {
-                for package_version in available_package["versions"].as_array().unwrap() {
-                    if package_version["tag"].as_str().unwrap() == extracted_package[2].clone()
-                        && available_package["target"].as_str().unwrap() == get_target()
-                    {
-                        is_found = true;
-                        checksum = package_version["checksum"].as_str().unwrap();
+            // 2. Make sure this Package is found in the Repository
+
+            if !is_found {
+                println!(
+                    "{}",
+                    "- This Package is not found on the Repository! Try: $ aati sync".bright_red()
+                );
+                exit(1);
+            }
+
+            if !is_installed && is_found {
+                let name = extracted_package[1].clone();
+                let version = extracted_package[2].clone();
+
+                let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+
+                let url = format!(
+                    "{}/{}/{}/{}-{}.lz4",
+                    aati_config["sources"]["repos"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .find(|r| r["name"].as_str().unwrap() == extracted_package[0])
+                        .unwrap()["url"]
+                        .as_str()
+                        .unwrap(),
+                    get_target(),
+                    name,
+                    name,
+                    version
+                );
+
+                match ureq::head(&url).call() {
+                    Ok(head_response) => {
+                        let content_length = head_response
+                            .header("Content-Length")
+                            .and_then(|len| len.parse::<u64>().ok())
+                            .unwrap_or(0);
+
+                        let human_readable_size = format_size(content_length, BINARY);
+
+                        // 3. Ask the user if he's sure that he wants to install it
+
+                        if prompt_yn(
+                            format!(
+                                "/ Are you sure you want to install {}/{}-{} ({})?",
+                                extracted_package[0], name, version, human_readable_size
+                            )
+                            .as_str(),
+                        ) {
+                            println!(
+                                "{}",
+                                format!("+ Downloading ({})...", url)
+                                    .as_str()
+                                    .bright_green()
+                            );
+
+                            // 4. Download the LZ4 compressed package
+
+                            match ureq::get(url.as_str()).call() {
+                                Ok(response) => {
+                                    let mut reader = response.into_reader();
+
+                                    let download_path = std::env::temp_dir()
+                                        .join(format!("{}-{}.lz4", name, version));
+
+                                    let mut downloaded_file = OpenOptions::new()
+                                        .create(true)
+                                        .read(true)
+                                        .write(true)
+                                        .open(download_path.clone())
+                                        .unwrap();
+
+                                    // 5. Save the LZ4 compressed package
+
+                                    copy(&mut reader, &mut downloaded_file).unwrap();
+
+                                    println!("{}", "+ Finished downloading!".bright_green());
+
+                                    // 6. Define two readers for the LZ4 compressed package:
+                                    //   - One for the checksum verification function
+                                    //   - and another for the LZ4 Decoder
+
+                                    let mut checksum_reader =
+                                        File::open(download_path.clone()).unwrap();
+                                    let lz4_reader = File::open(download_path.clone()).unwrap();
+
+                                    let mut body = Vec::new();
+                                    checksum_reader.read_to_end(&mut body).unwrap();
+
+                                    // 7. Verify the SHA256 Checksum of the LZ4 compressed package
+
+                                    if verify_checksum(&body, checksum.to_string()) {
+                                        println!("{}", "+ Checksums match!".bright_green());
+
+                                        let installation_path_buf =
+                                            get_installation_path_buf(&name);
+
+                                        let mut new_file =
+                                            File::create(installation_path_buf.clone()).unwrap();
+
+                                        // 8. Decode the LZ4 compressed package, delete it, then save the uncompressed data into ~/.local/bin/<package name>
+
+                                        let mut decoder = Decoder::new(lz4_reader).unwrap();
+
+                                        fs::remove_file(download_path).unwrap();
+
+                                        copy(&mut decoder, &mut new_file).unwrap();
+
+                                        println!(
+                                            "{}",
+                                            "+ Adding Package to the Lockfile...".bright_green()
+                                        );
+
+                                        // 9. Add this Package to the Lockfile
+
+                                        let aati_lock_path_buf = get_aati_lock_path_buf();
+
+                                        let lock_file_str =
+                                            fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
+                                        let mut lock_file: structs::LockFile =
+                                            toml::from_str(&lock_file_str).unwrap();
+
+                                        let package = structs::Package {
+                                            name,
+                                            source: extracted_package[0].to_string(),
+                                            version,
+                                        };
+
+                                        lock_file.package.push(package);
+
+                                        let mut file = OpenOptions::new()
+                                            .write(true)
+                                            .truncate(true)
+                                            .open(aati_lock_path_buf)
+                                            .unwrap();
+
+                                        let toml_str = toml::to_string(&lock_file).unwrap();
+                                        file.write_all(toml_str.as_bytes()).unwrap();
+
+                                        #[cfg(not(target_family = "windows"))]
+                                        {
+                                            println!(
+                                                "{}",
+                                                "+ Changing Permissions...".bright_green()
+                                            );
+
+                                            // 10. (non-windows only) Turn it into an executable file, simply: chmod +x ~/.local/bin/<package name>
+
+                                            let metadata =
+                                                fs::metadata(installation_path_buf.clone())
+                                                    .unwrap();
+                                            let mut permissions = metadata.permissions();
+                                            permissions.set_mode(0o755);
+                                            fs::set_permissions(installation_path_buf, permissions)
+                                                .unwrap();
+                                        }
+
+                                        println!(
+                                            "{}",
+                                            "+ Installation is complete!".bright_green()
+                                        );
+                                    } else {
+                                        println!(
+                                            "{}",
+                                            "- Checksums don't match! Installation is aborted"
+                                                .bright_red()
+                                        );
+
+                                        fs::remove_file(download_path).unwrap();
+                                    }
+                                }
+
+                                Err(error) => {
+                                    println!(
+                                        "{}",
+                                        format!("- ERROR[1]: {}", error).as_str().bright_red()
+                                    );
+                                    exit(1);
+                                }
+                            };
+                        } else {
+                            println!("{}", "+ Transaction aborted".bright_green());
+                        }
+                    }
+
+                    Err(error) => {
+                        println!("{}", format!("- ERROR[0]: {}", error).as_str().bright_red());
+                        exit(1);
                     }
                 }
             }
         }
-    }
 
-    // 2. Make sure this Package is found in the Repository
-
-    if !is_found {
-        println!(
-            "{}",
-            "- This Package is not found on the Repository! Try: $ aati sync".bright_red()
-        );
-        exit(1);
-    }
-
-    if !is_installed && is_found {
-        let name = extracted_package[1].clone();
-        let version = extracted_package[2].clone();
-
-        let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
-
-        let url = format!(
-            "{}/{}/{}/{}-{}.lz4",
-            aati_config["sources"]["repos"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .find(|r| r["name"].as_str().unwrap() == extracted_package[0])
-                .unwrap()["url"]
-                .as_str()
-                .unwrap(),
-            get_target(),
-            name,
-            name,
-            version
-        );
-
-        match ureq::head(&url).call() {
-            Ok(head_response) => {
-                let content_length = head_response
-                    .header("Content-Length")
-                    .and_then(|len| len.parse::<u64>().ok())
-                    .unwrap_or(0);
-
-                let human_readable_size = format_size(content_length, BINARY);
-
-                // 3. Ask the user if he's sure that he wants to install it
-
-                if prompt_yn(
-                    format!(
-                        "/ Are you sure you want to install {}/{}-{} ({})?",
-                        extracted_package[0], name, version, human_readable_size
-                    )
-                    .as_str(),
-                ) {
-                    println!(
-                        "{}",
-                        format!("+ Downloading ({})...", url)
-                            .as_str()
-                            .bright_green()
-                    );
-
-                    // 4. Download the LZ4 compressed package
-
-                    match ureq::get(url.as_str()).call() {
-                        Ok(response) => {
-                            let mut reader = response.into_reader();
-
-                            let download_path =
-                                std::env::temp_dir().join(format!("{}-{}.lz4", name, version));
-
-                            let mut downloaded_file = OpenOptions::new()
-                                .create(true)
-                                .read(true)
-                                .write(true)
-                                .open(download_path.clone())
-                                .unwrap();
-
-                            // 5. Save the LZ4 compressed package
-
-                            copy(&mut reader, &mut downloaded_file).unwrap();
-
-                            println!("{}", "+ Finished downloading!".bright_green());
-
-                            // 6. Define two readers for the LZ4 compressed package:
-                            //   - One for the checksum verification function
-                            //   - and another for the LZ4 Decoder
-
-                            let mut checksum_reader = File::open(download_path.clone()).unwrap();
-                            let lz4_reader = File::open(download_path.clone()).unwrap();
-
-                            let mut body = Vec::new();
-                            checksum_reader.read_to_end(&mut body).unwrap();
-
-                            // 7. Verify the SHA256 Checksum of the LZ4 compressed package
-
-                            if verify_checksum(&body, checksum.to_string()) {
-                                println!("{}", "+ Checksums match!".bright_green());
-
-                                let installation_path_buf = get_installation_path_buf(&name);
-
-                                let mut new_file =
-                                    File::create(installation_path_buf.clone()).unwrap();
-
-                                // 8. Decode the LZ4 compressed package, delete it, then save the uncompressed data into ~/.local/bin/<package name>
-
-                                let mut decoder = Decoder::new(lz4_reader).unwrap();
-
-                                fs::remove_file(download_path).unwrap();
-
-                                copy(&mut decoder, &mut new_file).unwrap();
-
-                                println!(
-                                    "{}",
-                                    "+ Adding Package to the Lockfile...".bright_green()
-                                );
-
-                                // 9. Add this Package to the Lockfile
-
-                                let aati_lock_path_buf = get_aati_lock_path_buf();
-
-                                let lock_file_str =
-                                    fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
-                                let mut lock_file: structs::LockFile =
-                                    toml::from_str(&lock_file_str).unwrap();
-
-                                let package = structs::Package {
-                                    name,
-                                    source: extracted_package[0].to_string(),
-                                    version,
-                                };
-
-                                lock_file.package.push(package);
-
-                                let mut file = OpenOptions::new()
-                                    .write(true)
-                                    .truncate(true)
-                                    .open(aati_lock_path_buf)
-                                    .unwrap();
-
-                                let toml_str = toml::to_string(&lock_file).unwrap();
-                                file.write_all(toml_str.as_bytes()).unwrap();
-
-                                #[cfg(not(target_family = "windows"))]
-                                {
-                                    println!("{}", "+ Changing Permissions...".bright_green());
-
-                                    // 10. (non-windows only) Turn it into an executable file, simply: chmod +x ~/.local/bin/<package name>
-
-                                    let metadata =
-                                        fs::metadata(installation_path_buf.clone()).unwrap();
-                                    let mut permissions = metadata.permissions();
-                                    permissions.set_mode(0o755);
-                                    fs::set_permissions(installation_path_buf, permissions)
-                                        .unwrap();
-                                }
-
-                                println!("{}", "+ Installation is complete!".bright_green());
-                            } else {
-                                println!(
-                                    "{}",
-                                    "- Checksums don't match! Installation is aborted".bright_red()
-                                );
-
-                                fs::remove_file(download_path).unwrap();
-                            }
-                        }
-
-                        Err(error) => {
-                            println!("{}", format!("- ERROR[1]: {}", error).as_str().bright_red());
-                            exit(1);
-                        }
-                    };
-                } else {
-                    println!("{}", "+ Transaction aborted".bright_green());
-                }
-            }
-
-            Err(error) => {
-                println!("{}", format!("- ERROR[0]: {}", error).as_str().bright_red());
-                exit(1);
-            }
+        None => {
+            println!("{}", "- PACKAGE NOT FOUND!".bright_red());
+            exit(1);
         }
     }
 }
@@ -266,33 +287,40 @@ pub fn upgrade_command(choice: Option<&str>) {
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     if let Some(package_name) = choice {
-        let extracted_package = extract_package(&package_name.to_string());
+        match extract_package(&package_name.to_string()) {
+            Some(extracted_package) => {
+                let mut is_installed = false;
+                let mut is_up_to_date = true;
 
-        let mut is_installed = false;
-        let mut is_up_to_date = true;
+                for installed_package in installed_packages {
+                    if installed_package["name"].as_str().unwrap() == extracted_package[1]
+                        && installed_package["source"].as_str().unwrap() == extracted_package[0]
+                    {
+                        is_installed = true;
+                        if installed_package["version"].as_str().unwrap() != extracted_package[2] {
+                            is_up_to_date = false;
+                        }
+                    }
+                }
 
-        for installed_package in installed_packages {
-            if installed_package["name"].as_str().unwrap() == extracted_package[1]
-                && installed_package["source"].as_str().unwrap() == extracted_package[0]
-            {
-                is_installed = true;
-                if installed_package["version"].as_str().unwrap() != extracted_package[2] {
-                    is_up_to_date = false;
+                if is_installed {
+                    if !is_up_to_date {
+                        uninstall_command(package_name);
+                        get_command(package_name);
+                    } else {
+                        println!("{}", "+ That Package is already up to date!".bright_green());
+                        exit(1);
+                    }
+                } else {
+                    println!("{}", "- Package not installed!".bright_red());
+                    exit(1);
                 }
             }
-        }
 
-        if is_installed {
-            if !is_up_to_date {
-                uninstall_command(package_name);
-                get_command(package_name);
-            } else {
-                println!("{}", "+ That Package is already up to date!".bright_green());
+            None => {
+                println!("{}", "- PACKAGE NOT FOUND!".bright_red());
                 exit(1);
             }
-        } else {
-            println!("{}", "- Package not installed!".bright_red());
-            exit(1);
         }
     } else {
         let mut to_be_upgraded: Vec<&str> = Vec::new();
