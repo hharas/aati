@@ -26,7 +26,7 @@ echo "+ Building finished!"
 
 echo "+ Copying Aati to the /usr/local/bin/ directory..."
 echo "+ Running (cp ./target/release/aati /usr/local/bin/aati)..."
-cp ./target/release/aati /usr/local/bin/aati
+sudo cp ./target/release/aati /usr/local/bin/aati
 
 if [ $? -ne 0 ]; then
   echo "- Failed to copy Aati to /usr/local/bin/."

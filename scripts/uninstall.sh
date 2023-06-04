@@ -11,17 +11,17 @@ if ! aati uninstall --all; then
 fi
 
 echo "+ Deleting Aati's files..."
-echo "+ Running (rm -rf ~/.config/aati)..."
+echo "+ Running (sudo rm -rf ~/.config/aati)..."
 
-if ! rm -rf ~/.config/aati; then
+if ! sudo rm -rf ~/.config/aati; then
   echo "- Failed to delete Aati's files"
   exit 1
 fi
 
 echo "+ Deleting Aati's executable..."
-echo "+ Running (rm -f /usr/local/bin/aati)..."
+echo "+ Running (sudo rm -f /usr/local/bin/aati)..."
 
-if ! rm -f /usr/local/bin/aati; then
+if ! sudo rm -f /usr/local/bin/aati; then
   echo "- Failed to delete Aati's executable"
   exit 1
 fi
