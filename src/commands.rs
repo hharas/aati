@@ -15,7 +15,7 @@ use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
 
-#[cfg(not(target_family = "windows"))]
+#[cfg(not(target_os = "windows"))]
 use std::os::unix::prelude::PermissionsExt;
 
 pub fn get_command(package_name: &str) {
@@ -207,7 +207,7 @@ pub fn get_command(package_name: &str) {
                                         let toml_str = toml::to_string(&lock_file).unwrap();
                                         file.write_all(toml_str.as_bytes()).unwrap();
 
-                                        #[cfg(not(target_family = "windows"))]
+                                        #[cfg(not(target_os = "windows"))]
                                         {
                                             println!(
                                                 "{}",
@@ -813,19 +813,19 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             fs::create_dir_all("aati_repo").unwrap();
             let mut file = File::create("aati_repo/repo.toml").unwrap();
 
-            fs::create_dir_all("aati_repo/x86-64-unix").unwrap();
-            fs::create_dir_all("aati_repo/x86-64-unix/dummy-package").unwrap();
-            fs::create_dir_all("aati_repo/aarch64-unix").unwrap();
-            fs::create_dir_all("aati_repo/aarch64-unix/dummy-package").unwrap();
+            fs::create_dir_all("aati_repo/x86-64-linux").unwrap();
+            fs::create_dir_all("aati_repo/x86-64-linux/dummy-package").unwrap();
+            fs::create_dir_all("aati_repo/aarch64-linux").unwrap();
+            fs::create_dir_all("aati_repo/aarch64-linux/dummy-package").unwrap();
 
             let dummy1_path =
-                PathBuf::from("aati_repo/x86-64-unix/dummy-package/dummy-package-0.1.0");
+                PathBuf::from("aati_repo/x86-64-linux/dummy-package/dummy-package-0.1.0");
             let dummy2_path =
-                PathBuf::from("aati_repo/x86-64-unix/dummy-package/dummy-package-0.1.1");
+                PathBuf::from("aati_repo/x86-64-linux/dummy-package/dummy-package-0.1.1");
             let dummy3_path =
-                PathBuf::from("aati_repo/aarch64-unix/dummy-package/dummy-package-0.1.0");
+                PathBuf::from("aati_repo/aarch64-linux/dummy-package/dummy-package-0.1.0");
             let dummy4_path =
-                PathBuf::from("aati_repo/aarch64-unix/dummy-package/dummy-package-0.1.1");
+                PathBuf::from("aati_repo/aarch64-linux/dummy-package/dummy-package-0.1.1");
 
             let mut dummy1 = File::create(dummy1_path.clone()).unwrap();
             let mut dummy2 = File::create(dummy2_path.clone()).unwrap();
@@ -833,16 +833,16 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             let mut dummy4 = File::create(dummy4_path.clone()).unwrap();
 
             dummy1
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86-64 Unix-like machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86-64 linux-like machines\"")
                 .unwrap();
             dummy2
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86-64 Unix-like machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86-64 linux-like machines\"")
                 .unwrap();
             dummy3
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for aarch64 Unix-like machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for aarch64 linux-like machines\"")
                 .unwrap();
             dummy4
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for aarch64 Unix-like machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for aarch64 linux-like machines\"")
                 .unwrap();
 
             package_command(format!("{}", dummy1_path.display()).as_str());
@@ -862,13 +862,13 @@ description = \"{}\"
 
 [index]
 packages = [
-    {{ name = \"dummy-package\", current = \"0.1.1\", target = \"aarch64-unix\", versions = [
-        {{ tag = \"0.1.0\", checksum = \"4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac\" }},
-        {{ tag = \"0.1.1\", checksum = \"eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4\" }},
+    {{ name = \"dummy-package\", current = \"0.1.1\", target = \"aarch64-linux\", versions = [
+        {{ tag = \"0.1.0\", checksum = \"3f2138ac83f9fe0f4f0c0a932b38333344987b423f6fff61beaa2215dd029686\" }},
+        {{ tag = \"0.1.1\", checksum = \"936e32688986da8bba7baec36289e92346e65d1a19657d38d231e36b738797d4\" }},
     ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},
-    {{ name = \"dummy-package\", current = \"0.1.1\", target = \"x86-64-unix\", versions = [
-        {{ tag = \"0.1.0\", checksum = \"ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95\" }},
-        {{ tag = \"0.1.1\", checksum = \"64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a\" }},
+    {{ name = \"dummy-package\", current = \"0.1.1\", target = \"x86-64-linux\", versions = [
+        {{ tag = \"0.1.0\", checksum = \"28bea21b606050e9ba5d074b02bf52d42c5e16d7d4c95c2bade202a587830aa7\" }},
+        {{ tag = \"0.1.1\", checksum = \"b73f53e83f1f854317971791d029872eb4e841fbc194e53fbbce681a5790276b\" }},
     ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},
 ]
 ", repo_name, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
@@ -1393,7 +1393,7 @@ pub fn install_command(filename: &str) {
                     let toml_str = toml::to_string(&lock_file).unwrap();
                     file.write_all(toml_str.as_bytes()).unwrap();
 
-                    #[cfg(not(target_family = "windows"))]
+                    #[cfg(not(target_os = "windows"))]
                     {
                         println!("{}", "+ Changing Permissions...".bright_green());
 

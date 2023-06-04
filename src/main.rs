@@ -1,4 +1,20 @@
-// بسم الله الرحمن الرحيم
+/* بسم الله الرحمن الرحيم
+
+   Aati - Minimal Package Manager written in Rust.
+   Copyright (C) 2023  Husayn Haras
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of version 3 of the GNU General Public License
+   as published by the Free Software Foundation.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
 
 mod commands;
 mod structs;
@@ -16,12 +32,9 @@ fn main() {
         match args.get(1).map(String::as_str) {
             // I got plans to make colored output an option since some terminals might not support coloring that well
             Some("--help") => {
-                println!(
-                    "{} - Minimal package manager written in Rust",
-                    "aati".bright_blue(),
-                );
+                println!("aati - Minimal package manager written in Rust");
                 println!();
-                println!("Usage: {} [COMMANDS/OPTIONS]", "aati".bright_blue());
+                println!("Usage: aati [COMMANDS/OPTIONS]");
                 println!();
                 println!("Commands:");
                 println!("    get <package>               Download a package from the Repository and install it");
@@ -43,14 +56,21 @@ fn main() {
                 println!("    -V, --version Print version info");
                 println!("        --help    Show this help message");
                 println!();
-                println!("Amad Project: https://codeberg.org/amad");
+                println!("This program is free software: you can redistribute it and/or modify");
+                println!("it under the terms of version 3 of the GNU General Public License");
+                println!("as published by the Free Software Foundation.");
+                println!();
+                println!("This program is distributed in the hope that it will be useful,");
+                println!("but WITHOUT ANY WARRANTY; without even the implied warranty of");
+                println!("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
+                println!("GNU General Public License for more details.");
             }
 
             Some("-V") | Some("--version") => {
                 let aati_version = version::VERSION;
 
                 println!(
-                    "aati {}\n\nAmad Project: https://codeberg.org/amad",
+                    "aati version {}",
                     aati_version,
                 );
             }

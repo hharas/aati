@@ -12,24 +12,24 @@ use ring::digest;
 
 use crate::structs;
 
-pub fn is_unix() -> bool {
-    std::env::consts::FAMILY == "unix"
+pub fn is_linux() -> bool {
+    std::env::consts::OS == "linux"
 }
 
 pub fn get_target() -> String {
     if cfg!(target_arch = "x86_64") {
-        if cfg!(target_family = "windows") {
+        if cfg!(target_os = "windows") {
             "x86-64-windows".to_string()
-        } else if cfg!(target_family = "unix") {
-            "x86-64-unix".to_string()
+        } else if cfg!(target_os = "linux") {
+            "x86-64-linux".to_string()
         } else {
             "x86-64-unknown".to_string()
         }
     } else if cfg!(target_arch = "aarch64") {
-        if cfg!(target_family = "windows") {
+        if cfg!(target_os = "windows") {
             "aarch64-windows".to_string()
-        } else if cfg!(target_family = "unix") {
-            "aarch64-unix".to_string()
+        } else if cfg!(target_os = "linux") {
+            "aarch64-linux".to_string()
         } else {
             "aarch64-unknown".to_string()
         }
@@ -39,17 +39,17 @@ pub fn get_target() -> String {
 }
 
 pub fn check_config_dir() {
-    let config_dir = if is_unix() {
+    let config_dir = if is_linux() {
         dirs::home_dir().unwrap().join(".config")
     } else {
         PathBuf::from("C:\\Program Files\\Aati\\Binaries")
     };
-    let aati_config_dir = if is_unix() {
+    let aati_config_dir = if is_linux() {
         dirs::home_dir().unwrap().join(".config/aati")
     } else {
         PathBuf::from("C:\\Program Files\\Aati")
     };
-    let repos_dir = if is_unix() {
+    let repos_dir = if is_linux() {
         dirs::home_dir().unwrap().join(".config/aati/repos")
     } else {
         PathBuf::from("C:\\Program Files\\Aati\\Repositories")
@@ -74,7 +74,7 @@ pub fn get_aati_lock() -> Option<String> {
     let aati_lock_path_buf;
     let aati_lock_path;
 
-    if is_unix() {
+    if is_linux() {
         let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
         aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
 
@@ -91,7 +91,7 @@ pub fn get_aati_lock() -> Option<String> {
         let default_config = "package = []";
         writeln!(aati_lock_file, "{}", default_config).unwrap();
 
-        if is_unix() {
+        if is_linux() {
             println!("{}", "+ Make sure to add ~/.local/bin to PATH. You can do this by appending this at the end of our .bashrc file:\n\n    export PATH=\"$HOME/.local/bin:$PATH\"".yellow());
         } else {
             println!(
@@ -109,7 +109,7 @@ pub fn get_aati_lock() -> Option<String> {
 pub fn get_repo_config(repo_name: &str) -> Option<String> {
     check_config_dir();
 
-    let repo_config_path_buf = if is_unix() {
+    let repo_config_path_buf = if is_linux() {
         let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
 
         home_dir.join(format!(".config/aati/repos/{}.toml", repo_name))
@@ -139,7 +139,7 @@ pub fn get_aati_config() -> Option<String> {
     let aati_config_path_buf;
     let aati_config_path;
 
-    if is_unix() {
+    if is_linux() {
         let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
 
         aati_config_path_buf = home_dir.join(".config/aati/rc.toml");
@@ -598,7 +598,7 @@ pub fn parse_filename(mut filename: &str) -> structs::Package {
 
 pub fn get_installation_path_buf(filename: &str) -> PathBuf {
     let home_dir = dirs::home_dir().unwrap();
-    if is_unix() {
+    if is_linux() {
         home_dir.join(format!(".local/bin/{}", filename))
     } else {
         PathBuf::from(format!(
@@ -609,7 +609,7 @@ pub fn get_installation_path_buf(filename: &str) -> PathBuf {
 }
 
 pub fn get_aati_config_path_buf() -> PathBuf {
-    if is_unix() {
+    if is_linux() {
         let home_dir = dirs::home_dir().unwrap();
         home_dir.join(".config/aati/rc.toml")
     } else {
@@ -618,7 +618,7 @@ pub fn get_aati_config_path_buf() -> PathBuf {
 }
 
 pub fn get_aati_lock_path_buf() -> PathBuf {
-    if is_unix() {
+    if is_linux() {
         let home_dir = dirs::home_dir().unwrap();
         home_dir.join(".config/aati/lock.toml")
     } else {
@@ -627,7 +627,7 @@ pub fn get_aati_lock_path_buf() -> PathBuf {
 }
 
 pub fn get_repo_config_path_buf(repo_name: &str) -> PathBuf {
-    if is_unix() {
+    if is_linux() {
         let home_dir = dirs::home_dir().unwrap();
         home_dir.join(format!(".config/aati/repos/{}.toml", repo_name))
     } else {

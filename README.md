@@ -38,11 +38,11 @@ After answering the prompts, you will be left with this tree structure:
 ```
 aati_repo/
     repo.toml
-    aarch64-unix/
+    aarch64-linux/
         dummy-package/
             dummy-package-0.1.0.lz4
             dummy-package-0.1.1.lz4
-    x86-64-unix/
+    x86-64-linux/
         dummy-package/
             dummy-package-0.1.0.lz4
             dummy-package-0.1.1.lz4
@@ -50,8 +50,8 @@ aati_repo/
 
 - `aati_repo/`: your repository's folder, in it you can initialise a git repository and host it somewhere, like on Codeberg or GitLab.
 - `repo.toml`: the file that contains the data needed to be able to host this package repository.
-- `x86-64-unix`: where amd64 Unix packages are located. Windows packages, for example, would be under a directory named `x86-64-windows`.
-- `aarch64-unix`: where ARMv8 Unix packages are located.
+- `x86-64-linux`: where amd64 linux packages are located. Windows packages, for example, would be under a directory named `x86-64-windows`.
+- `aarch64-linux`: where ARMv8 linux packages are located.
 - `dummy-package/`: a folder that contains LZ4 compressed packages of the default dummy package.
 
 `repo.toml` is the most important file. It contains the following template at first:
@@ -64,11 +64,11 @@ description = "<description>"
 
 [index]
 packages = [
-    { name = "dummy-package", current = "0.1.1", target = "aarch64-unix", versions = [
+    { name = "dummy-package", current = "0.1.1", target = "aarch64-linux", versions = [
         { tag = "0.1.0", checksum = "4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac" },
         { tag = "0.1.1", checksum = "eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4" },
     ], author = "<maintainer>", description = "Aati Dummy Package. This is a Package created as a template.", url = "https://codeberg.org/amad/aati" },
-    { name = "dummy-package", current = "0.1.1", target = "x86-64-unix", versions = [
+    { name = "dummy-package", current = "0.1.1", target = "x86-64-linux", versions = [
         { tag = "0.1.0", checksum = "ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95" },
         { tag = "0.1.1", checksum = "64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a" },
     ], author = "<maintainer>", description = "Aati Dummy Package. This is a Package created as a template.", url = "https://codeberg.org/amad/aati" }
@@ -78,7 +78,7 @@ packages = [
 Under `[repo]` there's general information about the Repository. Under `[index]` is where the `packages` array is located. The `packages` array contains an array that consists of the following package scheme:
 
 ```toml
-{ name = "<package name>", current = "<package's current version>", target = "<target architecture>-<target family>", versions = [
+{ name = "<package name>", current = "<package's current version>", target = "<target architecture>-<target os>", versions = [
     { tag = "version's tag", checksum = "file's sha256sum" }
 ], author = "<package author>", description = "<package description>", url = "<package url>" }
 ```
