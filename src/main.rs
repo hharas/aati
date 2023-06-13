@@ -69,10 +69,7 @@ fn main() {
             Some("-V") | Some("--version") => {
                 let aati_version = version::VERSION;
 
-                println!(
-                    "aati version {}",
-                    aati_version,
-                );
+                println!("aati version {}", aati_version,);
             }
 
             Some("get") => match args.get(2) {

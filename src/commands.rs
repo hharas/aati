@@ -716,11 +716,7 @@ pub fn list_command(choice_option: Option<&str>) {
 }
 
 pub fn sync_command() {
-    let home_dir = dirs::home_dir().unwrap();
-    let aati_config: toml::Value = get_aati_config()
-        .unwrap()
-        .parse()
-        .expect("- UNABLE TO PARSE ~/.config/aati/rc.toml!");
+    let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
 
     match aati_config
         .get("sources")
@@ -747,22 +743,18 @@ pub fn sync_command() {
 
                         check_config_dir();
 
-                        let repo_config_path_buf =
-                            home_dir.join(format!(".config/aati/repos/{}.toml", repo_name));
+                        let repo_config_path_buf = get_repo_config_path_buf(repo_name);
 
-                        let mut repo_config =
-                            File::create(repo_config_path_buf).unwrap_or_else(|_| {
-                                panic!(
-                                    "- UNABLE TO CREATE ~/.config/aati/repos/{}.toml!",
-                                    repo_name
-                                )
+                        let mut repo_config = File::create(repo_config_path_buf.clone())
+                            .unwrap_or_else(|_| {
+                                panic!("- UNABLE TO CREATE {}!", repo_config_path_buf.display())
                             });
 
                         println!(
                             "{}",
                             format!(
-                                "+   Writing Repo Config to ~/.config/aati/repos/{}.toml",
-                                repo_name
+                                "+   Writing Repo Config to {}",
+                                repo_config_path_buf.display()
                             )
                             .bright_green()
                         );
@@ -793,7 +785,15 @@ pub fn sync_command() {
         }
 
         None => {
-            println!("{}", "- ERROR[8]: UNABLE TO PARSE INFO FROM ~/.config/aati/rc.toml! TRY: aati repo <repo url>".bright_red());
+            let aati_config_path_buf = get_aati_config_path_buf();
+            println!(
+                "{}",
+                format!(
+                    "- ERROR[8]: UNABLE TO PARSE INFO FROM {}! TRY: aati repo <repo url>",
+                    aati_config_path_buf.display()
+                )
+                .bright_red()
+            );
             exit(1);
         }
     }

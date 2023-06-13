@@ -1,8 +1,9 @@
 [package]
 name = "aati"
+authors = ["Husayn Haras <husayn@dnmx.org>"]
 readme = "README.md"
 license = "GPL-3.0-only"
-version = "0.6.0"
+version = "0.6.1"
 edition = "2021"
 
 [dependencies]
