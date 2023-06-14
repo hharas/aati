@@ -409,7 +409,9 @@ pub fn extract_package(text: &String) -> Option<Vec<String>> {
 
                 if name == version {
                     for available_package in available_packages {
-                        if available_package["name"].as_str().unwrap() == name {
+                        if available_package["name"].as_str().unwrap() == name
+                            && available_package["target"].as_str().unwrap() == get_target()
+                        {
                             version = available_package["current"].as_str().unwrap();
                         }
                     }
