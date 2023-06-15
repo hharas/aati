@@ -767,7 +767,7 @@ pub fn generate_apr_html(
             ));
 
             header.push_str(&format!(
-                "Made by: <b>{}</b>, targeted for <b><code>{}</code></b>.",
+                "Made by: <b>{}</b>, targeted for <b><code style=\"font-size: 0.9rem;\">{}</code></b>.",
                 package_author, package_target
             ));
             header.push_str(&format!(
