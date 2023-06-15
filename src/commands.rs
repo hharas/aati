@@ -1430,7 +1430,8 @@ pub fn generate_command() {
         Ok(repo_toml) => match repo_toml.parse::<toml::Value>() {
             Ok(repo_config) => {
                 let website_url =
-                    prompt("On which URL will this index be hosted (e.g. http://example.com)? ");
+                    prompt("On what URL will this index be hosted (e.g. http://example.com)?");
+                let repo_url = prompt("On what URL is the package repository hosted?");
 
                 let available_packages = repo_config["index"]["packages"].as_array().unwrap();
                 let packages_folder = PathBuf::from("packages");
@@ -1439,36 +1440,47 @@ pub fn generate_command() {
 
                 html_files.insert(
                     PathBuf::from("index.html"),
-                    generate_apr_html(repo_config.clone(), "index", None, &website_url),
+                    generate_apr_html(repo_config.clone(), "index", None, &website_url, &repo_url),
                 );
 
                 html_files.insert(
                     PathBuf::from("packages.html"),
-                    generate_apr_html(repo_config.clone(), "packages", None, &website_url),
+                    generate_apr_html(
+                        repo_config.clone(),
+                        "packages",
+                        None,
+                        &website_url,
+                        &repo_url,
+                    ),
                 );
 
                 html_files.insert(
                     PathBuf::from("about.html"),
-                    generate_apr_html(repo_config.clone(), "about", None, &website_url),
+                    generate_apr_html(repo_config.clone(), "about", None, &website_url, &repo_url),
                 );
 
                 if !available_packages.is_empty() {
                     if !packages_folder.exists() {
                         fs::create_dir_all("packages").unwrap();
+                        fs::create_dir_all("packages/x86-64-linux").unwrap();
+                        fs::create_dir_all("packages/x86-64-windows").unwrap();
+                        fs::create_dir_all("packages/aarch64-linux").unwrap();
+                        fs::create_dir_all("packages/aarch64-windows").unwrap();
                     }
 
                     for package in available_packages {
                         html_files.insert(
                             PathBuf::from(format!(
-                                "packages/{}-{}.html",
+                                "packages/{}/{}.html",
+                                package["target"].as_str().unwrap(),
                                 package["name"].as_str().unwrap(),
-                                package["target"].as_str().unwrap()
                             )),
                             generate_apr_html(
                                 repo_config.clone(),
                                 "package",
                                 Some(package),
                                 &website_url,
+                                &repo_url,
                             ),
                         );
                     }

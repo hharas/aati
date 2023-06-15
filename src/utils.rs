@@ -645,6 +645,7 @@ pub fn generate_apr_html(
     template: &str,
     current_package: Option<&toml::Value>,
     website_url: &str,
+    repo_url: &str,
 ) -> String {
     let repo_name = repo_config["repo"]["name"].as_str().unwrap();
     let repo_description = repo_config["repo"]["description"].as_str().unwrap();
@@ -677,20 +678,39 @@ pub fn generate_apr_html(
             available_packages.len()
         ));
 
+        let targets = vec![
+            "x86-64-linux",
+            "x86-64-windows",
+            "x86-64-unknown",
+            "aarch64-linux",
+            "aarch64-windows",
+            "aarch64-unknown",
+        ];
+
         header.push_str("<ul>");
-        for package in available_packages {
-            let package_name = package["name"].as_str().unwrap();
-            let package_version = package["current"].as_str().unwrap();
-            let package_target = package["target"].as_str().unwrap();
-            header.push_str(&format!(
-                "<li><a href=\"{}/packages/{}-{}.html\"><b>{}</b> ({}) [{}]</a></li>",
-                website_url,
-                package_name,
-                package_target,
-                package_name,
-                package_version,
-                package_target
-            ));
+        for target in targets {
+            if available_packages
+                .iter()
+                .any(|package| package["target"].as_str().unwrap() == target)
+            {
+                header.push_str(&format!("<li><code style=\"font-size: 0.9rem;\">{}</code><ul>", target));
+                for package in available_packages {
+                    let package_name = package["name"].as_str().unwrap();
+                    let package_version = package["current"].as_str().unwrap();
+                    let package_target = package["target"].as_str().unwrap();
+                    if target == package_target {
+                        header.push_str(&format!(
+                            "<li><a href=\"{}/packages/{}/{}.html\"><b>{}</b>-{}</a></li>",
+                            website_url,
+                            package_target,
+                            package_name,
+                            package_name,
+                            package_version,
+                        ));
+                    }
+                }
+                header.push_str("</ul></li>");
+            }
         }
         header.push_str("</ul>");
 
@@ -705,7 +725,7 @@ pub fn generate_apr_html(
         );
 
         header.push_str(&format!(
-            "<p>{}</p><p>Number of packages: <b>{}</b></p><p>Maintained by: <b>{}</b></p>",
+            "<p>{}</p><p>Number of packages: <b>{}</b></p><p>Maintained by: <b>{}</b></p><hr /><p>Generated using the <a href=\"https://github.com/hharas/aati\">Aati Package Manager</a> as a hosted Aati Package Repository.</p>",
             repo_description,
             available_packages.len(),
             repo_maintainer
@@ -736,7 +756,8 @@ pub fn generate_apr_html(
             ));
 
             header.push_str(&format!(
-                "<div class=\"installation_guide\"><p>You can install this package by:</p><ol><li>Adding this package repository to Aati by running:<br/><code>&nbsp;&nbsp;&nbsp;&nbsp;aati repo add &lt;repo url&gt;</code></li><li>Then telling Aati to fetch it for you by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;aati get {}</code></li></ol>or you can download the version you want of this package below and install it locally by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;aati install {}-<i>version</i>.lz4</code></div><br />",
+                "<div class=\"installation_guide\"><p>You can install this package by:</p><ol><li>Adding this package repository to Aati by running:<br/><code>&nbsp;&nbsp;&nbsp;&nbsp;aati repo add {}</code></li><li>Then telling Aati to fetch it for you by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;aati get {}</code></li></ol>or you can download the version you want of this package below and install it locally by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;aati install {}-<i>version</i>.lz4</code></div><br />",
+                repo_url,
                 package_name,
                 package_name
             ));
@@ -765,7 +786,7 @@ pub fn generate_apr_html(
 
                 header.push_str(&format!(
                     "<tr><td><a href=\"{}/{}/{}/{}-{}.lz4\">{}</a></td><td>{}</td></tr>",
-                    website_url, package_target, package_name, package_name, tag, tag, checksum
+                    repo_url, package_target, package_name, package_name, tag, tag, checksum
                 ));
             }
             header.push_str("</table>");
