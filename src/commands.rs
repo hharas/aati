@@ -1434,7 +1434,12 @@ pub fn generate_command() {
                 let repo_url = prompt("On what URL is the package repository hosted?");
 
                 let available_packages = repo_config["index"]["packages"].as_array().unwrap();
-                let packages_folder = PathBuf::from("packages");
+                let targets = vec![
+                    "x86-64-linux",
+                    "aarch64-linux",
+                    "x86-64-windows",
+                    "aarch64-windows",
+                ];
 
                 let mut html_files: HashMap<PathBuf, String> = HashMap::new();
 
@@ -1460,19 +1465,30 @@ pub fn generate_command() {
                 );
 
                 if !available_packages.is_empty() {
-                    if !packages_folder.exists() {
-                        fs::create_dir_all("packages").unwrap();
-                        fs::create_dir_all("packages/x86-64-linux").unwrap();
-                        fs::create_dir_all("packages/x86-64-windows").unwrap();
-                        fs::create_dir_all("packages/aarch64-linux").unwrap();
-                        fs::create_dir_all("packages/aarch64-windows").unwrap();
-                    }
-
                     for package in available_packages {
+                        for target in &targets {
+                            if available_packages
+                                .iter()
+                                .any(|pkg| &pkg["target"].as_str().unwrap() == target)
+                            {
+                                let target_directory = PathBuf::from(target);
+
+                                if !target_directory.exists() {
+                                    fs::create_dir_all(format!(
+                                        "{}/{}",
+                                        target_directory.display(),
+                                        package["name"].as_str().unwrap()
+                                    ))
+                                    .unwrap();
+                                }
+                            }
+                        }
+
                         html_files.insert(
                             PathBuf::from(format!(
-                                "packages/{}/{}.html",
+                                "{}/{}/{}.html",
                                 package["target"].as_str().unwrap(),
+                                package["name"].as_str().unwrap(),
                                 package["name"].as_str().unwrap(),
                             )),
                             generate_apr_html(

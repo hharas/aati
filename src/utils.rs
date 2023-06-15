@@ -703,9 +703,10 @@ pub fn generate_apr_html(
                     let package_target = package["target"].as_str().unwrap();
                     if target == package_target {
                         header.push_str(&format!(
-                            "<li><a href=\"{}/packages/{}/{}.html\"><b>{}</b>-{}</a></li>",
+                            "<li><a href=\"{}/{}/{}/{}.html\"><b>{}</b>-{}</a></li>",
                             website_url,
                             package_target,
+                            package_name,
                             package_name,
                             package_name,
                             package_version,

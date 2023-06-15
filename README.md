@@ -48,11 +48,11 @@ aati_repo/
             dummy-package-0.1.1.lz4
 ```
 
-- `aati_repo/`: your repository's folder, in it you can initialise a git repository and host it somewhere, like on Codeberg or GitLab.
+- `aati_repo/`: your repository's directory, in it you can initialise a git repository and host it somewhere, like on Codeberg or GitLab.
 - `repo.toml`: the file that contains the data needed to be able to host this package repository.
 - `x86-64-linux`: where amd64 linux packages are located. Windows packages, for example, would be under a directory named `x86-64-windows`.
 - `aarch64-linux`: where ARMv8 linux packages are located.
-- `dummy-package/`: a folder that contains LZ4 compressed packages of the default dummy package.
+- `dummy-package/`: a directory that contains LZ4 compressed packages of the default dummy package.
 
 `repo.toml` is the most important file. It contains the following template at first:
 
