@@ -693,7 +693,10 @@ pub fn generate_apr_html(
                 .iter()
                 .any(|package| package["target"].as_str().unwrap() == target)
             {
-                header.push_str(&format!("<li><code style=\"font-size: 0.9rem;\">{}</code><ul>", target));
+                header.push_str(&format!(
+                    "<li><code style=\"font-size: 0.9rem;\">{}</code><ul>",
+                    target
+                ));
                 for package in available_packages {
                     let package_name = package["name"].as_str().unwrap();
                     let package_version = package["current"].as_str().unwrap();
@@ -756,8 +759,9 @@ pub fn generate_apr_html(
             ));
 
             header.push_str(&format!(
-                "<div class=\"installation_guide\"><p>You can install this package by:</p><ol><li>Adding this package repository to Aati by running:<br/><code>&nbsp;&nbsp;&nbsp;&nbsp;aati repo add {}</code></li><li>Then telling Aati to fetch it for you by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;aati get {}</code></li></ol>or you can download the version you want of this package below and install it locally by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;aati install {}-<i>version</i>.lz4</code></div><br />",
+                "<div class=\"installation_guide\"><p>You can install this package by:</p><ol><li>Adding this package repository to Aati by running:<br/><code>&nbsp;&nbsp;&nbsp;&nbsp;aati repo add {}</code></li><li>Then telling Aati to fetch it for you by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;aati get {}/{}</code></li></ol>or you can download the version you want of this package below and install it locally by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;aati install {}-<i>version</i>.lz4</code></div><br />",
                 repo_url,
+                repo_name,
                 package_name,
                 package_name
             ));
@@ -776,7 +780,10 @@ pub fn generate_apr_html(
                 package_url, package_url
             ));
 
-            header.push_str(&format!("<p>Current version: {}</p>", package_version));
+            header.push_str(&format!(
+                "<p>Current version: <b>{}</b></p>",
+                package_version
+            ));
             header.push_str("<p>Available versions:</p>");
 
             header.push_str("<table><tr><th>Version</th><th>SHA256 Checksum</th></tr>");
