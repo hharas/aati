@@ -1445,23 +1445,17 @@ pub fn generate_command() {
 
                 html_files.insert(
                     PathBuf::from("index.html"),
-                    generate_apr_html(repo_config.clone(), "index", None, &website_url, &repo_url),
+                    generate_apr_html(&repo_config, "index", None, &website_url, &repo_url),
                 );
 
                 html_files.insert(
                     PathBuf::from("packages.html"),
-                    generate_apr_html(
-                        repo_config.clone(),
-                        "packages",
-                        None,
-                        &website_url,
-                        &repo_url,
-                    ),
+                    generate_apr_html(&repo_config, "packages", None, &website_url, &repo_url),
                 );
 
                 html_files.insert(
                     PathBuf::from("about.html"),
-                    generate_apr_html(repo_config.clone(), "about", None, &website_url, &repo_url),
+                    generate_apr_html(&repo_config, "about", None, &website_url, &repo_url),
                 );
 
                 if !available_packages.is_empty() {
@@ -1481,6 +1475,20 @@ pub fn generate_command() {
                                     ))
                                     .unwrap();
                                 }
+
+                                html_files.insert(
+                                    PathBuf::from(format!(
+                                        "{}/index.html",
+                                        package["target"].as_str().unwrap(),
+                                    )),
+                                    generate_apr_html(
+                                        &repo_config,
+                                        target,
+                                        Some(package),
+                                        &website_url,
+                                        &repo_url,
+                                    ),
+                                );
                             }
                         }
 
@@ -1492,7 +1500,7 @@ pub fn generate_command() {
                                 package["name"].as_str().unwrap(),
                             )),
                             generate_apr_html(
-                                repo_config.clone(),
+                                &repo_config,
                                 "package",
                                 Some(package),
                                 &website_url,

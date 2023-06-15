@@ -641,7 +641,7 @@ pub fn get_repo_config_path_buf(repo_name: &str) -> PathBuf {
 }
 
 pub fn generate_apr_html(
-    repo_config: toml::Value,
+    repo_config: &toml::Value,
     template: &str,
     current_package: Option<&toml::Value>,
     website_url: &str,
@@ -680,10 +680,10 @@ pub fn generate_apr_html(
 
         let targets = vec![
             "x86-64-linux",
-            "x86-64-windows",
-            "x86-64-unknown",
             "aarch64-linux",
+            "x86-64-windows",
             "aarch64-windows",
+            "x86-64-unknown",
             "aarch64-unknown",
         ];
 
@@ -694,8 +694,8 @@ pub fn generate_apr_html(
                 .any(|package| package["target"].as_str().unwrap() == target)
             {
                 header.push_str(&format!(
-                    "<li><code style=\"font-size: 0.9rem;\">{}</code><ul>",
-                    target
+                    "<li><code style=\"font-size: 0.9rem;\"><a href=\"{}/{}\">{}</a></code><ul>",
+                    website_url, target, target
                 ));
                 for package in available_packages {
                     let package_name = package["name"].as_str().unwrap();
@@ -809,6 +809,48 @@ pub fn generate_apr_html(
             "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
             repo_name, website_url, website_url, website_url
         );
+
+        let target = template;
+
+        // Borrow Checker headache, had to do all this
+        let mut these_available_packages = available_packages.clone();
+        let retained_available_packages: &mut Vec<toml::Value> = these_available_packages.as_mut();
+        retained_available_packages.retain(|package| package["target"].as_str().unwrap() == target);
+
+        header.push_str(&format!(
+            "<p>Number of <code style=\"font-size: 0.9rem;\">{}</code>-targeted packages: <b>{}</b></p>",
+            target,
+            retained_available_packages.len()
+        ));
+
+        if retained_available_packages
+            .iter()
+            .any(|package| package["target"].as_str().unwrap() == target)
+        {
+            header.push_str("<ul>");
+            for package in available_packages {
+                let package_name = package["name"].as_str().unwrap();
+                let package_version = package["current"].as_str().unwrap();
+                let package_target = package["target"].as_str().unwrap();
+                if target == package_target {
+                    header.push_str(&format!(
+                        "<li><a href=\"{}/{}/{}/{}.html\"><b>{}</b>-{}</a></li>",
+                        website_url,
+                        package_target,
+                        package_name,
+                        package_name,
+                        package_name,
+                        package_version,
+                    ));
+                }
+            }
+            header.push_str("</ul>");
+        }
+
+        head.push_str(&format!(
+            "<title>Packages - {} - APR</title></head>",
+            repo_name
+        ));
     }
 
     response.push_str(&head);
