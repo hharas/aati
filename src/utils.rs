@@ -644,6 +644,7 @@ pub fn generate_apr_html(
     repo_config: toml::Value,
     template: &str,
     current_package: Option<&toml::Value>,
+    website_url: &str,
 ) -> String {
     let repo_name = repo_config["repo"]["name"].as_str().unwrap();
     let repo_description = repo_config["repo"]["description"].as_str().unwrap();
@@ -659,16 +660,16 @@ pub fn generate_apr_html(
 
     if template == "index" {
         header = format!(
-            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"index.html\">home</a> - <a href=\"packages.html\">packages</a> - <a href=\"about.html\">about</a><hr />",
-            repo_name
+            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
+            repo_name, website_url, website_url, website_url
         );
 
         head.push_str(&format!("<title>{} - APR</title></head>", repo_name));
         header.push_str(&format!("<p>{}</p>", repo_description));
     } else if template == "packages" {
         header = format!(
-            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"index.html\">home</a> - <a href=\"packages.html\">packages</a> - <a href=\"about.html\">about</a><hr />",
-            repo_name
+            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
+            repo_name, website_url, website_url, website_url
         );
 
         header.push_str(&format!(
@@ -682,8 +683,13 @@ pub fn generate_apr_html(
             let package_version = package["current"].as_str().unwrap();
             let package_target = package["target"].as_str().unwrap();
             header.push_str(&format!(
-                "<li><a href=\"packages/{}-{}.html\"><b>{}</b> ({}) [{}]</a></li>",
-                package_name, package_target, package_name, package_version, package_target
+                "<li><a href=\"{}/packages/{}-{}.html\"><b>{}</b> ({}) [{}]</a></li>",
+                website_url,
+                package_name,
+                package_target,
+                package_name,
+                package_version,
+                package_target
             ));
         }
         header.push_str("</ul>");
@@ -694,8 +700,8 @@ pub fn generate_apr_html(
         ));
     } else if template == "about" {
         header = format!(
-            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"index.html\">home</a> - <a href=\"packages.html\">packages</a> - <a href=\"about.html\">about</a><hr />",
-            repo_name
+            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
+            repo_name, website_url, website_url, website_url
         );
 
         header.push_str(&format!(
@@ -711,8 +717,8 @@ pub fn generate_apr_html(
         ));
     } else if template == "package" {
         header = format!(
-            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"../index.html\">home</a> - <a href=\"../packages.html\">packages</a> - <a href=\"../about.html\">about</a><hr />",
-            repo_name
+            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
+            repo_name, website_url, website_url, website_url
         );
 
         if let Some(package) = current_package {
@@ -758,8 +764,8 @@ pub fn generate_apr_html(
                 let checksum = version["checksum"].as_str().unwrap();
 
                 header.push_str(&format!(
-                    "<tr><td><a href=\"../{}/{}/{}-{}.lz4\">{}</a></td><td>{}</td></tr>",
-                    package_target, package_name, package_name, tag, tag, checksum
+                    "<tr><td><a href=\"{}/{}/{}/{}-{}.lz4\">{}</a></td><td>{}</td></tr>",
+                    website_url, package_target, package_name, package_name, tag, tag, checksum
                 ));
             }
             header.push_str("</table>");
@@ -771,8 +777,8 @@ pub fn generate_apr_html(
         }
     } else {
         header = format!(
-            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"index.html\">home</a> - <a href=\"packages.html\">packages</a> - <a href=\"about.html\">about</a><hr />",
-            repo_name
+            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
+            repo_name, website_url, website_url, website_url
         );
     }
 

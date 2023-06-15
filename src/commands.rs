@@ -1429,6 +1429,9 @@ pub fn generate_command() {
     match read_to_string("repo.toml") {
         Ok(repo_toml) => match repo_toml.parse::<toml::Value>() {
             Ok(repo_config) => {
+                let website_url =
+                    prompt("On which URL will this index be hosted (e.g. http://example.com)? ");
+
                 let available_packages = repo_config["index"]["packages"].as_array().unwrap();
                 let packages_folder = PathBuf::from("packages");
 
@@ -1436,17 +1439,17 @@ pub fn generate_command() {
 
                 html_files.insert(
                     PathBuf::from("index.html"),
-                    generate_apr_html(repo_config.clone(), "index", None),
+                    generate_apr_html(repo_config.clone(), "index", None, &website_url),
                 );
 
                 html_files.insert(
                     PathBuf::from("packages.html"),
-                    generate_apr_html(repo_config.clone(), "packages", None),
+                    generate_apr_html(repo_config.clone(), "packages", None, &website_url),
                 );
 
                 html_files.insert(
                     PathBuf::from("about.html"),
-                    generate_apr_html(repo_config.clone(), "about", None),
+                    generate_apr_html(repo_config.clone(), "about", None, &website_url),
                 );
 
                 if !available_packages.is_empty() {
@@ -1461,7 +1464,12 @@ pub fn generate_command() {
                                 package["name"].as_str().unwrap(),
                                 package["target"].as_str().unwrap()
                             )),
-                            generate_apr_html(repo_config.clone(), "package", Some(package)),
+                            generate_apr_html(
+                                repo_config.clone(),
+                                "package",
+                                Some(package),
+                                &website_url,
+                            ),
                         );
                     }
                 }
