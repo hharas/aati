@@ -51,6 +51,9 @@ fn main() {
                 println!("      info <repo name>          Show an overview of a repository");
                 println!("    info <package>              Show a package's info");
                 println!("    package <path/to/binary>    Compress a binary into LZ4");
+                println!(
+                    "    generate                    Generate .html files for a package repository"
+                );
                 println!();
                 println!("Options:");
                 println!("    -V, --version Print version info");
@@ -158,6 +161,8 @@ fn main() {
                     exit(1);
                 }
             },
+
+            Some("generate") => commands::generate_command(),
 
             _ => {
                 println!("{}", "- Unknown command!".bright_red())

@@ -639,3 +639,146 @@ pub fn get_repo_config_path_buf(repo_name: &str) -> PathBuf {
         ))
     }
 }
+
+pub fn generate_apr_html(
+    repo_config: toml::Value,
+    template: &str,
+    current_package: Option<&toml::Value>,
+) -> String {
+    let repo_name = repo_config["repo"]["name"].as_str().unwrap();
+    let repo_description = repo_config["repo"]["description"].as_str().unwrap();
+    let repo_maintainer = repo_config["repo"]["maintainer"].as_str().unwrap();
+    let available_packages = repo_config["index"]["packages"].as_array().unwrap();
+
+    let mut response = "<!DOCTYPE html><html lang=\"en\">".to_string();
+
+    let mut head = "<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><style>table, th, td { border: 1px solid black; border-collapse: collapse; } .installation_guide { background-color: #f0f0f0; }</style>"
+        .to_string();
+
+    let mut header;
+
+    if template == "index" {
+        header = format!(
+            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"index.html\">home</a> - <a href=\"packages.html\">packages</a> - <a href=\"about.html\">about</a><hr />",
+            repo_name
+        );
+
+        head.push_str(&format!("<title>{} - APR</title></head>", repo_name));
+        header.push_str(&format!("<p>{}</p>", repo_description));
+    } else if template == "packages" {
+        header = format!(
+            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"index.html\">home</a> - <a href=\"packages.html\">packages</a> - <a href=\"about.html\">about</a><hr />",
+            repo_name
+        );
+
+        header.push_str(&format!(
+            "<p>Number of packages: <b>{}</b></p>",
+            available_packages.len()
+        ));
+
+        header.push_str("<ul>");
+        for package in available_packages {
+            let package_name = package["name"].as_str().unwrap();
+            let package_version = package["current"].as_str().unwrap();
+            let package_target = package["target"].as_str().unwrap();
+            header.push_str(&format!(
+                "<li><a href=\"packages/{}-{}.html\"><b>{}</b> ({}) [{}]</a></li>",
+                package_name, package_target, package_name, package_version, package_target
+            ));
+        }
+        header.push_str("</ul>");
+
+        head.push_str(&format!(
+            "<title>Packages - {} - APR</title></head>",
+            repo_name
+        ));
+    } else if template == "about" {
+        header = format!(
+            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"index.html\">home</a> - <a href=\"packages.html\">packages</a> - <a href=\"about.html\">about</a><hr />",
+            repo_name
+        );
+
+        header.push_str(&format!(
+            "<p>{}</p><p>Number of packages: <b>{}</b></p><p>Maintained by: <b>{}</b></p>",
+            repo_description,
+            available_packages.len(),
+            repo_maintainer
+        ));
+
+        head.push_str(&format!(
+            "<title>About - {} - APR</title></head>",
+            repo_name
+        ));
+    } else if template == "package" {
+        header = format!(
+            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"../index.html\">home</a> - <a href=\"../packages.html\">packages</a> - <a href=\"../about.html\">about</a><hr />",
+            repo_name
+        );
+
+        if let Some(package) = current_package {
+            let package_name = package["name"].as_str().unwrap();
+            let package_version = package["current"].as_str().unwrap();
+            let package_target = package["target"].as_str().unwrap();
+            let package_versions = package["versions"].as_array().unwrap();
+            let package_author = package["author"].as_str().unwrap();
+            let package_description = package["description"].as_str().unwrap();
+            let package_url = package["url"].as_str().unwrap();
+
+            header.push_str(&format!(
+                "<h3>Package: <code style=\"font-size: 1rem;\">{}</code></h3>",
+                package_name
+            ));
+
+            header.push_str(&format!(
+                "<div class=\"installation_guide\"><p>You can install this package by:</p><ol><li>Adding this package repository to Aati by running:<br/><code>&nbsp;&nbsp;&nbsp;&nbsp;aati repo add &lt;repo url&gt;</code></li><li>Then telling Aati to fetch it for you by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;aati get {}</code></li></ol>or you can download the version you want of this package below and install it locally by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;aati install {}-<i>version</i>.lz4</code></div><br />",
+                package_name,
+                package_name
+            ));
+
+            header.push_str(&format!(
+                "Made by: <b>{}</b>, targeted for <b><code>{}</code></b>.",
+                package_author, package_target
+            ));
+            header.push_str(&format!(
+                "<p>Description: <b>{}</b></p>",
+                package_description
+            ));
+
+            header.push_str(&format!(
+                "<p>URL: <a href=\"{}\">{}</a></p>",
+                package_url, package_url
+            ));
+
+            header.push_str(&format!("<p>Current version: {}</p>", package_version));
+            header.push_str("<p>Available versions:</p>");
+
+            header.push_str("<table><tr><th>Version</th><th>SHA256 Checksum</th></tr>");
+            for version in package_versions {
+                let tag = version["tag"].as_str().unwrap();
+                let checksum = version["checksum"].as_str().unwrap();
+
+                header.push_str(&format!(
+                    "<tr><td><a href=\"../{}/{}/{}-{}.lz4\">{}</a></td><td>{}</td></tr>",
+                    package_target, package_name, package_name, tag, tag, checksum
+                ));
+            }
+            header.push_str("</table>");
+
+            head.push_str(&format!(
+                "<title>{}/{} - APR</title></head>",
+                repo_name, package_name
+            ));
+        }
+    } else {
+        header = format!(
+            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"index.html\">home</a> - <a href=\"packages.html\">packages</a> - <a href=\"about.html\">about</a><hr />",
+            repo_name
+        );
+    }
+
+    response.push_str(&head);
+    response.push_str(&header);
+    response.push_str("</body></html>");
+
+    response
+}

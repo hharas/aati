@@ -5,7 +5,9 @@ use colored::Colorize;
 use humansize::{format_size, BINARY};
 use lz4::Decoder;
 use lz4::EncoderBuilder;
+use std::collections::HashMap;
 use std::fs;
+use std::fs::read_to_string;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io;
@@ -833,16 +835,16 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             let mut dummy4 = File::create(dummy4_path.clone()).unwrap();
 
             dummy1
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86-64 linux-like machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86-64 linux machines\"")
                 .unwrap();
             dummy2
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86-64 linux-like machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86-64 linux machines\"")
                 .unwrap();
             dummy3
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for aarch64 linux-like machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for aarch64 linux machines\"")
                 .unwrap();
             dummy4
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for aarch64 linux-like machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for aarch64 linux machines\"")
                 .unwrap();
 
             package_command(format!("{}", dummy1_path.display()).as_str());
@@ -863,13 +865,13 @@ description = \"{}\"
 [index]
 packages = [
     {{ name = \"dummy-package\", current = \"0.1.1\", target = \"aarch64-linux\", versions = [
-        {{ tag = \"0.1.0\", checksum = \"3f2138ac83f9fe0f4f0c0a932b38333344987b423f6fff61beaa2215dd029686\" }},
-        {{ tag = \"0.1.1\", checksum = \"936e32688986da8bba7baec36289e92346e65d1a19657d38d231e36b738797d4\" }},
-    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},
+        {{ tag = \"0.1.0\", checksum = \"fd54f3db9f9b001d836654dec8b50a3f76f9003e5b86afc9fb0e2ef42c98a935\" }},
+        {{ tag = \"0.1.1\", checksum = \"41a5dbe93c5641969374a2c369d486168d28fa6e5049730770f72a64c83afd61\" }},
+    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://github.com/hharas/aati\" }},
     {{ name = \"dummy-package\", current = \"0.1.1\", target = \"x86-64-linux\", versions = [
-        {{ tag = \"0.1.0\", checksum = \"28bea21b606050e9ba5d074b02bf52d42c5e16d7d4c95c2bade202a587830aa7\" }},
-        {{ tag = \"0.1.1\", checksum = \"b73f53e83f1f854317971791d029872eb4e841fbc194e53fbbce681a5790276b\" }},
-    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://codeberg.org/amad/aati\" }},
+        {{ tag = \"0.1.0\", checksum = \"f9a604403a4838e5e9ac64db85ac6dc6f08c0d27889a151ab3d349bc84b9c881\" }},
+        {{ tag = \"0.1.1\", checksum = \"7b191ce2d53733d5b02d8740c9975346c33287ab74d7c7c7831df43aefdfddfc\" }},
+    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://github.com/hharas/aati\" }},
 ]
 ", repo_name, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
 
@@ -1420,5 +1422,76 @@ pub fn install_command(filename: &str) {
             "- A Package with the same name is already installed!".bright_red()
         );
         exit(1);
+    }
+}
+
+pub fn generate_command() {
+    match read_to_string("repo.toml") {
+        Ok(repo_toml) => match repo_toml.parse::<toml::Value>() {
+            Ok(repo_config) => {
+                let available_packages = repo_config["index"]["packages"].as_array().unwrap();
+                let packages_folder = PathBuf::from("packages");
+
+                let mut html_files: HashMap<PathBuf, String> = HashMap::new();
+
+                html_files.insert(
+                    PathBuf::from("index.html"),
+                    generate_apr_html(repo_config.clone(), "index", None),
+                );
+
+                html_files.insert(
+                    PathBuf::from("packages.html"),
+                    generate_apr_html(repo_config.clone(), "packages", None),
+                );
+
+                html_files.insert(
+                    PathBuf::from("about.html"),
+                    generate_apr_html(repo_config.clone(), "about", None),
+                );
+
+                if !available_packages.is_empty() {
+                    if !packages_folder.exists() {
+                        fs::create_dir_all("packages").unwrap();
+                    }
+
+                    for package in available_packages {
+                        html_files.insert(
+                            PathBuf::from(format!(
+                                "packages/{}-{}.html",
+                                package["name"].as_str().unwrap(),
+                                package["target"].as_str().unwrap()
+                            )),
+                            generate_apr_html(repo_config.clone(), "package", Some(package)),
+                        );
+                    }
+                }
+
+                for (filepath, filehtml) in html_files {
+                    let mut file = match File::create(&filepath) {
+                        Ok(file) => file,
+                        Err(error) => {
+                            println!("{}", format!("ERROR[14]: {}", error).bright_red());
+                            exit(1);
+                        }
+                    };
+
+                    file.write_all(filehtml.as_bytes()).unwrap();
+                    println!(
+                        "{}",
+                        format!("+ Written {}", filepath.display()).bright_green()
+                    );
+                }
+            }
+
+            Err(error) => {
+                println!("{}", format!("ERROR[12]: {}", error).bright_red());
+                exit(1);
+            }
+        },
+
+        Err(error) => {
+            println!("{}", format!("ERROR[13]: {}", error).bright_red());
+            exit(1);
+        }
     }
 }
