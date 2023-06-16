@@ -618,10 +618,7 @@ packages = [
         ])
     );
 
-    assert_eq!(
-        extract_package("unknown-package", &added_repos),
-        None
-    );
+    assert_eq!(extract_package("unknown-package", &added_repos), None);
 }
 
 pub fn verify_checksum(body: &[u8], checksum: String) -> bool {
