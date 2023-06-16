@@ -11,7 +11,7 @@ Minimal package manager written in Rust
 ### As a user
 
 First off, install Aati by running the `./scripts/install.sh` script, or build Aati on your own (if you wish to install Aati on Windows, see [this section](#installation-guide-for-windows-users)).  
-Aati relies on Aati Package Repositories (APRs), and so you need to add one in order to you use it. In order to set a repository, you need to run `aati repo add <repo url>`. You can add the [Amad Project Package Repository](https://codeberg.org/amad/repo/raw/branch/stable) if you want to try it out. Afterwards, if you run `aati list available`, you will see the available packages in the repo and their versions that you can install. If you wish to install the latest version of a package, you can run:
+Aati relies on Aati Package Repositories (APRs), and so you need to add one in order to you use it. In order to set a repository, you need to run `aati repo add <repo url>`. You can add the [Amad Project Package Repository](https://amad.codeberg.page) if you want to try it out. Afterwards, if you run `aati list available`, you will see the available packages in the repo and their versions that you can install. If you wish to install the latest version of a package, you can run:
 
 ```bash
 aati get <package name>
@@ -65,12 +65,12 @@ description = "<description>"
 [index]
 packages = [
     { name = "dummy-package", current = "0.1.1", target = "aarch64-linux", versions = [
-        { tag = "0.1.0", checksum = "4237a71f63ef797e4bd5c70561ae85f68e66f84ae985704c14dd53fa9d81d7ac" },
-        { tag = "0.1.1", checksum = "eda1b669d0bf90fdeb247a1e768a60baf56b9ba008a05c34859960be803d0ac4" },
+        { tag = "0.1.0", checksum = "fd54f3db9f9b001d836654dec8b50a3f76f9003e5b86afc9fb0e2ef42c98a935" },
+        { tag = "0.1.1", checksum = "41a5dbe93c5641969374a2c369d486168d28fa6e5049730770f72a64c83afd61" },
     ], author = "<maintainer>", description = "Aati Dummy Package. This is a Package created as a template.", url = "https://codeberg.org/amad/aati" },
     { name = "dummy-package", current = "0.1.1", target = "x86-64-linux", versions = [
-        { tag = "0.1.0", checksum = "ac5d6d9d495700c3f5880e89b34f56259a888b9ef671a76fc43410a1712acf95" },
-        { tag = "0.1.1", checksum = "64cc0909fe1a2eaa2f7b211c1cf0250596d2c20b225c0c86507f01db9032913a" },
+        { tag = "0.1.0", checksum = "f9a604403a4838e5e9ac64db85ac6dc6f08c0d27889a151ab3d349bc84b9c881" },
+        { tag = "0.1.1", checksum = "7b191ce2d53733d5b02d8740c9975346c33287ab74d7c7c7831df43aefdfddfc" },
     ], author = "<maintainer>", description = "Aati Dummy Package. This is a Package created as a template.", url = "https://codeberg.org/amad/aati" }
 ]
 ```
