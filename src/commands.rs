@@ -1477,14 +1477,11 @@ pub fn generate_command() {
                                 }
 
                                 html_files.insert(
-                                    PathBuf::from(format!(
-                                        "{}/index.html",
-                                        package["target"].as_str().unwrap(),
-                                    )),
+                                    PathBuf::from(format!("{}/index.html", target,)),
                                     generate_apr_html(
                                         &repo_config,
                                         target,
-                                        Some(package),
+                                        None,
                                         &website_url,
                                         &repo_url,
                                     ),
