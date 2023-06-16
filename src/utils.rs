@@ -667,7 +667,7 @@ pub fn generate_apr_html(
 
         head.push_str(&format!("<title>{} - APR</title></head>", repo_name));
         header.push_str(&format!("<p>{}</p>", repo_description));
-        header.push_str(&format!("<p>Add this as a Package Repository in Aati by running:</p><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati repo add {}</code>", repo_url));
+        header.push_str(&format!("<p>Add this Package Repository in Aati by running:</p><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati repo add {}</code>", repo_url));
     } else if template == "packages" {
         header = format!(
             "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
