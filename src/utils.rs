@@ -208,11 +208,11 @@ pub fn prompt_yn(prompt_text: &str) -> bool {
 }
 
 // This function goes hard. Feel free to copy & paste.
-pub fn extract_package(text: &String, added_repos: &Vec<toml::Value>) -> Option<Vec<String>> {
+pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec<String>> {
     let mut repo_name = "$unprovided$";
     let mut name;
     let mut version;
-    let mut text_to_be_extracted = text.as_str();
+    let mut text_to_be_extracted = text;
 
     if !text.contains('/') {
         let (found_name, found_version) = text.rsplit_once('-').unwrap_or((text, text));
@@ -243,10 +243,8 @@ pub fn extract_package(text: &String, added_repos: &Vec<toml::Value>) -> Option<
             if repo_name == "$unprovided$" {
                 if name == version {
                     for added_repo in added_repos {
-                        let repo_str =
-                            get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();
-                        let repo_toml: toml::Value = repo_str.parse().unwrap();
-                        let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+                        let available_packages =
+                            added_repo["index"]["packages"].as_array().unwrap();
 
                         for available_package in available_packages {
                             if available_package["name"].as_str().unwrap() == text
@@ -258,7 +256,10 @@ pub fn extract_package(text: &String, added_repos: &Vec<toml::Value>) -> Option<
                                         .as_str()
                                         .unwrap()
                                         .to_string(),
-                                    source: added_repo["name"].as_str().unwrap().to_string(),
+                                    source: added_repo["repo"]["name"]
+                                        .as_str()
+                                        .unwrap()
+                                        .to_string(),
                                 })
                             }
                         }
@@ -267,10 +268,8 @@ pub fn extract_package(text: &String, added_repos: &Vec<toml::Value>) -> Option<
                     name = text_to_be_extracted;
 
                     for added_repo in added_repos {
-                        let repo_str =
-                            get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();
-                        let repo_toml: toml::Value = repo_str.parse().unwrap();
-                        let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+                        let available_packages =
+                            added_repo["index"]["packages"].as_array().unwrap();
 
                         for available_package in available_packages {
                             if available_package["name"].as_str().unwrap() == text
@@ -282,17 +281,18 @@ pub fn extract_package(text: &String, added_repos: &Vec<toml::Value>) -> Option<
                                         .as_str()
                                         .unwrap()
                                         .to_string(),
-                                    source: added_repo["name"].as_str().unwrap().to_string(),
+                                    source: added_repo["repo"]["name"]
+                                        .as_str()
+                                        .unwrap()
+                                        .to_string(),
                                 })
                             }
                         }
                     }
                 } else {
                     for added_repo in added_repos {
-                        let repo_str =
-                            get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();
-                        let repo_toml: toml::Value = repo_str.parse().unwrap();
-                        let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+                        let available_packages =
+                            added_repo["index"]["packages"].as_array().unwrap();
 
                         for available_package in available_packages {
                             if available_package["name"].as_str().unwrap() == name {
@@ -309,7 +309,7 @@ pub fn extract_package(text: &String, added_repos: &Vec<toml::Value>) -> Option<
                                                 .unwrap()
                                                 .to_string(),
                                             version: version.to_string(),
-                                            source: added_repo["name"]
+                                            source: added_repo["repo"]["name"]
                                                 .as_str()
                                                 .unwrap()
                                                 .to_string(),
@@ -322,9 +322,7 @@ pub fn extract_package(text: &String, added_repos: &Vec<toml::Value>) -> Option<
                 }
             } else if name == version {
                 for added_repo in added_repos {
-                    let repo_str = get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();
-                    let repo_toml: toml::Value = repo_str.parse().unwrap();
-                    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+                    let available_packages = added_repo["index"]["packages"].as_array().unwrap();
 
                     for available_package in available_packages {
                         if available_package["name"].as_str().unwrap() == text_to_be_extracted
@@ -333,7 +331,7 @@ pub fn extract_package(text: &String, added_repos: &Vec<toml::Value>) -> Option<
                             results.push(structs::Package {
                                 name: available_package["name"].as_str().unwrap().to_string(),
                                 version: available_package["current"].as_str().unwrap().to_string(),
-                                source: added_repo["name"].as_str().unwrap().to_string(),
+                                source: added_repo["repo"]["name"].as_str().unwrap().to_string(),
                             })
                         }
                     }
@@ -342,9 +340,7 @@ pub fn extract_package(text: &String, added_repos: &Vec<toml::Value>) -> Option<
                 name = text_to_be_extracted;
 
                 for added_repo in added_repos {
-                    let repo_str = get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();
-                    let repo_toml: toml::Value = repo_str.parse().unwrap();
-                    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+                    let available_packages = added_repo["index"]["packages"].as_array().unwrap();
 
                     for available_package in available_packages {
                         if available_package["name"].as_str().unwrap() == text_to_be_extracted
@@ -353,16 +349,14 @@ pub fn extract_package(text: &String, added_repos: &Vec<toml::Value>) -> Option<
                             results.push(structs::Package {
                                 name: available_package["name"].as_str().unwrap().to_string(),
                                 version: available_package["current"].as_str().unwrap().to_string(),
-                                source: added_repo["name"].as_str().unwrap().to_string(),
+                                source: added_repo["repo"]["name"].as_str().unwrap().to_string(),
                             })
                         }
                     }
                 }
             } else {
                 for added_repo in added_repos {
-                    let repo_str = get_repo_config(added_repo["name"].as_str().unwrap()).unwrap();
-                    let repo_toml: toml::Value = repo_str.parse().unwrap();
-                    let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+                    let available_packages = added_repo["index"]["packages"].as_array().unwrap();
 
                     for available_package in available_packages {
                         if available_package["name"].as_str().unwrap() == name {
@@ -377,7 +371,10 @@ pub fn extract_package(text: &String, added_repos: &Vec<toml::Value>) -> Option<
                                             .unwrap()
                                             .to_string(),
                                         version: version.to_string(),
-                                        source: added_repo["name"].as_str().unwrap().to_string(),
+                                        source: added_repo["repo"]["name"]
+                                            .as_str()
+                                            .unwrap()
+                                            .to_string(),
                                     })
                                 }
                             }
@@ -401,7 +398,11 @@ pub fn extract_package(text: &String, added_repos: &Vec<toml::Value>) -> Option<
 
                 let repo_name = found_package.source.as_str();
 
-                let repo_toml: toml::Value = get_repo_config(repo_name).unwrap().parse().unwrap();
+                let repo_toml: &toml::Value = added_repos
+                    .iter()
+                    .find(|repo| repo["repo"]["name"].as_str().unwrap() == repo_name)
+                    .unwrap();
+
                 let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
                 if name == version {
@@ -504,6 +505,123 @@ pub fn extract_package(text: &String, added_repos: &Vec<toml::Value>) -> Option<
         println!("{}", "- UNEXPECTED BEHAVIOUR!".bright_red());
         exit(1);
     }
+}
+
+#[test]
+fn test_extract_package() {
+    let repo_toml = r#"[repo]
+name = "testing"
+maintainer = "Husayn Haras"
+description = "APR made for testing the extract_package() function"
+
+[index]
+packages = [
+    { name = "testing-package", current = "0.1.0", target = "x86-64-linux", versions = [
+        { tag = "0.1.0", checksum = "checksum-placeholder" }
+    ], author = "Husayn Haras", description = "Package made to test the extract_package() function", url = "https://github.com/hharas/aati" },
+    { name = "calculator", current = "0.1.1", target = "x86-64-linux", versions = [
+        { tag = "0.1.0", checksum = "checksum-placeholder" },
+        { tag = "0.1.1", checksum = "checksum-placeholder" },
+    ], author = "Husayn Haras", description = "Package made to test the extract_package() function", url = "https://github.com/hharas/aati" },
+]"#;
+
+    let repo_config: toml::Value = repo_toml.parse().unwrap();
+    let added_repos = vec![repo_config];
+
+    assert_eq!(
+        extract_package("calculator", &added_repos),
+        Some(vec![
+            "testing".to_string(),
+            "calculator".to_string(),
+            "0.1.1".to_string()
+        ])
+    );
+
+    assert_eq!(
+        extract_package("calculator-0.1.0", &added_repos),
+        Some(vec![
+            "testing".to_string(),
+            "calculator".to_string(),
+            "0.1.0".to_string()
+        ])
+    );
+
+    assert_eq!(
+        extract_package("calculator-0.1.1", &added_repos),
+        Some(vec![
+            "testing".to_string(),
+            "calculator".to_string(),
+            "0.1.1".to_string()
+        ])
+    );
+
+    assert_eq!(
+        extract_package("testing/calculator", &added_repos),
+        Some(vec![
+            "testing".to_string(),
+            "calculator".to_string(),
+            "0.1.1".to_string()
+        ])
+    );
+
+    assert_eq!(
+        extract_package("testing/calculator-0.1.0", &added_repos),
+        Some(vec![
+            "testing".to_string(),
+            "calculator".to_string(),
+            "0.1.0".to_string()
+        ])
+    );
+
+    assert_eq!(
+        extract_package("testing/calculator-0.1.1", &added_repos),
+        Some(vec![
+            "testing".to_string(),
+            "calculator".to_string(),
+            "0.1.1".to_string()
+        ])
+    );
+
+    assert_eq!(
+        extract_package("testing-package", &added_repos),
+        Some(vec![
+            "testing".to_string(),
+            "testing-package".to_string(),
+            "0.1.0".to_string()
+        ])
+    );
+
+    assert_eq!(
+        extract_package("testing-package-0.1.0", &added_repos),
+        Some(vec![
+            "testing".to_string(),
+            "testing-package".to_string(),
+            "0.1.0".to_string()
+        ])
+    );
+
+    assert_eq!(
+        extract_package("testing/testing-package", &added_repos),
+        Some(vec![
+            "testing".to_string(),
+            "testing-package".to_string(),
+            "0.1.0".to_string()
+        ])
+    );
+
+    assert_eq!(
+        extract_package("testing/testing-package-0.1.0", &added_repos),
+        Some(vec![
+            "testing".to_string(),
+            "testing-package".to_string(),
+            "0.1.0".to_string()
+        ])
+    );
+
+    assert_eq!(
+        extract_package("unknown-package", &added_repos),
+        None
+    );
 }
 
 pub fn verify_checksum(body: &[u8], checksum: String) -> bool {
