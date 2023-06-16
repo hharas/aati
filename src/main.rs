@@ -54,6 +54,7 @@ fn main() {
                 println!(
                     "    generate                    Generate .html files for a package repository"
                 );
+                println!("    serve [host:port]           Host a package web index (default: localhost:8887)");
                 println!();
                 println!("Options:");
                 println!("    -V, --version Print version info");
@@ -163,6 +164,16 @@ fn main() {
             },
 
             Some("generate") => commands::generate_command(),
+
+            Some("serve") => match args.get(2) {
+                Some(address) => {
+                    commands::serve_command(Some(address));
+                }
+
+                None => {
+                    commands::serve_command(None);
+                }
+            },
 
             _ => {
                 println!("{}", "- Unknown command!".bright_red())
