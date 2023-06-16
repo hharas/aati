@@ -595,6 +595,26 @@ pub fn parse_filename(mut filename: &str) -> structs::Package {
     }
 }
 
+#[test]
+fn test_parse_filename() {
+    let filename1 = "silm-0.3.3.lz4";
+    let expected_result1 = structs::Package {
+        name: "silm".to_string(),
+        source: "local".to_string(),
+        version: "0.3.3".to_string(),
+    };
+
+    let filename2 = "arsil-server-0.2.1.lz4";
+    let expected_result2 = structs::Package {
+        name: "arsil-server".to_string(),
+        source: "local".to_string(),
+        version: "0.2.1".to_string(),
+    };
+
+    assert_eq!(parse_filename(filename1), expected_result1);
+    assert_eq!(parse_filename(filename2), expected_result2);
+}
+
 pub fn get_installation_path_buf(filename: &str) -> PathBuf {
     let home_dir = dirs::home_dir().unwrap();
     if is_linux() {

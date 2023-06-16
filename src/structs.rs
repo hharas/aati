@@ -25,7 +25,7 @@ pub struct LockFile {
     pub package: Vec<Package>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Package {
     pub name: String,
     pub source: String,
