@@ -1544,10 +1544,18 @@ pub fn generate_command() {
 }
 
 pub fn serve_command(address_option: Option<&str>) {
-    let address = if let Some(address) = address_option {
-        address
+    let address;
+    let website_url;
+    let repo_url;
+
+    if let Some(given_address) = address_option {
+        address = given_address;
+        website_url = prompt("On what URL will this index be hosted (e.g. http://example.com)?");
+        repo_url = prompt("On what URL is the package repository hosted?");
     } else {
-        "localhost:8887"
+        address = "localhost:8887";
+        website_url = "http://localhost:8887".to_string();
+        repo_url = "http://localhost:8887".to_string();
     };
 
     match Server::http(address) {
@@ -1555,9 +1563,6 @@ pub fn serve_command(address_option: Option<&str>) {
             Ok(repo_toml) => match repo_toml.parse::<toml::Value>() {
                 Ok(repo_config) => {
                     let packages = repo_config["index"]["packages"].as_array().unwrap();
-                    let website_url =
-                        prompt("On what URL will this index be hosted (e.g. http://example.com)?");
-                    let repo_url = prompt("On what URL is the package repository hosted?");
                     let targets = vec![
                         "x86-64-linux",
                         "aarch64-linux",
