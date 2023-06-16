@@ -27,9 +27,11 @@ pub fn get_command(package_name: &str) {
     // Initialise some variables
 
     let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+    let added_repos = aati_config["sources"]["repos"].as_array().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
-    match extract_package(&package_name.to_string()) {
+    match extract_package(&package_name.to_string(), added_repos) {
         Some(extracted_package) => {
             let repo_toml: toml::Value = get_repo_config(extracted_package[0].as_str())
                 .unwrap()
@@ -275,6 +277,7 @@ pub fn get_command(package_name: &str) {
 
 pub fn upgrade_command(choice: Option<&str>) {
     let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+    let added_repos = aati_config["sources"]["repos"].as_array().unwrap();
     let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
 
     let repos = aati_config["sources"]["repos"].as_array().unwrap();
@@ -292,7 +295,7 @@ pub fn upgrade_command(choice: Option<&str>) {
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     if let Some(package_name) = choice {
-        match extract_package(&package_name.to_string()) {
+        match extract_package(&package_name.to_string(), added_repos) {
             Some(extracted_package) => {
                 let mut is_installed = false;
                 let mut is_up_to_date = true;

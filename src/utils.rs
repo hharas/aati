@@ -208,10 +208,7 @@ pub fn prompt_yn(prompt_text: &str) -> bool {
 }
 
 // This function goes hard. Feel free to copy & paste.
-pub fn extract_package(text: &String) -> Option<Vec<String>> {
-    let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
-    let added_repos = aati_config["sources"]["repos"].as_array().unwrap();
-
+pub fn extract_package(text: &String, added_repos: &Vec<toml::Value>) -> Option<Vec<String>> {
     let mut repo_name = "$unprovided$";
     let mut name;
     let mut version;
