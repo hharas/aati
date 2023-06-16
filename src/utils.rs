@@ -667,6 +667,7 @@ pub fn generate_apr_html(
 
         head.push_str(&format!("<title>{} - APR</title></head>", repo_name));
         header.push_str(&format!("<p>{}</p>", repo_description));
+        header.push_str(&format!("<p>Add this as a Package Repository in Aati by running:</p><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati repo add {}</code>", repo_url));
     } else if template == "packages" {
         header = format!(
             "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
@@ -760,7 +761,7 @@ pub fn generate_apr_html(
             ));
 
             header.push_str(&format!(
-                "<div class=\"installation_guide\"><p>You can install this package by:</p><ol><li>Adding this package repository to Aati by running:<br/><code>&nbsp;&nbsp;&nbsp;&nbsp;aati repo add {}</code></li><li>Then telling Aati to fetch it for you by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;aati get {}/{}</code></li></ol>or you can download the version you want of this package below and install it locally by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;aati install {}-<i>version</i>.lz4</code></div><br />",
+                "<div class=\"installation_guide\"><p>You can install this package by:</p><ol><li>Adding this package repository to Aati by running:<br/><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati repo add {}</code></li><li>Then telling Aati to fetch it for you by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati get {}/{}</code></li></ol>or you can download the version you want of this package below and install it locally by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati install {}-<i>version</i>.lz4</code></div><br />",
                 repo_url,
                 repo_name,
                 package_name,
