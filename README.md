@@ -10,7 +10,7 @@ Minimal package manager written in Rust
 
 ### As a user
 
-First off, install Aati by running the `./scripts/install.sh` script, or build Aati on your own (if you wish to install Aati on Windows, see [this section](#installation-guide-for-windows-users)).  
+First off, install Aati by running the `./install.sh` script, or build Aati on your own (if you wish to install Aati on Windows, see [this section](#installation-guide-for-windows-users)).  
 Aati relies on Aati Package Repositories (APRs), and so you need to add one in order to you use it. In order to set a repository, you need to run `aati repo add <repo url>`. You can add the [Amad Project Package Repository](https://amad.codeberg.page) if you want to try it out. Afterwards, if you run `aati list available`, you will see the available packages in the repo and their versions that you can install. If you wish to install the latest version of a package, you can run:
 
 ```bash
