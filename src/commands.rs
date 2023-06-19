@@ -502,7 +502,7 @@ pub fn uninstall_command(package_name: &str) {
             exit(0);
         }
     } else if !installed_packages.is_empty() {
-        if prompt_yn("Are you sure you want to uninstall all of your packages?") {
+        if prompt_yn("/ Are you sure you want to uninstall all of your packages?") {
             for package in installed_packages {
                 uninstall_command(package["name"].as_str().unwrap());
             }
