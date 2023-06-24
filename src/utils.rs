@@ -213,12 +213,31 @@ pub fn get_repo_config(repo_name: &str) -> Option<String> {
     if !repo_config_path_buf.exists() {
         println!(
             "{}",
-            "- NO REPO CONFIG FOUND! PLEASE RUN: $ aati repo <repo url>".bright_red()
+            format!(
+                "- NO REPO CONFIG FOUND IN '{}'! PLEASE RUN: $ aati repo <repo url>",
+                repo_config_path_buf.display()
+            )
+            .bright_red()
         );
         exit(1)
     }
 
-    let repo_config = read_to_string(repo_config_path_buf).unwrap();
+    let repo_config = match read_to_string(&repo_config_path_buf) {
+        Ok(content) => content,
+        Err(error) => {
+            println!(
+                "{}",
+                format!(
+                    "- UNABLE TO READ FILE '{}'! ERROR[25]: {}",
+                    repo_config_path_buf.display(),
+                    error
+                )
+                .bright_red()
+            );
+
+            exit(1);
+        }
+    };
 
     Some(repo_config.trim().to_string())
 }
@@ -242,13 +261,63 @@ pub fn get_aati_config() -> Option<String> {
     }
 
     if !aati_config_path.exists() {
-        let mut aati_config_file = File::create(aati_config_path_buf.clone()).unwrap();
+        let mut aati_config_file = match File::create(&aati_config_path_buf) {
+            Ok(file) => file,
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- UNABLE TO CREATE FILE '{}'! ERROR[26]: {}",
+                        &aati_config_path_buf.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+
+                exit(1);
+            }
+        };
 
         let default_config = "[sources]\nrepos = []";
-        writeln!(aati_config_file, "{}", default_config).unwrap();
+
+        // writeln!(aati_config_file, "{}", default_config).unwrap();
+
+        match writeln!(aati_config_file, "{}", default_config) {
+            Ok(_) => {}
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- UNABLE TO WRITE INTO FILE '{}'! ERROR[27]: {}",
+                        &aati_config_path_buf.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+
+                exit(1);
+            }
+        }
     }
 
-    let aati_config = read_to_string(aati_config_path).unwrap();
+    // let aati_config = read_to_string(aati_config_path).unwrap();
+
+    let aati_config = match read_to_string(aati_config_path) {
+        Ok(content) => content,
+        Err(error) => {
+            println!(
+                "{}",
+                format!(
+                    "- UNABLE TO READ FILE '{}'! ERROR[28]: {}",
+                    aati_config_path.display(),
+                    error
+                )
+                .bright_red()
+            );
+
+            exit(1);
+        }
+    };
 
     Some(aati_config.trim().to_string())
 }
