@@ -198,11 +198,57 @@ pub fn get_command(package_name: &str) {
                                     //   - One for the checksum verification function
                                     //   - and another for the LZ4 Decoder
 
-                                    let mut checksum_reader = File::open(&download_path).unwrap();
-                                    let lz4_reader = File::open(&download_path).unwrap();
+                                    let mut checksum_reader = match File::open(&download_path) {
+                                        Ok(file) => file,
+                                        Err(error) => {
+                                            println!(
+                                                "{}",
+                                                format!(
+                                                    "- UNABLE TO OPEN FILE '{}'! ERROR[31]: {}",
+                                                    &download_path.display(),
+                                                    error
+                                                )
+                                                .bright_red()
+                                            );
+
+                                            exit(1);
+                                        }
+                                    };
+
+                                    let lz4_reader = match File::open(&download_path) {
+                                        Ok(file) => file,
+                                        Err(error) => {
+                                            println!(
+                                                "{}",
+                                                format!(
+                                                    "- UNABLE TO OPEN FILE '{}'! ERROR[32]: {}",
+                                                    &download_path.display(),
+                                                    error
+                                                )
+                                                .bright_red()
+                                            );
+
+                                            exit(1);
+                                        }
+                                    };
 
                                     let mut body = Vec::new();
-                                    checksum_reader.read_to_end(&mut body).unwrap();
+                                    match checksum_reader.read_to_end(&mut body) {
+                                        Ok(_) => {}
+                                        Err(error) => {
+                                            println!(
+                                                "{}",
+                                                format!(
+                                                    "- UNABLE TO READ FILE '{}'! ERROR[33]: {}",
+                                                    &download_path.display(),
+                                                    error
+                                                )
+                                                .bright_red()
+                                            );
+
+                                            exit(1);
+                                        }
+                                    }
 
                                     // 7. Verify the SHA256 Checksum of the LZ4 compressed package
 
@@ -215,7 +261,7 @@ pub fn get_command(package_name: &str) {
                                         let mut new_file =
                                             File::create(&installation_path_buf).unwrap();
 
-                                        // 8. Decode the LZ4 compressed package, delete it, then save the uncompressed data into ~/.local/bin/<package name>
+                                        // 8. Decode the LZ4 compressed package, delete it, then save the uncompressed data into the installation directory
 
                                         let mut decoder = Decoder::new(lz4_reader).unwrap();
 

@@ -329,7 +329,7 @@ fn flush_output() {
             println!(
                 "{}",
                 format!(
-                    "- UNABLE TO FLUSH THE STANDARD OUTPUT! ERROR[20]: {}",
+                    "- UNABLE TO FLUSH THE STANDARD OUTPUT! ERROR[34]: {}",
                     error
                 )
                 .bright_red()
