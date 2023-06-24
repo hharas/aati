@@ -323,7 +323,21 @@ pub fn get_aati_config() -> Option<String> {
 }
 
 fn flush_output() {
-    io::stdout().flush().unwrap();
+    match io::stdout().flush() {
+        Ok(_) => {}
+        Err(error) => {
+            println!(
+                "{}",
+                format!(
+                    "- UNABLE TO FLUSH THE STANDARD OUTPUT! ERROR[20]: {}",
+                    error
+                )
+                .bright_red()
+            );
+
+            exit(1);
+        }
+    }
 }
 
 pub fn prompt(prompt_text: &str) -> String {
@@ -846,11 +860,33 @@ pub fn parse_filename(mut filename: &str) -> structs::Package {
     filename = filename.trim();
 
     if filename.ends_with(".lz4") {
-        let (package, _) = filename.rsplit_once(".lz4").unwrap();
+        let package = if let Some((package, _)) = filename.rsplit_once(".lz4") {
+            package
+        } else {
+            println!(
+                "{}",
+                format!("- FILE '{}' HAS AN INVALID FILENAME!", filename).bright_red()
+            );
+
+            exit(1);
+        };
 
         // package's value is now: dummy-package-0.1.0
 
-        let (name, version) = package.rsplit_once('-').unwrap();
+        let (name, version) = if let Some((name, version)) = package.rsplit_once('-') {
+            (name, version)
+        } else {
+            println!(
+                "{}",
+                format!(
+                    "- FILE '{}' DOESN'T CONTAIN A HYPHEN AS A SEPARATOR!",
+                    filename
+                )
+                .bright_red()
+            );
+
+            exit(1);
+        };
 
         // Now: name = "dummy-package", version = "0.1.0"
 
