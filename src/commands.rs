@@ -1063,7 +1063,22 @@ pub fn sync_command() {
                             .bright_green()
                         );
 
-                        writeln!(repo_config, "{}", repo_toml).unwrap();
+                        match writeln!(repo_config, "{}", repo_toml) {
+                            Ok(_) => {}
+                            Err(error) => {
+                                println!(
+                                    "{}",
+                                    format!(
+                                        "- UNABLE TO WRITE INTO REPO CONFIG AT '{}'! ERROR[48]: {}",
+                                        &repo_config_path_buf.display(),
+                                        error
+                                    )
+                                    .bright_red()
+                                );
+
+                                exit(1);
+                            }
+                        }
 
                         println!(
                             "{}",
