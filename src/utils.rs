@@ -12,8 +12,8 @@ use ring::digest;
 
 use crate::structs;
 
-pub fn is_linux() -> bool {
-    std::env::consts::OS == "linux"
+pub fn is_windows() -> bool {
+    std::env::consts::OS == "windows"
 }
 
 pub fn get_target() -> String {
@@ -39,17 +39,17 @@ pub fn get_target() -> String {
 }
 
 pub fn check_config_dir() {
-    let config_dir = if is_linux() {
+    let config_dir = if !is_windows() {
         dirs::home_dir().unwrap().join(".config")
     } else {
         PathBuf::from("C:\\Program Files\\Aati\\Binaries")
     };
-    let aati_config_dir = if is_linux() {
+    let aati_config_dir = if !is_windows() {
         dirs::home_dir().unwrap().join(".config/aati")
     } else {
         PathBuf::from("C:\\Program Files\\Aati")
     };
-    let repos_dir = if is_linux() {
+    let repos_dir = if !is_windows() {
         dirs::home_dir().unwrap().join(".config/aati/repos")
     } else {
         PathBuf::from("C:\\Program Files\\Aati\\Repositories")
@@ -74,7 +74,7 @@ pub fn get_aati_lock() -> Option<String> {
     let aati_lock_path_buf;
     let aati_lock_path;
 
-    if is_linux() {
+    if !is_windows() {
         let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
         aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
 
@@ -91,7 +91,7 @@ pub fn get_aati_lock() -> Option<String> {
         let default_config = "package = []";
         writeln!(aati_lock_file, "{}", default_config).unwrap();
 
-        if is_linux() {
+        if !is_windows() {
             println!("{}", "+ Make sure to add ~/.local/bin to PATH. You can do this by appending this at the end of our .bashrc file:\n\n    export PATH=\"$HOME/.local/bin:$PATH\"".yellow());
         } else {
             println!(
@@ -109,7 +109,7 @@ pub fn get_aati_lock() -> Option<String> {
 pub fn get_repo_config(repo_name: &str) -> Option<String> {
     check_config_dir();
 
-    let repo_config_path_buf = if is_linux() {
+    let repo_config_path_buf = if !is_windows() {
         let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
 
         home_dir.join(format!(".config/aati/repos/{}.toml", repo_name))
@@ -139,7 +139,7 @@ pub fn get_aati_config() -> Option<String> {
     let aati_config_path_buf;
     let aati_config_path;
 
-    if is_linux() {
+    if !is_windows() {
         let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
 
         aati_config_path_buf = home_dir.join(".config/aati/rc.toml");
@@ -732,7 +732,7 @@ fn test_parse_filename() {
 
 pub fn get_installation_path_buf(filename: &str) -> PathBuf {
     let home_dir = dirs::home_dir().unwrap();
-    if is_linux() {
+    if !is_windows() {
         home_dir.join(format!(".local/bin/{}", filename))
     } else {
         PathBuf::from(format!(
@@ -743,7 +743,7 @@ pub fn get_installation_path_buf(filename: &str) -> PathBuf {
 }
 
 pub fn get_aati_config_path_buf() -> PathBuf {
-    if is_linux() {
+    if !is_windows() {
         let home_dir = dirs::home_dir().unwrap();
         home_dir.join(".config/aati/rc.toml")
     } else {
@@ -752,7 +752,7 @@ pub fn get_aati_config_path_buf() -> PathBuf {
 }
 
 pub fn get_aati_lock_path_buf() -> PathBuf {
-    if is_linux() {
+    if !is_windows() {
         let home_dir = dirs::home_dir().unwrap();
         home_dir.join(".config/aati/lock.toml")
     } else {
@@ -761,7 +761,7 @@ pub fn get_aati_lock_path_buf() -> PathBuf {
 }
 
 pub fn get_repo_config_path_buf(repo_name: &str) -> PathBuf {
-    if is_linux() {
+    if !is_windows() {
         let home_dir = dirs::home_dir().unwrap();
         home_dir.join(format!(".config/aati/repos/{}.toml", repo_name))
     } else {
@@ -793,16 +793,16 @@ pub fn generate_apr_html(
 
     if template == "index" {
         header = format!(
-            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
+            "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
             repo_name, website_url, website_url, website_url
         );
 
-        head.push_str(&format!("<title>{} - APR</title></head>", repo_name));
+        head.push_str(&format!("<title>{}</title></head>", repo_name));
         header.push_str(&format!("<p>{}</p>", repo_description));
         header.push_str(&format!("<p>Add this Package Repository in Aati by running:</p><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati repo add {}</code>", repo_url));
     } else if template == "packages" {
         header = format!(
-            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
+            "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
             repo_name, website_url, website_url, website_url
         );
 
@@ -851,13 +851,10 @@ pub fn generate_apr_html(
         }
         header.push_str("</ul>");
 
-        head.push_str(&format!(
-            "<title>Packages - {} - APR</title></head>",
-            repo_name
-        ));
+        head.push_str(&format!("<title>packages - {}</title></head>", repo_name));
     } else if template == "about" {
         header = format!(
-            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
+            "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
             repo_name, website_url, website_url, website_url
         );
 
@@ -868,13 +865,10 @@ pub fn generate_apr_html(
             repo_maintainer
         ));
 
-        head.push_str(&format!(
-            "<title>About - {} - APR</title></head>",
-            repo_name
-        ));
+        head.push_str(&format!("<title>about - {}</title></head>", repo_name));
     } else if template == "package" {
         header = format!(
-            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
+            "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
             repo_name, website_url, website_url, website_url
         );
 
@@ -933,13 +927,13 @@ pub fn generate_apr_html(
             header.push_str("</table>");
 
             head.push_str(&format!(
-                "<title>{}/{} - APR</title></head>",
+                "<title>{}/{}</title></head>",
                 repo_name, package_name
             ));
         }
     } else {
         header = format!(
-            "<body><h3><code>{}</code> - Aati Package Repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
+            "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
             repo_name, website_url, website_url, website_url
         );
 
@@ -981,8 +975,8 @@ pub fn generate_apr_html(
         }
 
         head.push_str(&format!(
-            "<title>Packages - {} - APR</title></head>",
-            repo_name
+            "<title>{} packages - {}</title></head>",
+            target, repo_name
         ));
     }
 
