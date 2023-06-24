@@ -204,7 +204,7 @@ pub fn get_command(package_name: &str) {
                                             println!(
                                                 "{}",
                                                 format!(
-                                                    "- UNABLE TO OPEN FILE '{}'! ERROR[31]: {}",
+                                                    "- UNABLE TO OPEN FILE '{}' FOR READING! ERROR[31]: {}",
                                                     &download_path.display(),
                                                     error
                                                 )
@@ -221,7 +221,7 @@ pub fn get_command(package_name: &str) {
                                             println!(
                                                 "{}",
                                                 format!(
-                                                    "- UNABLE TO OPEN FILE '{}'! ERROR[32]: {}",
+                                                    "- UNABLE TO OPEN FILE '{}' FOR READING! ERROR[32]: {}",
                                                     &download_path.display(),
                                                     error
                                                 )
@@ -259,15 +259,75 @@ pub fn get_command(package_name: &str) {
                                             get_installation_path_buf(&name);
 
                                         let mut new_file =
-                                            File::create(&installation_path_buf).unwrap();
+                                            match File::create(&installation_path_buf) {
+                                                Ok(file) => file,
+                                                Err(error) => {
+                                                    println!(
+                                                        "{}",
+                                                        format!(
+                                                    "- UNABLE TO CREATE FILE '{}'! ERROR[35]: {}",
+                                                    &installation_path_buf.display(),
+                                                    error
+                                                )
+                                                        .bright_red()
+                                                    );
+
+                                                    exit(1);
+                                                }
+                                            };
 
                                         // 8. Decode the LZ4 compressed package, delete it, then save the uncompressed data into the installation directory
 
-                                        let mut decoder = Decoder::new(lz4_reader).unwrap();
+                                        let mut decoder = match Decoder::new(lz4_reader) {
+                                            Ok(decoder) => decoder,
+                                            Err(error) => {
+                                                println!(
+                                                    "{}",
+                                                    format!(
+                                                "- UNABLE TO DECODE THE LZ4 COMPRESSED PACKAGE AT '{}'! ERROR[36]: {}",
+                                                download_path.display(),
+                                                error
+                                            )
+                                                    .bright_red()
+                                                );
 
-                                        fs::remove_file(download_path).unwrap();
+                                                exit(1);
+                                            }
+                                        };
 
-                                        copy(&mut decoder, &mut new_file).unwrap();
+                                        match fs::remove_file(&download_path) {
+                                            Ok(_) => {}
+                                            Err(error) => {
+                                                println!(
+                                                    "{}",
+                                                    format!(
+                                                "- UNABLE TO DELETE DOWNLODED FILE '{}'! ERROR[37]: {}",
+                                                download_path.display(),
+                                                error
+                                            )
+                                                    .bright_red()
+                                                );
+
+                                                exit(1);
+                                            }
+                                        }
+
+                                        match copy(&mut decoder, &mut new_file) {
+                                            Ok(_) => {}
+                                            Err(error) => {
+                                                println!(
+                                                    "{}",
+                                                    format!(
+                                                "- UNABLE TO WRITE INTO FILE '{}'! ERROR[38]: {}",
+                                                &installation_path_buf.display(),
+                                                error
+                                            )
+                                                    .bright_red()
+                                                );
+
+                                                exit(1);
+                                            }
+                                        }
 
                                         println!(
                                             "{}",
@@ -279,7 +339,22 @@ pub fn get_command(package_name: &str) {
                                         let aati_lock_path_buf = get_aati_lock_path_buf();
 
                                         let lock_file_str =
-                                            fs::read_to_string(&aati_lock_path_buf).unwrap();
+                                            match fs::read_to_string(&aati_lock_path_buf) {
+                                                Ok(contents) => contents,
+                                                Err(error) => {
+                                                    println!(
+                                                        "{}",
+                                                        format!(
+                                                    "- UNABLE TO READ FILE '{}'! ERROR[39]: {}",
+                                                    &aati_lock_path_buf.display(),
+                                                    error
+                                                )
+                                                        .bright_red()
+                                                    );
+
+                                                    exit(1);
+                                                }
+                                            };
                                         let mut lock_file: structs::LockFile =
                                             toml::from_str(&lock_file_str).unwrap();
 
@@ -291,11 +366,26 @@ pub fn get_command(package_name: &str) {
 
                                         lock_file.package.push(package);
 
-                                        let mut file = OpenOptions::new()
+                                        let mut file = match OpenOptions::new()
                                             .write(true)
                                             .truncate(true)
-                                            .open(aati_lock_path_buf)
-                                            .unwrap();
+                                            .open(&aati_lock_path_buf)
+                                        {
+                                            Ok(file) => file,
+                                            Err(error) => {
+                                                println!(
+                                                        "{}",
+                                                        format!(
+                                                    "- UNABLE TO OPEN FILE '{}' FOR WRITING! ERROR[40]: {}",
+                                                    &aati_lock_path_buf.display(),
+                                                    error
+                                                )
+                                                        .bright_red()
+                                                    );
+
+                                                exit(1);
+                                            }
+                                        };
 
                                         let toml_str = toml::to_string(&lock_file).unwrap();
                                         file.write_all(toml_str.as_bytes()).unwrap();
