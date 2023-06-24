@@ -56,15 +56,60 @@ pub fn check_config_dir() {
     };
 
     if !config_dir.exists() {
-        fs::create_dir_all(&config_dir).unwrap();
+        match fs::create_dir_all(&config_dir) {
+            Ok(_) => {}
+
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- UNABLE TO CREATE THE '{}' DIRECTORY! ERROR[19]: {}",
+                        &config_dir.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+                exit(1);
+            }
+        }
     }
 
     if !aati_config_dir.exists() {
-        fs::create_dir_all(&aati_config_dir).unwrap();
+        match fs::create_dir_all(&aati_config_dir) {
+            Ok(_) => {}
+
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- UNABLE TO CREATE THE '{}' DIRECTORY! ERROR[20]: {}",
+                        &aati_config_dir.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+                exit(1);
+            }
+        }
     }
 
     if !repos_dir.exists() {
-        fs::create_dir_all(&repos_dir).unwrap();
+        match fs::create_dir_all(&repos_dir) {
+            Ok(_) => {}
+
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- UNABLE TO CREATE THE '{}' DIRECTORY! ERROR[21]: {}",
+                        &repos_dir.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+                exit(1);
+            }
+        }
     }
 }
 
@@ -86,10 +131,40 @@ pub fn get_aati_lock() -> Option<String> {
     }
 
     if !aati_lock_path.exists() {
-        let mut aati_lock_file = File::create(aati_lock_path).unwrap();
+        let mut aati_lock_file = match File::create(aati_lock_path) {
+            Ok(file) => file,
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- UNABLE TO CREATE FILE '{}'! ERROR[22]: {}",
+                        &aati_lock_path.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+
+                exit(1);
+            }
+        };
 
         let default_config = "package = []";
-        writeln!(aati_lock_file, "{}", default_config).unwrap();
+        match writeln!(aati_lock_file, "{}", default_config) {
+            Ok(_) => {}
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- UNABLE TO WRITE INTO FILE '{}'! ERROR[24]: {}",
+                        &aati_lock_path.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+
+                exit(1);
+            }
+        }
 
         if !is_windows() {
             println!("{}", "+ Make sure to add ~/.local/bin to PATH. You can do this by appending this at the end of our .bashrc file:\n\n    export PATH=\"$HOME/.local/bin:$PATH\"".yellow());
@@ -101,7 +176,22 @@ pub fn get_aati_lock() -> Option<String> {
         }
     }
 
-    let aati_lock = read_to_string(aati_lock_path).unwrap();
+    let aati_lock = match read_to_string(aati_lock_path) {
+        Ok(content) => content,
+        Err(error) => {
+            println!(
+                "{}",
+                format!(
+                    "- UNABLE TO READ FILE '{}'! ERROR[23]: {}",
+                    &aati_lock_path.display(),
+                    error
+                )
+                .bright_red()
+            );
+
+            exit(1);
+        }
+    };
 
     Some(aati_lock.trim().to_string())
 }
