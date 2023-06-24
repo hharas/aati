@@ -151,16 +151,46 @@ pub fn get_command(package_name: &str) {
                                     let download_path = std::env::temp_dir()
                                         .join(format!("{}-{}.lz4", name, version));
 
-                                    let mut downloaded_file = OpenOptions::new()
+                                    let mut downloaded_file = match OpenOptions::new()
                                         .create(true)
                                         .read(true)
                                         .write(true)
-                                        .open(download_path.clone())
-                                        .unwrap();
+                                        .open(&download_path)
+                                    {
+                                        Ok(file) => file,
+                                        Err(error) => {
+                                            println!(
+                                                "{}",
+                                                format!(
+                                                    "- UNABLE TO CREATE FILE '{}'! ERROR[29]: {}",
+                                                    &download_path.display(),
+                                                    error
+                                                )
+                                                .bright_red()
+                                            );
+
+                                            exit(1);
+                                        }
+                                    };
 
                                     // 5. Save the LZ4 compressed package
 
-                                    copy(&mut reader, &mut downloaded_file).unwrap();
+                                    match copy(&mut reader, &mut downloaded_file) {
+                                        Ok(_) => {}
+                                        Err(error) => {
+                                            println!(
+                                                "{}",
+                                                format!(
+                                                    "- UNABLE TO WRITE INTO FILE '{}'! ERROR[30]: {}",
+                                                    &download_path.display(),
+                                                    error
+                                                )
+                                                .bright_red()
+                                            );
+
+                                            exit(1);
+                                        }
+                                    }
 
                                     println!("{}", "+ Finished downloading!".bright_green());
 
@@ -168,9 +198,8 @@ pub fn get_command(package_name: &str) {
                                     //   - One for the checksum verification function
                                     //   - and another for the LZ4 Decoder
 
-                                    let mut checksum_reader =
-                                        File::open(download_path.clone()).unwrap();
-                                    let lz4_reader = File::open(download_path.clone()).unwrap();
+                                    let mut checksum_reader = File::open(&download_path).unwrap();
+                                    let lz4_reader = File::open(&download_path).unwrap();
 
                                     let mut body = Vec::new();
                                     checksum_reader.read_to_end(&mut body).unwrap();
@@ -184,7 +213,7 @@ pub fn get_command(package_name: &str) {
                                             get_installation_path_buf(&name);
 
                                         let mut new_file =
-                                            File::create(installation_path_buf.clone()).unwrap();
+                                            File::create(&installation_path_buf).unwrap();
 
                                         // 8. Decode the LZ4 compressed package, delete it, then save the uncompressed data into ~/.local/bin/<package name>
 
@@ -204,7 +233,7 @@ pub fn get_command(package_name: &str) {
                                         let aati_lock_path_buf = get_aati_lock_path_buf();
 
                                         let lock_file_str =
-                                            fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
+                                            fs::read_to_string(&aati_lock_path_buf).unwrap();
                                         let mut lock_file: structs::LockFile =
                                             toml::from_str(&lock_file_str).unwrap();
 
@@ -235,8 +264,7 @@ pub fn get_command(package_name: &str) {
                                             // 10. (non-windows only) Turn it into an executable file, simply: chmod +x ~/.local/bin/<package name>
 
                                             let metadata =
-                                                fs::metadata(installation_path_buf.clone())
-                                                    .unwrap();
+                                                fs::metadata(&installation_path_buf).unwrap();
                                             let mut permissions = metadata.permissions();
                                             permissions.set_mode(0o755);
                                             fs::set_permissions(installation_path_buf, permissions)
@@ -458,7 +486,7 @@ pub fn uninstall_command(package_name: &str) {
 
                         let aati_lock_path_buf = get_aati_lock_path_buf();
 
-                        let lock_file_str = fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
+                        let lock_file_str = fs::read_to_string(&aati_lock_path_buf).unwrap();
                         let mut lock_file: structs::LockFile =
                             toml::from_str(&lock_file_str).unwrap();
 
@@ -775,8 +803,8 @@ pub fn sync_command() {
 
                         let repo_config_path_buf = get_repo_config_path_buf(repo_name);
 
-                        let mut repo_config = File::create(repo_config_path_buf.clone())
-                            .unwrap_or_else(|_| {
+                        let mut repo_config =
+                            File::create(&repo_config_path_buf).unwrap_or_else(|_| {
                                 panic!("- UNABLE TO CREATE {}!", repo_config_path_buf.display())
                             });
 
@@ -857,10 +885,10 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             let dummy4_path =
                 PathBuf::from("aati_repo/aarch64-linux/dummy-package/dummy-package-0.1.1");
 
-            let mut dummy1 = File::create(dummy1_path.clone()).unwrap();
-            let mut dummy2 = File::create(dummy2_path.clone()).unwrap();
-            let mut dummy3 = File::create(dummy3_path.clone()).unwrap();
-            let mut dummy4 = File::create(dummy4_path.clone()).unwrap();
+            let mut dummy1 = File::create(&dummy1_path).unwrap();
+            let mut dummy2 = File::create(&dummy2_path).unwrap();
+            let mut dummy3 = File::create(&dummy3_path).unwrap();
+            let mut dummy4 = File::create(&dummy4_path).unwrap();
 
             dummy1
                 .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86_64 linux machines\"")
@@ -963,8 +991,7 @@ packages = [
 
                             let repo_config_path_buf = get_repo_config_path_buf(repo_name);
 
-                            let mut repo_config =
-                                File::create(repo_config_path_buf.clone()).unwrap();
+                            let mut repo_config = File::create(&repo_config_path_buf).unwrap();
 
                             println!(
                                 "{}",
@@ -1051,7 +1078,7 @@ packages = [
                         println!("{}", format!("+ Removing '{}' from the Config File...", second_argument).bright_green());
 
                         let config_file_str =
-                            fs::read_to_string(aati_config_path_buf.clone()).unwrap();
+                            fs::read_to_string(&aati_config_path_buf).unwrap();
                         let mut config_file: structs::ConfigFile =
                             toml::from_str(&config_file_str).unwrap();
 
@@ -1391,7 +1418,7 @@ pub fn install_command(filename: &str) {
 
                     let installation_path_buf = get_installation_path_buf(name);
 
-                    let mut new_file = File::create(installation_path_buf.clone()).unwrap();
+                    let mut new_file = File::create(&installation_path_buf).unwrap();
 
                     let mut decoder = Decoder::new(input_file).unwrap();
 
@@ -1403,7 +1430,7 @@ pub fn install_command(filename: &str) {
 
                     let aati_lock_path_buf = get_aati_lock_path_buf();
 
-                    let lock_file_str = fs::read_to_string(aati_lock_path_buf.clone()).unwrap();
+                    let lock_file_str = fs::read_to_string(&aati_lock_path_buf).unwrap();
                     let mut lock_file: structs::LockFile = toml::from_str(&lock_file_str).unwrap();
 
                     let package = structs::Package {
@@ -1427,7 +1454,7 @@ pub fn install_command(filename: &str) {
                     {
                         println!("{}", "+ Changing Permissions...".bright_green());
 
-                        let metadata = fs::metadata(installation_path_buf.clone()).unwrap();
+                        let metadata = fs::metadata(&installation_path_buf).unwrap();
                         let mut permissions = metadata.permissions();
                         permissions.set_mode(0o755);
                         fs::set_permissions(installation_path_buf, permissions).unwrap();
