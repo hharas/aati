@@ -843,15 +843,15 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             fs::create_dir_all("aati_repo").unwrap();
             let mut file = File::create("aati_repo/repo.toml").unwrap();
 
-            fs::create_dir_all("aati_repo/x86-64-linux").unwrap();
-            fs::create_dir_all("aati_repo/x86-64-linux/dummy-package").unwrap();
+            fs::create_dir_all("aati_repo/x86_64-linux").unwrap();
+            fs::create_dir_all("aati_repo/x86_64-linux/dummy-package").unwrap();
             fs::create_dir_all("aati_repo/aarch64-linux").unwrap();
             fs::create_dir_all("aati_repo/aarch64-linux/dummy-package").unwrap();
 
             let dummy1_path =
-                PathBuf::from("aati_repo/x86-64-linux/dummy-package/dummy-package-0.1.0");
+                PathBuf::from("aati_repo/x86_64-linux/dummy-package/dummy-package-0.1.0");
             let dummy2_path =
-                PathBuf::from("aati_repo/x86-64-linux/dummy-package/dummy-package-0.1.1");
+                PathBuf::from("aati_repo/x86_64-linux/dummy-package/dummy-package-0.1.1");
             let dummy3_path =
                 PathBuf::from("aati_repo/aarch64-linux/dummy-package/dummy-package-0.1.0");
             let dummy4_path =
@@ -863,10 +863,10 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             let mut dummy4 = File::create(dummy4_path.clone()).unwrap();
 
             dummy1
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86-64 linux machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86_64 linux machines\"")
                 .unwrap();
             dummy2
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86-64 linux machines\"")
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86_64 linux machines\"")
                 .unwrap();
             dummy3
                 .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for aarch64 linux machines\"")
@@ -896,9 +896,9 @@ packages = [
         {{ tag = \"0.1.0\", checksum = \"fd54f3db9f9b001d836654dec8b50a3f76f9003e5b86afc9fb0e2ef42c98a935\" }},
         {{ tag = \"0.1.1\", checksum = \"41a5dbe93c5641969374a2c369d486168d28fa6e5049730770f72a64c83afd61\" }},
     ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://github.com/hharas/aati\" }},
-    {{ name = \"dummy-package\", current = \"0.1.1\", target = \"x86-64-linux\", versions = [
-        {{ tag = \"0.1.0\", checksum = \"f9a604403a4838e5e9ac64db85ac6dc6f08c0d27889a151ab3d349bc84b9c881\" }},
-        {{ tag = \"0.1.1\", checksum = \"7b191ce2d53733d5b02d8740c9975346c33287ab74d7c7c7831df43aefdfddfc\" }},
+    {{ name = \"dummy-package\", current = \"0.1.1\", target = \"x86_64-linux\", versions = [
+        {{ tag = \"0.1.0\", checksum = \"11b3cb26f62469bd04ce1175e9593ae9d1a02920c4e3bd69f3ac4fbde6dc856f\" }},
+        {{ tag = \"0.1.1\", checksum = \"c8e6b84c85602b774c15c1efefdd9be11c739d73f541f3a92193cf10054a11a0\" }},
     ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://github.com/hharas/aati\" }},
 ]
 ", repo_name, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
@@ -1463,9 +1463,9 @@ pub fn generate_command() {
 
                 let available_packages = repo_config["index"]["packages"].as_array().unwrap();
                 let targets = vec![
-                    "x86-64-linux",
+                    "x86_64-linux",
                     "aarch64-linux",
-                    "x86-64-windows",
+                    "x86_64-windows",
                     "aarch64-windows",
                 ];
 
@@ -1586,9 +1586,9 @@ pub fn serve_command(address_option: Option<&str>) {
                 Ok(repo_config) => {
                     let packages = repo_config["index"]["packages"].as_array().unwrap();
                     let targets = vec![
-                        "x86-64-linux",
+                        "x86_64-linux",
                         "aarch64-linux",
-                        "x86-64-windows",
+                        "x86_64-windows",
                         "aarch64-windows",
                     ];
 

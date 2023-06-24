@@ -19,11 +19,11 @@ pub fn is_windows() -> bool {
 pub fn get_target() -> String {
     if cfg!(target_arch = "x86_64") {
         if cfg!(target_os = "windows") {
-            "x86-64-windows".to_string()
+            "x86_64-windows".to_string()
         } else if cfg!(target_os = "linux") {
-            "x86-64-linux".to_string()
+            "x86_64-linux".to_string()
         } else {
-            "x86-64-unknown".to_string()
+            "x86_64-unknown".to_string()
         }
     } else if cfg!(target_arch = "aarch64") {
         if cfg!(target_os = "windows") {
@@ -516,10 +516,10 @@ description = "APR made for testing the extract_package() function"
 
 [index]
 packages = [
-    { name = "testing-package", current = "0.1.0", target = "x86-64-linux", versions = [
+    { name = "testing-package", current = "0.1.0", target = "x86_64-linux", versions = [
         { tag = "0.1.0", checksum = "checksum-placeholder" }
     ], author = "Husayn Haras", description = "Package made to test the extract_package() function", url = "https://github.com/hharas/aati" },
-    { name = "calculator", current = "0.1.1", target = "x86-64-linux", versions = [
+    { name = "calculator", current = "0.1.1", target = "x86_64-linux", versions = [
         { tag = "0.1.0", checksum = "checksum-placeholder" },
         { tag = "0.1.1", checksum = "checksum-placeholder" },
     ], author = "Husayn Haras", description = "Package made to test the extract_package() function", url = "https://github.com/hharas/aati" },
@@ -812,11 +812,11 @@ pub fn generate_apr_html(
         ));
 
         let targets = vec![
-            "x86-64-linux",
+            "x86_64-linux",
             "aarch64-linux",
-            "x86-64-windows",
+            "x86_64-windows",
             "aarch64-windows",
-            "x86-64-unknown",
+            "x86_64-unknown",
             "aarch64-unknown",
         ];
 
