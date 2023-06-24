@@ -181,7 +181,7 @@ pub fn get_command(package_name: &str) {
                                             println!(
                                                 "{}",
                                                 format!(
-                                                    "- UNABLE TO WRITE INTO FILE '{}'! ERROR[30]: {}",
+                                                    "- UNABLE TO WRITE INTO DOWNLOADED FILE '{}'! ERROR[30]: {}",
                                                     &download_path.display(),
                                                     error
                                                 )
@@ -204,7 +204,7 @@ pub fn get_command(package_name: &str) {
                                             println!(
                                                 "{}",
                                                 format!(
-                                                    "- UNABLE TO OPEN FILE '{}' FOR READING! ERROR[31]: {}",
+                                                    "- UNABLE TO OPEN DOWNLOADED FILE '{}' FOR READING! ERROR[31]: {}",
                                                     &download_path.display(),
                                                     error
                                                 )
@@ -221,7 +221,7 @@ pub fn get_command(package_name: &str) {
                                             println!(
                                                 "{}",
                                                 format!(
-                                                    "- UNABLE TO OPEN FILE '{}' FOR READING! ERROR[32]: {}",
+                                                    "- UNABLE TO OPEN DOWNLOADED FILE '{}' FOR READING! ERROR[32]: {}",
                                                     &download_path.display(),
                                                     error
                                                 )
@@ -239,7 +239,7 @@ pub fn get_command(package_name: &str) {
                                             println!(
                                                 "{}",
                                                 format!(
-                                                    "- UNABLE TO READ FILE '{}'! ERROR[33]: {}",
+                                                    "- UNABLE TO READ DOWNLOADED FILE '{}'! ERROR[33]: {}",
                                                     &download_path.display(),
                                                     error
                                                 )
@@ -338,23 +338,24 @@ pub fn get_command(package_name: &str) {
 
                                         let aati_lock_path_buf = get_aati_lock_path_buf();
 
-                                        let lock_file_str =
-                                            match fs::read_to_string(&aati_lock_path_buf) {
-                                                Ok(contents) => contents,
-                                                Err(error) => {
-                                                    println!(
+                                        let lock_file_str = match fs::read_to_string(
+                                            &aati_lock_path_buf,
+                                        ) {
+                                            Ok(contents) => contents,
+                                            Err(error) => {
+                                                println!(
                                                         "{}",
                                                         format!(
-                                                    "- UNABLE TO READ FILE '{}'! ERROR[39]: {}",
+                                                    "- UNABLE TO READ LOCKFILE AT '{}'! ERROR[39]: {}",
                                                     &aati_lock_path_buf.display(),
                                                     error
                                                 )
                                                         .bright_red()
                                                     );
 
-                                                    exit(1);
-                                                }
-                                            };
+                                                exit(1);
+                                            }
+                                        };
                                         let mut lock_file: structs::LockFile =
                                             toml::from_str(&lock_file_str).unwrap();
 
@@ -376,7 +377,7 @@ pub fn get_command(package_name: &str) {
                                                 println!(
                                                         "{}",
                                                         format!(
-                                                    "- UNABLE TO OPEN FILE '{}' FOR WRITING! ERROR[40]: {}",
+                                                    "- UNABLE TO OPEN LOCKFILE AT '{}' FOR WRITING! ERROR[40]: {}",
                                                     &aati_lock_path_buf.display(),
                                                     error
                                                 )
@@ -388,7 +389,22 @@ pub fn get_command(package_name: &str) {
                                         };
 
                                         let toml_str = toml::to_string(&lock_file).unwrap();
-                                        file.write_all(toml_str.as_bytes()).unwrap();
+                                        match file.write_all(toml_str.as_bytes()) {
+                                            Ok(_) => {}
+                                            Err(error) => {
+                                                println!(
+                                                    "{}",
+                                                    format!(
+                                                "- UNABLE TO WRITE INTO LOCKFILE AT '{}'! ERROR[41]: {}",
+                                                &aati_lock_path_buf.display(),
+                                                error
+                                            )
+                                                    .bright_red()
+                                                );
+
+                                                exit(1);
+                                            }
+                                        }
 
                                         #[cfg(not(target_os = "windows"))]
                                         {
@@ -399,12 +415,46 @@ pub fn get_command(package_name: &str) {
 
                                             // 10. (non-windows only) Turn it into an executable file, simply: chmod +x ~/.local/bin/<package name>
 
-                                            let metadata =
-                                                fs::metadata(&installation_path_buf).unwrap();
+                                            let metadata = match fs::metadata(
+                                                &installation_path_buf,
+                                            ) {
+                                                Ok(metadata) => metadata,
+                                                Err(error) => {
+                                                    println!(
+                                                            "{}",
+                                                            format!(
+                                                        "- UNABLE TO GET METADATA OF FILE '{}'! ERROR[42]: {}",
+                                                        &installation_path_buf.display(),
+                                                        error
+                                                    )
+                                                            .bright_red()
+                                                        );
+
+                                                    exit(1);
+                                                }
+                                            };
+
                                             let mut permissions = metadata.permissions();
                                             permissions.set_mode(0o755);
-                                            fs::set_permissions(installation_path_buf, permissions)
-                                                .unwrap();
+                                            match fs::set_permissions(
+                                                &installation_path_buf,
+                                                permissions,
+                                            ) {
+                                                Ok(_) => {}
+                                                Err(error) => {
+                                                    println!(
+                                                        "{}",
+                                                        format!(
+                                                    "- UNABLE TO SET PERMISSIONS OF FILE '{}'! ERROR[42]: {}",
+                                                    &installation_path_buf.display(),
+                                                    error
+                                                )
+                                                        .bright_red()
+                                                    );
+
+                                                    exit(1);
+                                                }
+                                            }
                                         }
 
                                         println!(
@@ -418,7 +468,22 @@ pub fn get_command(package_name: &str) {
                                                 .bright_red()
                                         );
 
-                                        fs::remove_file(download_path).unwrap();
+                                        match fs::remove_file(&download_path) {
+                                            Ok(_) => {}
+                                            Err(error) => {
+                                                println!(
+                                                    "{}",
+                                                    format!(
+                                                        "- UNABLE DELETE FILE '{}'! ERROR[42]: {}",
+                                                        download_path.display(),
+                                                        error
+                                                    )
+                                                    .bright_red()
+                                                );
+
+                                                exit(1);
+                                            }
+                                        }
                                     }
                                 }
 
