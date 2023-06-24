@@ -2032,21 +2032,76 @@ pub fn package_command(filename: &str) {
     let source = PathBuf::from(filename);
     let destination = PathBuf::from(format!("{}.lz4", filename));
 
-    match File::open(source) {
+    match File::open(&source) {
         Ok(mut input_file) => {
             println!(
                 "{}",
                 format!("+ Packaging the '{}' binary...", filename).bright_green()
             );
-            let output_file = File::create(destination.clone()).unwrap();
+            let output_file = match File::create(&destination) {
+                Ok(file) => file,
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO CREATE FILE '{}'! ERROR[75]: {}",
+                            &destination.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
 
-            let mut encoder = EncoderBuilder::new().level(16).build(output_file).unwrap();
+                    exit(1);
+                }
+            };
+
+            let mut encoder = match EncoderBuilder::new().level(16).build(output_file) {
+                Ok(encoder) => encoder,
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!("- UNABLE INITIALISE THE LZ4 ENCODER! ERROR[76]: {}", error)
+                            .bright_red()
+                    );
+
+                    exit(1);
+                }
+            };
 
             println!("{}", "+ Writing the compressed buffer...".bright_green());
 
-            io::copy(&mut input_file, &mut encoder).unwrap();
+            match io::copy(&mut input_file, &mut encoder) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO WRITE DATA INTO THE LZ4 ENCODER! ERROR[77]: {}",
+                            error
+                        )
+                        .bright_red()
+                    );
 
-            let (_output, _result) = encoder.finish();
+                    exit(1);
+                }
+            }
+
+            match encoder.finish().1 {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO COMPRESS FINE '{}' USING LZ4! ERROR[78]: {}",
+                            source.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+
+                    exit(1);
+                }
+            }
 
             println!(
                 "{}",
@@ -2055,7 +2110,15 @@ pub fn package_command(filename: &str) {
         }
 
         Err(error) => {
-            println!("{}", format!("- ERROR[7]: {}", error).bright_red());
+            println!(
+                "{}",
+                format!(
+                    "- UNABLE TO OPEN FILE '{}' FOR READING! ERROR[7]: {}",
+                    source.display(),
+                    error
+                )
+                .bright_red()
+            );
             exit(1);
         }
     }
@@ -2089,19 +2152,75 @@ pub fn install_command(filename: &str) {
 
                     let installation_path_buf = get_installation_path_buf(name);
 
-                    let mut new_file = File::create(&installation_path_buf).unwrap();
+                    let mut new_file = match File::create(&installation_path_buf) {
+                        Ok(file) => file,
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!(
+                                    "- UNABLE TO CREATE FILE '{}'! ERROR[79]: {}",
+                                    &installation_path_buf.display(),
+                                    error
+                                )
+                                .bright_red()
+                            );
 
-                    let mut decoder = Decoder::new(input_file).unwrap();
+                            exit(1);
+                        }
+                    };
+
+                    let mut decoder = match Decoder::new(input_file) {
+                        Ok(decoder) => decoder,
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!("- FAILED TO INITIALISE LZ4 DECODER! ERROR[80]: {}", error)
+                                    .bright_red()
+                            );
+
+                            exit(1);
+                        }
+                    };
 
                     println!("{}", "+ Copying package executable...".bright_green());
 
-                    copy(&mut decoder, &mut new_file).unwrap();
+                    match copy(&mut decoder, &mut new_file) {
+                        Ok(_) => {}
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!(
+                                    "- UNABLE TO WRITE DATA INTO THE LZ4 DECODER! ERROR[81]: {}",
+                                    error
+                                )
+                                .bright_red()
+                            );
+
+                            exit(1);
+                        }
+                    }
 
                     println!("{}", "+ Adding package to the Lockfile...".bright_green());
 
                     let aati_lock_path_buf = get_aati_lock_path_buf();
 
-                    let lock_file_str = fs::read_to_string(&aati_lock_path_buf).unwrap();
+                    let lock_file_str = match fs::read_to_string(&aati_lock_path_buf) {
+                        Ok(contents) => contents,
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!(
+                                    "- UNABLE TO READ FILE '{}'! ERROR[85]: {}",
+                                    &aati_lock_path_buf.display(),
+                                    error
+                                )
+                                .bright_red()
+                            );
+
+                            exit(1);
+                        }
+                    };
+
                     let mut lock_file: structs::LockFile = toml::from_str(&lock_file_str).unwrap();
 
                     let package = structs::Package {
@@ -2112,23 +2231,84 @@ pub fn install_command(filename: &str) {
 
                     lock_file.package.push(package);
 
-                    let mut file = OpenOptions::new()
+                    let mut file = match OpenOptions::new()
                         .write(true)
                         .truncate(true)
-                        .open(aati_lock_path_buf)
-                        .unwrap();
+                        .open(&aati_lock_path_buf)
+                    {
+                        Ok(file) => file,
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!(
+                                    "- UNABLE TO OPEN FILE '{}' FOR WRITING! ERROR[82]: {}",
+                                    aati_lock_path_buf.display(),
+                                    error
+                                )
+                                .bright_red()
+                            );
+
+                            exit(1);
+                        }
+                    };
 
                     let toml_str = toml::to_string(&lock_file).unwrap();
-                    file.write_all(toml_str.as_bytes()).unwrap();
+                    match file.write_all(toml_str.as_bytes()) {
+                        Ok(_) => {}
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!(
+                                    "- UNABLE TO WRITE INTO FILE '{}'! ERROR[86]: {}",
+                                    aati_lock_path_buf.display(),
+                                    error
+                                )
+                                .bright_red()
+                            );
+
+                            exit(1);
+                        }
+                    }
 
                     #[cfg(not(target_os = "windows"))]
                     {
                         println!("{}", "+ Changing Permissions...".bright_green());
 
-                        let metadata = fs::metadata(&installation_path_buf).unwrap();
+                        let metadata = match fs::metadata(&installation_path_buf) {
+                            Ok(metadata) => metadata,
+                            Err(error) => {
+                                println!(
+                                    "{}",
+                                    format!(
+                                        "- UNABLE TO GET METADATA OF FILE '{}'! ERROR[83]: {}",
+                                        &installation_path_buf.display(),
+                                        error
+                                    )
+                                    .bright_red()
+                                );
+
+                                exit(1);
+                            }
+                        };
+
                         let mut permissions = metadata.permissions();
                         permissions.set_mode(0o755);
-                        fs::set_permissions(installation_path_buf, permissions).unwrap();
+                        match fs::set_permissions(&installation_path_buf, permissions) {
+                            Ok(_) => {}
+                            Err(error) => {
+                                println!(
+                                    "{}",
+                                    format!(
+                                        "- UNABLE TO SET PERMISSIONS OF FILE '{}'! ERROR[84]: {}",
+                                        &installation_path_buf.display(),
+                                        error
+                                    )
+                                    .bright_red()
+                                );
+
+                                exit(1);
+                            }
+                        }
                     }
 
                     println!("{}", "+ Installation is complete!".bright_green());
@@ -2237,12 +2417,36 @@ pub fn generate_command() {
                     let mut file = match File::create(&filepath) {
                         Ok(file) => file,
                         Err(error) => {
-                            println!("{}", format!("ERROR[14]: {}", error).bright_red());
+                            println!(
+                                "{}",
+                                format!(
+                                    "- UNABLE TO CREATE FILE '{}'! ERROR[14]: {}",
+                                    filepath.display(),
+                                    error
+                                )
+                                .bright_red()
+                            );
                             exit(1);
                         }
                     };
 
-                    file.write_all(filehtml.as_bytes()).unwrap();
+                    match file.write_all(filehtml.as_bytes()) {
+                        Ok(_) => {}
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!(
+                                    "- UNABLE TO WRITE INTO FILE '{}'! ERROR[87]: {}",
+                                    filepath.display(),
+                                    error
+                                )
+                                .bright_red()
+                            );
+
+                            exit(1);
+                        }
+                    }
+
                     println!(
                         "{}",
                         format!("+ Written {}", filepath.display()).bright_green()
