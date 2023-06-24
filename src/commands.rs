@@ -445,7 +445,7 @@ pub fn get_command(package_name: &str) {
                                                     println!(
                                                         "{}",
                                                         format!(
-                                                    "- UNABLE TO SET PERMISSIONS OF FILE '{}'! ERROR[42]: {}",
+                                                    "- UNABLE TO SET PERMISSIONS OF FILE '{}'! ERROR[43]: {}",
                                                     &installation_path_buf.display(),
                                                     error
                                                 )
@@ -474,7 +474,7 @@ pub fn get_command(package_name: &str) {
                                                 println!(
                                                     "{}",
                                                     format!(
-                                                        "- UNABLE DELETE FILE '{}'! ERROR[42]: {}",
+                                                        "- UNABLE DELETE FILE '{}'! ERROR[44]: {}",
                                                         download_path.display(),
                                                         error
                                                     )
@@ -687,7 +687,22 @@ pub fn uninstall_command(package_name: &str) {
 
                         let aati_lock_path_buf = get_aati_lock_path_buf();
 
-                        let lock_file_str = fs::read_to_string(&aati_lock_path_buf).unwrap();
+                        let lock_file_str = match fs::read_to_string(&aati_lock_path_buf) {
+                            Ok(contents) => contents,
+                            Err(error) => {
+                                println!(
+                                    "{}",
+                                    format!(
+                                        "- UNABLE TO READ LOCKFILE AT '{}'! ERROR[45]: {}",
+                                        &aati_lock_path_buf.display(),
+                                        error
+                                    )
+                                    .bright_red()
+                                );
+
+                                exit(1);
+                            }
+                        };
                         let mut lock_file: structs::LockFile =
                             toml::from_str(&lock_file_str).unwrap();
 
@@ -695,14 +710,44 @@ pub fn uninstall_command(package_name: &str) {
                             .package
                             .retain(|package| package.name != package_name);
 
-                        let mut file = OpenOptions::new()
+                        let mut file = match OpenOptions::new()
                             .write(true)
                             .truncate(true)
                             .open(&aati_lock_path_buf)
-                            .unwrap();
+                        {
+                            Ok(file) => file,
+                            Err(error) => {
+                                println!(
+                                    "{}",
+                                    format!(
+                            "- UNABLE TO OPEN LOCKFILE AT '{}' FOR WRITING! ERROR[46]: {}",
+                            &aati_lock_path_buf.display(),
+                            error
+                        )
+                                    .bright_red()
+                                );
+
+                                exit(1);
+                            }
+                        };
 
                         let toml_str = toml::to_string_pretty(&lock_file).unwrap();
-                        file.write_all(toml_str.as_bytes()).unwrap();
+                        match file.write_all(toml_str.as_bytes()) {
+                            Ok(_) => {}
+                            Err(error) => {
+                                println!(
+                                    "{}",
+                                    format!(
+                                        "- UNABLE TO WRITE INTO LOCKFILE AT'{}'! ERROR[47]: {}",
+                                        &aati_lock_path_buf.display(),
+                                        error
+                                    )
+                                    .bright_red()
+                                );
+
+                                exit(1);
+                            }
+                        }
 
                         println!(
                             "{}",
