@@ -63,7 +63,7 @@ pub fn check_config_dir() {
                 println!(
                     "{}",
                     format!(
-                        "- UNABLE TO CREATE THE '{}' DIRECTORY! ERROR[19]: {}",
+                        "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[19]: {}",
                         &config_dir.display(),
                         error
                     )
@@ -82,7 +82,7 @@ pub fn check_config_dir() {
                 println!(
                     "{}",
                     format!(
-                        "- UNABLE TO CREATE THE '{}' DIRECTORY! ERROR[20]: {}",
+                        "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[20]: {}",
                         &aati_config_dir.display(),
                         error
                     )
@@ -101,7 +101,7 @@ pub fn check_config_dir() {
                 println!(
                     "{}",
                     format!(
-                        "- UNABLE TO CREATE THE '{}' DIRECTORY! ERROR[21]: {}",
+                        "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[21]: {}",
                         &repos_dir.display(),
                         error
                     )

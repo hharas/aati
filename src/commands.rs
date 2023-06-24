@@ -1129,14 +1129,13 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             let repo_maintainer = prompt("* What's the name of its Maintainer?");
             let repo_description = prompt("* What's the Description of the Repository?");
 
-            fs::create_dir_all("aati_repo").unwrap();
-            let mut file = File::create("aati_repo/repo.toml").unwrap();
+            let repo_dir = PathBuf::from("aati_repo");
+            let x86_64_dir = PathBuf::from("aati_repo/x86-64-linux");
+            let x86_64_dummy_package_dir = PathBuf::from("aati_repo/x86-64-linux/dummy-package");
+            let aarch64_dir = PathBuf::from("aati_repo/aarch64-linux");
+            let aarch_64_dummy_package_dir = PathBuf::from("aati_repo/aarch64-linux/dummy-package");
 
-            fs::create_dir_all("aati_repo/x86_64-linux").unwrap();
-            fs::create_dir_all("aati_repo/x86_64-linux/dummy-package").unwrap();
-            fs::create_dir_all("aati_repo/aarch64-linux").unwrap();
-            fs::create_dir_all("aati_repo/aarch64-linux/dummy-package").unwrap();
-
+            let repo_toml_path_buf = PathBuf::from("aati_repo/repo.toml");
             let dummy1_path =
                 PathBuf::from("aati_repo/x86_64-linux/dummy-package/dummy-package-0.1.0");
             let dummy2_path =
@@ -1146,33 +1145,309 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             let dummy4_path =
                 PathBuf::from("aati_repo/aarch64-linux/dummy-package/dummy-package-0.1.1");
 
-            let mut dummy1 = File::create(&dummy1_path).unwrap();
-            let mut dummy2 = File::create(&dummy2_path).unwrap();
-            let mut dummy3 = File::create(&dummy3_path).unwrap();
-            let mut dummy4 = File::create(&dummy4_path).unwrap();
+            match fs::create_dir_all(&repo_dir) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[49]: {}",
+                            &repo_dir.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+                    exit(1);
+                }
+            }
+            let mut repo_toml = match File::create(&repo_toml_path_buf) {
+                Ok(file) => file,
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO CREATE FILE '{}'! ERROR[50]: {}",
+                            &repo_toml_path_buf.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
 
-            dummy1
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86_64 linux machines\"")
-                .unwrap();
-            dummy2
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86_64 linux machines\"")
-                .unwrap();
-            dummy3
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for aarch64 linux machines\"")
-                .unwrap();
-            dummy4
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for aarch64 linux machines\"")
-                .unwrap();
+                    exit(1);
+                }
+            };
+
+            match fs::create_dir_all(&x86_64_dir) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[51]: {}",
+                            &x86_64_dir.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+
+                    exit(1);
+                }
+            }
+            match fs::create_dir_all(&x86_64_dummy_package_dir) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[52]: {}",
+                            &x86_64_dummy_package_dir.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+
+                    exit(1);
+                }
+            }
+            match fs::create_dir_all(&aarch64_dir) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[53]: {}",
+                            &aarch64_dir.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+
+                    exit(1);
+                }
+            }
+            match fs::create_dir_all(&aarch_64_dummy_package_dir) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[54]: {}",
+                            &aarch_64_dummy_package_dir.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+
+                    exit(1);
+                }
+            }
+
+            let mut dummy1 = match File::create(&dummy1_path) {
+                Ok(file) => file,
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO CREATE FILE '{}'! ERROR[55]: {}",
+                            &dummy1_path.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+
+                    exit(1);
+                }
+            };
+            let mut dummy2 = match File::create(&dummy2_path) {
+                Ok(file) => file,
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO CREATE FILE '{}'! ERROR[56]: {}",
+                            &dummy2_path.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+
+                    exit(1);
+                }
+            };
+            let mut dummy3 = match File::create(&dummy3_path) {
+                Ok(file) => file,
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO CREATE FILE '{}'! ERROR[57]: {}",
+                            &dummy3_path.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+
+                    exit(1);
+                }
+            };
+            let mut dummy4 = match File::create(&dummy4_path) {
+                Ok(file) => file,
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO CREATE FILE '{}'! ERROR[58]: {}",
+                            &dummy4_path.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+
+                    exit(1);
+                }
+            };
+
+            match dummy1
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86_64 linux machines\"") {
+                    Ok(_) => {}
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- UNABLE TO WRITE INTO FILE '{}'! ERROR[59]: {}",
+                                &dummy1_path.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
+
+                        exit(1);
+                    }
+                }
+
+            match dummy2
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86_64 linux machines\"") {
+                    Ok(_) => {}
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- UNABLE TO WRITE INTO FILE '{}'! ERROR[60]: {}",
+                                &dummy2_path.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
+
+                        exit(1);
+                    }
+                }
+
+            match dummy3
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for aarch64 linux machines\"") {
+                    Ok(_) => {}
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- UNABLE TO WRITE INTO FILE '{}'! ERROR[61]: {}",
+                                &dummy3_path.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
+
+                        exit(1);
+                    }
+                }
+
+            match dummy4
+                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for aarch64 linux machines\"") {
+                    Ok(_) => {}
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- UNABLE TO WRITE INTO FILE '{}'! ERROR[62]: {}",
+                                &dummy4_path.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
+
+                        exit(1);
+                    }
+                }
 
             package_command(format!("{}", dummy1_path.display()).as_str());
             package_command(format!("{}", dummy2_path.display()).as_str());
             package_command(format!("{}", dummy3_path.display()).as_str());
             package_command(format!("{}", dummy4_path.display()).as_str());
 
-            fs::remove_file(dummy1_path).unwrap();
-            fs::remove_file(dummy2_path).unwrap();
-            fs::remove_file(dummy3_path).unwrap();
-            fs::remove_file(dummy4_path).unwrap();
+            match fs::remove_file(&dummy1_path) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO DELETE FILE '{}'! ERROR[63]: {}",
+                            dummy1_path.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+
+                    exit(1);
+                }
+            }
+            match fs::remove_file(&dummy2_path) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO DELETE FILE '{}'! ERROR[64]: {}",
+                            dummy2_path.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+
+                    exit(1);
+                }
+            }
+            match fs::remove_file(&dummy3_path) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO DELETE FILE '{}'! ERROR[65]: {}",
+                            dummy3_path.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+
+                    exit(1);
+                }
+            }
+            match fs::remove_file(&dummy4_path) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO DELETE FILE '{}'! ERROR[66]: {}",
+                            dummy4_path.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+
+                    exit(1);
+                }
+            }
 
             let contents = format!("[repo]
 name = \"{}\"
@@ -1192,11 +1467,26 @@ packages = [
 ]
 ", repo_name, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
 
-            file.write_all(contents.as_bytes()).unwrap();
+            match repo_toml.write_all(contents.as_bytes()) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- UNABLE TO WRITE INTO FILE '{}'! ERROR[67]: {}",
+                            repo_toml_path_buf.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+
+                    exit(1);
+                }
+            }
 
             println!(
                 "{}",
-                "+ The Repo is done! Now you can add your packages".bright_green()
+                "+ The Repo is made! Now you can add your packages".bright_green()
             );
         } else if first_argument == "list" {
             let repos = aati_config["sources"]["repos"].as_array().unwrap();
@@ -1252,18 +1542,48 @@ packages = [
 
                             let repo_config_path_buf = get_repo_config_path_buf(repo_name);
 
-                            let mut repo_config = File::create(&repo_config_path_buf).unwrap();
+                            let mut repo_config = match File::create(&repo_config_path_buf) {
+                                Ok(file) => file,
+                                Err(error) => {
+                                    println!(
+                                        "{}",
+                                        format!(
+                                            "- UNABLE TO CREATE FILE '{}'! ERROR[68]: {}",
+                                            &repo_config_path_buf.display(),
+                                            error
+                                        )
+                                        .bright_red()
+                                    );
+
+                                    exit(1);
+                                }
+                            };
 
                             println!(
                                 "{}",
                                 format!(
                                     "+ Writing Repo Config to {}",
-                                    repo_config_path_buf.display()
+                                    &repo_config_path_buf.display()
                                 )
                                 .bright_green()
                             );
 
-                            writeln!(repo_config, "{}", repo_toml).unwrap();
+                            match writeln!(repo_config, "{}", repo_toml) {
+                                Ok(_) => {}
+                                Err(error) => {
+                                    println!(
+                                        "{}",
+                                        format!(
+                                            "- UNABLE TO WRITE INTO REPO CONFIG AT '{}'! ERROR[69]: {}",
+                                            repo_config_path_buf.display(),
+                                            error
+                                        )
+                                        .bright_red()
+                                    );
+
+                                    exit(1);
+                                }
+                            }
 
                             // Putting it in rc.toml
 
@@ -1283,14 +1603,44 @@ packages = [
 
                             let aati_config_path_buf = get_aati_config_path_buf();
 
-                            let mut file = OpenOptions::new()
+                            let mut file = match OpenOptions::new()
                                 .write(true)
                                 .truncate(true)
-                                .open(aati_config_path_buf)
-                                .unwrap();
+                                .open(&aati_config_path_buf)
+                            {
+                                Ok(file) => file,
+                                Err(error) => {
+                                    println!(
+                                            "{}",
+                                            format!(
+                                                "- UNABLE TO OPEN CONFIG FILE AT '{}' FOR WRITING! ERROR[70]: {}",
+                                                &aati_config_path_buf.display(),
+                                                error
+                                            )
+                                            .bright_red()
+                                        );
+
+                                    exit(1);
+                                }
+                            };
 
                             let toml_str = toml::to_string(&config_file).unwrap();
-                            file.write_all(toml_str.as_bytes()).unwrap();
+                            match file.write_all(toml_str.as_bytes()) {
+                                Ok(_) => {}
+                                Err(error) => {
+                                    println!(
+                                        "{}",
+                                        format!(
+                                            "- UNABLE TO WRITE INTO CONFIG FILE AT '{}'! ERROR[71]: {}",
+                                            aati_config_path_buf.display(),
+                                            error
+                                        )
+                                        .bright_red()
+                                    );
+
+                                    exit(1);
+                                }
+                            }
 
                             println!(
                                 "{}",
@@ -1339,7 +1689,22 @@ packages = [
                         println!("{}", format!("+ Removing '{}' from the Config File...", second_argument).bright_green());
 
                         let config_file_str =
-                            fs::read_to_string(&aati_config_path_buf).unwrap();
+                            match fs::read_to_string(&aati_config_path_buf) {
+                                Ok(contents) => contents,
+                                Err(error) => {
+                                    println!(
+                                        "{}",
+                                        format!(
+                                            "- UNABLE TO READ CONFIG FILE AT '{}'! ERROR[72]: {}",
+                                            &aati_config_path_buf.display(),
+                                            error
+                                        )
+                                        .bright_red()
+                                    );
+
+                                    exit(1);
+                                }
+                            };
                         let mut config_file: structs::ConfigFile =
                             toml::from_str(&config_file_str).unwrap();
 
@@ -1348,20 +1713,65 @@ packages = [
                                 && r.url != repo["url"].as_str().unwrap()
                         });
 
-                        let mut file = OpenOptions::new()
+                        let mut file = match OpenOptions::new()
                             .write(true)
                             .truncate(true)
                             .open(&aati_config_path_buf)
-                            .unwrap();
+                            {
+                                Ok(file) => file,
+                                Err(error) => {
+                                    println!(
+                                            "{}",
+                                            format!(
+                                                "- UNABLE TO OPEN CONFIG FILE AT '{}' FOR WRITING! ERROR[73]: {}",
+                                                &aati_config_path_buf.display(),
+                                                error
+                                            )
+                                            .bright_red()
+                                        );
+
+                                    exit(1);
+                                }
+                            };
 
                         let toml_str = toml::to_string_pretty(&config_file).unwrap();
-                        file.write_all(toml_str.as_bytes()).unwrap();
+                        match file.write_all(toml_str.as_bytes()) {
+                            Ok(_) => {}
+                            Err(error) => {
+                                println!(
+                                    "{}",
+                                    format!(
+                                        "- UNABLE TO WRITE INTO CONFIG FILE AT '{}'! ERROR[74]: {}",
+                                        aati_config_path_buf.display(),
+                                        error
+                                    )
+                                    .bright_red()
+                                );
+
+                                exit(1);
+                            }
+                        }
 
                         let repo_path_buf = get_repo_config_path_buf(second_argument);
 
                         println!("{}", format!("+ Deleting '{}'...", repo_path_buf.display()).bright_green());
 
-                        fs::remove_file(repo_path_buf).unwrap();
+                        match fs::remove_file(&repo_path_buf) {
+                            Ok(_) => {}
+                            Err(error) => {
+                                println!(
+                                    "{}",
+                                    format!(
+                                        "- UNABLE TO DELETE FILE '{}'! ERROR[29]: {}",
+                                        repo_path_buf.display(),
+                                        error
+                                    )
+                                    .bright_red()
+                                );
+
+                                exit(1);
+                            }
+                        }
 
                         println!(
                             "{}",
