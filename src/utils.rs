@@ -167,7 +167,7 @@ pub fn get_aati_lock() -> Option<String> {
         }
 
         if !is_windows() {
-            println!("{}", "+ Make sure to add ~/.local/bin to PATH. You can do this by appending this at the end of our .bashrc file:\n\n    export PATH=\"$HOME/.local/bin:$PATH\"".yellow());
+            println!("{}", "+ Make sure to add ~/.local/bin to PATH. You can do this by appending this line at the end of your .bashrc file:\n\n    export PATH=\"$HOME/.local/bin:$PATH\"".yellow());
         } else {
             println!(
                 "{}",
