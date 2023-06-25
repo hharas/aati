@@ -120,7 +120,7 @@ pub fn get_aati_lock() -> Option<String> {
     let aati_lock_path;
 
     if !is_windows() {
-        let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
+        let home_dir = dirs::home_dir().unwrap();
         aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
 
         aati_lock_path = aati_lock_path_buf.as_path();
@@ -200,7 +200,7 @@ pub fn get_repo_config(repo_name: &str) -> Option<String> {
     check_config_dir();
 
     let repo_config_path_buf = if !is_windows() {
-        let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
+        let home_dir = dirs::home_dir().unwrap();
 
         home_dir.join(format!(".config/aati/repos/{}.toml", repo_name))
     } else {
@@ -249,7 +249,7 @@ pub fn get_aati_config() -> Option<String> {
     let aati_config_path;
 
     if !is_windows() {
-        let home_dir = dirs::home_dir().expect("- CAN'T GET USER'S HOME DIRECTORY");
+        let home_dir = dirs::home_dir().unwrap();
 
         aati_config_path_buf = home_dir.join(".config/aati/rc.toml");
 

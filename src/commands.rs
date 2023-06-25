@@ -1033,10 +1033,22 @@ pub fn sync_command() {
 
                         let repo_config_path_buf = get_repo_config_path_buf(repo_name);
 
-                        let mut repo_config =
-                            File::create(&repo_config_path_buf).unwrap_or_else(|_| {
-                                panic!("- UNABLE TO CREATE {}!", repo_config_path_buf.display())
-                            });
+                        let mut repo_config = match File::create(&repo_config_path_buf) {
+                            Ok(file) => file,
+                            Err(error) => {
+                                println!(
+                                    "{}",
+                                    format!(
+                                        "- UNABLE TO CREATE FILE '{}'! ERROR[88]: {}",
+                                        repo_config_path_buf.display(),
+                                        error
+                                    )
+                                    .bright_red()
+                                );
+
+                                exit(1);
+                            }
+                        };
 
                         println!(
                             "{}",
