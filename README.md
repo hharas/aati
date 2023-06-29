@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="art/aati.png" alt="Aati Andalusian Calligraphy in ASCII" width="300" />
+    <img src="aati.png" alt="Aati Andalusian Calligraphy in ASCII" width="300" />
 </p>
 
 # The Aati Package Manager

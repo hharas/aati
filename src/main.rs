@@ -30,44 +30,44 @@ fn main() {
 
     if args.len() > 1 {
         match args.get(1).map(String::as_str) {
-            // I got plans to make colored output an option since some terminals might not support coloring that well
             Some("--help") => {
-                println!("aati - Minimal package manager written in Rust");
-                println!();
-                println!("Usage: aati [COMMANDS/OPTIONS]");
-                println!();
-                println!("Commands:");
-                println!("    get <package>               Download a package from the Repository and install it");
-                println!("    install <path/to/archive>   Install a package from an LZ4 Archive");
-                println!("    upgrade [package]           Upgrade a package or all packages");
-                println!("    uninstall <package>         Uninstall a package");
-                println!("    remove <package>/<-all>     Alias of uninstall");
-                println!("    list [installed/available]  List installed or available packages");
-                println!("    sync                        Update package index");
-                println!("    repo                        Package Repository Management");
-                println!("      add <url://to/repo>       Add a package repository");
-                println!("      remove <repo name>        Remove a package repository");
-                println!("      list                      List all added package repositories");
-                println!("      info <repo name>          Show an overview of a repository");
-                println!("    info <package>              Show a package's info");
-                println!("    package <path/to/binary>    Compress a binary into LZ4");
                 println!(
-                    "    generate                    Generate .html files for a package repository"
+                    "aati - Minimal package manager written in Rust
+
+Usage: aati [COMMANDS/OPTIONS]
+
+Commands:
+    get <package>               Download a package from the Repository and install it
+    install <path/to/archive>   Install a package from an LZ4 Archive
+    upgrade [package]           Upgrade a package or all packages
+    uninstall <package>/<-all>  Uninstall a package
+    remove <package>/<-all>     Alias of uninstall
+    list [installed/available]  List installed or available packages
+    sync                        Update package index
+    repo                        Package Repository Management
+        add <url://to/repo>       Add a package repository
+        remove <repo name>        Remove a package repository
+        list                      List all added package repositories
+        info <repo name>          Show an overview of a repository
+        init                      Initialise a new package repository
+    info <package>              Show a package's info
+    package <path/to/binary>    Compress a binary into LZ4
+    generate                    Generate .html files for a package repository
+    serve [host:port]           Host a package web index (default: localhost:8887)
+
+Options:
+    -V, --version Print version info
+        --help    Show this help message
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of version 3 of the GNU General Public License
+as published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details."
                 );
-                println!("    serve [host:port]           Host a package web index (default: localhost:8887)");
-                println!();
-                println!("Options:");
-                println!("    -V, --version Print version info");
-                println!("        --help    Show this help message");
-                println!();
-                println!("This program is free software: you can redistribute it and/or modify");
-                println!("it under the terms of version 3 of the GNU General Public License");
-                println!("as published by the Free Software Foundation.");
-                println!();
-                println!("This program is distributed in the hope that it will be useful,");
-                println!("but WITHOUT ANY WARRANTY; without even the implied warranty of");
-                println!("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
-                println!("GNU General Public License for more details.");
             }
 
             Some("-V") | Some("--version") => {
