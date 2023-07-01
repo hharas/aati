@@ -1,3 +1,21 @@
+/* بسم الله الرحمن الرحيم
+
+   Aati - Minimal Package Manager written in Rust.
+   Copyright (C) 2023  Husayn Haras
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of version 3 of the GNU General Public License
+   as published by the Free Software Foundation.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 use crate::structs;
 use crate::utils::*;
 
@@ -1126,8 +1144,8 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             let repo_description = prompt("* What's the Description of the Repository?");
 
             let repo_dir = PathBuf::from("aati_repo");
-            let x86_64_dir = PathBuf::from("aati_repo/x86-64-linux");
-            let x86_64_dummy_package_dir = PathBuf::from("aati_repo/x86-64-linux/dummy-package");
+            let x86_64_dir = PathBuf::from("aati_repo/x86_64-linux");
+            let x86_64_dummy_package_dir = PathBuf::from("aati_repo/x86_64-linux/dummy-package");
             let aarch64_dir = PathBuf::from("aati_repo/aarch64-linux");
             let aarch_64_dummy_package_dir = PathBuf::from("aati_repo/aarch64-linux/dummy-package");
 
