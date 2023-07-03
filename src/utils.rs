@@ -10,6 +10,7 @@ use std::process::exit;
 use std::process::Command;
 
 use colored::Colorize;
+use dirs::home_dir;
 use ring::digest;
 
 use crate::types;
@@ -1289,8 +1290,9 @@ pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&Pat
     )) {
         for line in lines {
             let line = line
-                .replace("$BIN_INSTALL_DIR$", get_bin_path_buf().to_str().unwrap())
-                .replace("$LIB_INSTALL_DIR$", get_lib_path_buf().to_str().unwrap());
+                .replace("$bin_dir", get_bin_path_buf().to_str().unwrap())
+                .replace("$lib_dir", get_lib_path_buf().to_str().unwrap())
+                .replace("$home_dir", home_dir().unwrap().to_str().unwrap());
 
             let tokens: Vec<&str> = line.split_whitespace().collect();
 
