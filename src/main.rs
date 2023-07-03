@@ -142,8 +142,8 @@ GNU General Public License for more details."
             },
 
             Some("package") => match args.get(2) {
-                Some(package_name) => {
-                    commands::package_command(package_name);
+                Some(package_directory) => {
+                    commands::package_command(package_directory.to_string());
                 }
 
                 None => {

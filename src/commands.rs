@@ -21,6 +21,7 @@ use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
 use tar::Archive;
+use tar::Builder;
 use tiny_http::Header;
 use tiny_http::{Response, Server};
 
@@ -1158,20 +1159,11 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             let repo_description = prompt("* What's the Description of the Repository?");
 
             let repo_dir = PathBuf::from("aati_repo");
-            let x86_64_dir = PathBuf::from("aati_repo/x86-64-linux");
-            let x86_64_dummy_package_dir = PathBuf::from("aati_repo/x86-64-linux/dummy-package");
+            let x86_64_linux_dir = PathBuf::from("aati_repo/x86_64-linux");
             let aarch64_dir = PathBuf::from("aati_repo/aarch64-linux");
-            let aarch_64_dummy_package_dir = PathBuf::from("aati_repo/aarch64-linux/dummy-package");
+            let x86_64_windows_dir = PathBuf::from("aati_repo/x86_64-windows");
 
             let repo_toml_path_buf = PathBuf::from("aati_repo/repo.toml");
-            let dummy1_path =
-                PathBuf::from("aati_repo/x86_64-linux/dummy-package/dummy-package-0.1.0");
-            let dummy2_path =
-                PathBuf::from("aati_repo/x86_64-linux/dummy-package/dummy-package-0.1.1");
-            let dummy3_path =
-                PathBuf::from("aati_repo/aarch64-linux/dummy-package/dummy-package-0.1.0");
-            let dummy4_path =
-                PathBuf::from("aati_repo/aarch64-linux/dummy-package/dummy-package-0.1.1");
 
             match fs::create_dir_all(&repo_dir) {
                 Ok(_) => {}
@@ -1188,6 +1180,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     exit(1);
                 }
             }
+
             let mut repo_toml = match File::create(&repo_toml_path_buf) {
                 Ok(file) => file,
                 Err(error) => {
@@ -1205,14 +1198,14 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                 }
             };
 
-            match fs::create_dir_all(&x86_64_dir) {
+            match fs::create_dir_all(&x86_64_linux_dir) {
                 Ok(_) => {}
                 Err(error) => {
                     println!(
                         "{}",
                         format!(
                             "- FAILED TO CREATE DIRECTORY '{}'! ERROR[51]: {}",
-                            &x86_64_dir.display(),
+                            &x86_64_linux_dir.display(),
                             error
                         )
                         .bright_red()
@@ -1221,14 +1214,15 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     exit(1);
                 }
             }
-            match fs::create_dir_all(&x86_64_dummy_package_dir) {
+
+            match fs::create_dir_all(&x86_64_windows_dir) {
                 Ok(_) => {}
                 Err(error) => {
                     println!(
                         "{}",
                         format!(
                             "- FAILED TO CREATE DIRECTORY '{}'! ERROR[52]: {}",
-                            &x86_64_dummy_package_dir.display(),
+                            &x86_64_windows_dir.display(),
                             error
                         )
                         .bright_red()
@@ -1237,6 +1231,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     exit(1);
                 }
             }
+
             match fs::create_dir_all(&aarch64_dir) {
                 Ok(_) => {}
                 Err(error) => {
@@ -1253,229 +1248,6 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     exit(1);
                 }
             }
-            match fs::create_dir_all(&aarch_64_dummy_package_dir) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[54]: {}",
-                            &aarch_64_dummy_package_dir.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            }
-
-            let mut dummy1 = match File::create(&dummy1_path) {
-                Ok(file) => file,
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO CREATE FILE '{}'! ERROR[55]: {}",
-                            &dummy1_path.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            };
-            let mut dummy2 = match File::create(&dummy2_path) {
-                Ok(file) => file,
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO CREATE FILE '{}'! ERROR[56]: {}",
-                            &dummy2_path.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            };
-            let mut dummy3 = match File::create(&dummy3_path) {
-                Ok(file) => file,
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO CREATE FILE '{}'! ERROR[57]: {}",
-                            &dummy3_path.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            };
-            let mut dummy4 = match File::create(&dummy4_path) {
-                Ok(file) => file,
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO CREATE FILE '{}'! ERROR[58]: {}",
-                            &dummy4_path.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            };
-
-            match dummy1
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for x86_64 linux machines\"") {
-                    Ok(_) => {}
-                    Err(error) => {
-                        println!(
-                            "{}",
-                            format!(
-                                "- FAILED TO WRITE INTO FILE '{}'! ERROR[59]: {}",
-                                &dummy1_path.display(),
-                                error
-                            )
-                            .bright_red()
-                        );
-
-                        exit(1);
-                    }
-                }
-
-            match dummy2
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for x86_64 linux machines\"") {
-                    Ok(_) => {}
-                    Err(error) => {
-                        println!(
-                            "{}",
-                            format!(
-                                "- FAILED TO WRITE INTO FILE '{}'! ERROR[60]: {}",
-                                &dummy2_path.display(),
-                                error
-                            )
-                            .bright_red()
-                        );
-
-                        exit(1);
-                    }
-                }
-
-            match dummy3
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.0 for aarch64 linux machines\"") {
-                    Ok(_) => {}
-                    Err(error) => {
-                        println!(
-                            "{}",
-                            format!(
-                                "- FAILED TO WRITE INTO FILE '{}'! ERROR[61]: {}",
-                                &dummy3_path.display(),
-                                error
-                            )
-                            .bright_red()
-                        );
-
-                        exit(1);
-                    }
-                }
-
-            match dummy4
-                .write_all(b"#!/usr/bin/bash\n\necho \"This is Aati Dummy Package 0.1.1 for aarch64 linux machines\"") {
-                    Ok(_) => {}
-                    Err(error) => {
-                        println!(
-                            "{}",
-                            format!(
-                                "- FAILED TO WRITE INTO FILE '{}'! ERROR[62]: {}",
-                                &dummy4_path.display(),
-                                error
-                            )
-                            .bright_red()
-                        );
-
-                        exit(1);
-                    }
-                }
-
-            package_command(format!("{}", dummy1_path.display()).as_str());
-            package_command(format!("{}", dummy2_path.display()).as_str());
-            package_command(format!("{}", dummy3_path.display()).as_str());
-            package_command(format!("{}", dummy4_path.display()).as_str());
-
-            match fs::remove_file(&dummy1_path) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO DELETE FILE '{}'! ERROR[63]: {}",
-                            dummy1_path.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            }
-            match fs::remove_file(&dummy2_path) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO DELETE FILE '{}'! ERROR[64]: {}",
-                            dummy2_path.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            }
-            match fs::remove_file(&dummy3_path) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO DELETE FILE '{}'! ERROR[65]: {}",
-                            dummy3_path.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            }
-            match fs::remove_file(&dummy4_path) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO DELETE FILE '{}'! ERROR[66]: {}",
-                            dummy4_path.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            }
 
             let contents = format!("[repo]
 name = \"{}\"
@@ -1484,16 +1256,12 @@ description = \"{}\"
 
 [index]
 packages = [
-    {{ name = \"dummy-package\", current = \"0.1.1\", target = \"aarch64-linux\", versions = [
-        {{ tag = \"0.1.0\", checksum = \"fd54f3db9f9b001d836654dec8b50a3f76f9003e5b86afc9fb0e2ef42c98a935\" }},
-        {{ tag = \"0.1.1\", checksum = \"41a5dbe93c5641969374a2c369d486168d28fa6e5049730770f72a64c83afd61\" }},
-    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://github.com/hharas/aati\" }},
-    {{ name = \"dummy-package\", current = \"0.1.1\", target = \"x86_64-linux\", versions = [
-        {{ tag = \"0.1.0\", checksum = \"11b3cb26f62469bd04ce1175e9593ae9d1a02920c4e3bd69f3ac4fbde6dc856f\" }},
-        {{ tag = \"0.1.1\", checksum = \"c8e6b84c85602b774c15c1efefdd9be11c739d73f541f3a92193cf10054a11a0\" }},
-    ], author = \"{}\", description = \"Aati Dummy Package. This is a Package created as a template.\", url = \"https://github.com/hharas/aati\" }},
+#   {{ name = \"package-name-here\", current = \"0.1.1\", target = \"x86_64-linux\", versions = [
+#       {{ tag = \"0.1.0\", checksum = \"sha256-sum-here\" }},
+#       {{ tag = \"0.1.1\", checksum = \"sha256-sum-here\" }},
+#   ], author = \"{}\", description = \"Package description here.\", url = \"https://github.com/hharas/aati\" }},
 ]
-", repo_name, repo_maintainer, repo_description, repo_maintainer, repo_maintainer);
+", repo_name, repo_maintainer, repo_description, repo_maintainer);
 
             match repo_toml.write_all(contents.as_bytes()) {
                 Ok(_) => {}
@@ -2056,100 +1824,186 @@ pub fn info_command(text: &str, repo_name: Option<&str>) {
     }
 }
 
-pub fn package_command(filename: &str) {
-    let source = PathBuf::from(filename);
-    let destination = PathBuf::from(format!("{}.lz4", filename));
+pub fn package_command(mut directory_name: String) {
+    if directory_name.ends_with('/') {
+        directory_name.pop();
+    }
 
-    match File::open(&source) {
-        Ok(mut input_file) => {
-            println!(
-                "{}",
-                format!("+ Packaging the '{}' binary...", filename).bright_green()
-            );
-            let output_file = match File::create(&destination) {
-                Ok(file) => file,
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO CREATE FILE '{}'! ERROR[75]: {}",
-                            &destination.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
+    let source = PathBuf::from(directory_name);
+    let tar_destination = PathBuf::from(format!("{}.tar", source.display()));
+    let lz4_destination = PathBuf::from(format!("{}.lz4", tar_destination.display()));
 
-                    exit(1);
-                }
-            };
+    println!(
+        "{}",
+        format!("+ Packaging '{}'...", source.display()).bright_green()
+    );
 
-            let mut encoder = match EncoderBuilder::new().level(16).build(output_file) {
-                Ok(encoder) => encoder,
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!("- UNABLE INITIALISE THE LZ4 ENCODER! ERROR[76]: {}", error)
-                            .bright_red()
-                    );
+    println!(
+        "{}",
+        format!(
+            "+ Adding folder contents to a tarball '{}'...",
+            &tar_destination.display()
+        )
+        .as_str()
+        .bright_green()
+    );
 
-                    exit(1);
-                }
-            };
-
-            println!("{}", "+ Writing the compressed buffer...".bright_green());
-
-            match io::copy(&mut input_file, &mut encoder) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO WRITE DATA INTO THE LZ4 ENCODER! ERROR[77]: {}",
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            }
-
-            match encoder.finish().1 {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO COMPRESS FINE '{}' USING LZ4! ERROR[78]: {}",
-                            source.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            }
-
-            println!(
-                "{}",
-                format!("+ Done packaging! See: {}", destination.display()).bright_green()
-            );
-        }
-
+    let file = match File::create(&tar_destination) {
+        Ok(file) => file,
         Err(error) => {
             println!(
                 "{}",
                 format!(
-                    "- FAILED TO OPEN FILE '{}' FOR READING! ERROR[7]: {}",
+                    "- FAILED TO CREATE NEW FILE '{}'! ERROR[7]: {}",
+                    tar_destination.display(),
+                    error
+                )
+                .bright_red()
+            );
+
+            exit(1);
+        }
+    };
+
+    let mut builder = Builder::new(file);
+    builder.mode(tar::HeaderMode::Deterministic);
+    match builder.append_dir_all(
+        source.to_str().unwrap(),
+        format!("./{}", source.to_str().unwrap()),
+    ) {
+        Ok(_) => match builder.finish() {
+            Ok(_) => {}
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- FAILED TO CREATE '{}' TARBALL! ERROR[102]: {}",
+                        tar_destination.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+
+                exit(1);
+            }
+        },
+        Err(error) => {
+            println!(
+                "{}",
+                format!(
+                    "- FAILED TO APPEND '{}' DIRECTORY TO THE TARBALL! ERROR[101]: {}",
                     source.display(),
                     error
                 )
                 .bright_red()
             );
+
             exit(1);
         }
     }
+
+    let output_file = match File::create(&lz4_destination) {
+        Ok(file) => file,
+        Err(error) => {
+            println!(
+                "{}",
+                format!(
+                    "- FAILED TO CREATE FILE '{}'! ERROR[75]: {}",
+                    &lz4_destination.display(),
+                    error
+                )
+                .bright_red()
+            );
+
+            exit(1);
+        }
+    };
+
+    let mut encoder = match EncoderBuilder::new().level(16).build(output_file) {
+        Ok(encoder) => encoder,
+        Err(error) => {
+            println!(
+                "{}",
+                format!("- UNABLE INITIALISE THE LZ4 ENCODER! ERROR[76]: {}", error).bright_red()
+            );
+
+            exit(1);
+        }
+    };
+
+    println!("{}", "+ Writing the compressed buffer...".bright_green());
+
+    let mut tarball = match File::open(&tar_destination) {
+        Ok(file) => file,
+        Err(error) => {
+            println!(
+                "{}",
+                format!(
+                    "- FAILED TO OPEN FILE '{}' FOR READING! ERROR[103]: {}",
+                    tar_destination.display(),
+                    error
+                )
+                .bright_red()
+            );
+
+            exit(1);
+        }
+    };
+
+    match io::copy(&mut tarball, &mut encoder) {
+        Ok(_) => {}
+        Err(error) => {
+            println!(
+                "{}",
+                format!(
+                    "- FAILED TO WRITE DATA INTO THE LZ4 ENCODER! ERROR[77]: {}",
+                    error
+                )
+                .bright_red()
+            );
+
+            exit(1);
+        }
+    }
+
+    match encoder.finish().1 {
+        Ok(_) => {}
+        Err(error) => {
+            println!(
+                "{}",
+                format!(
+                    "- FAILED TO COMPRESS FINE '{}' USING LZ4! ERROR[78]: {}",
+                    source.display(),
+                    error
+                )
+                .bright_red()
+            );
+
+            exit(1);
+        }
+    }
+
+    match fs::remove_file(&tar_destination) {
+        Ok(_) => {}
+        Err(error) => {
+            println!(
+                "{}",
+                format!(
+                    "- FAILED TO DELETE FILE {}! ERROR[54]: {}",
+                    tar_destination.display(),
+                    error
+                )
+                .as_str()
+                .bright_red()
+            );
+            exit(1);
+        }
+    }
+
+    println!(
+        "{}",
+        format!("+ Done packaging! See: {}", lz4_destination.display()).bright_green()
+    );
 }
 
 pub fn install_command(filename: &str) {
@@ -2215,23 +2069,6 @@ pub fn install_command(filename: &str) {
                             exit(1);
                         }
                     };
-
-                    match fs::remove_file(&filename_path_buf) {
-                        Ok(_) => {}
-                        Err(error) => {
-                            println!(
-                                "{}",
-                                format!(
-                                    "- FAILED TO DELETE DOWNLODED FILE '{}'! ERROR[96]: {}",
-                                    filename_path_buf.display(),
-                                    error
-                                )
-                                .bright_red()
-                            );
-
-                            exit(1);
-                        }
-                    }
 
                     match copy(&mut decoder, &mut tarball) {
                         Ok(_) => {}

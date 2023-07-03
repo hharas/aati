@@ -913,9 +913,9 @@ pub fn parse_filename(mut filename: &str) -> types::Package {
         } //         ^^^^^ That's the name of the repo containing locally installed packages.
     } else {
         println!(
-            "{}\n  {}",
+            "{}\n{}",
             "- Unidentified file extension!".bright_red(),
-            "Note: Only LZ4 archives are installable.".bright_blue()
+            "+ Note: Only .tar.lz4 files are installable.".bright_blue()
         );
         exit(1);
     }
@@ -1108,7 +1108,7 @@ pub fn generate_apr_html(
             ));
 
             header.push_str(&format!(
-                "<div class=\"installation_guide\"><p>You can install this package by:</p><ol><li>Adding this package repository to Aati by running:<br/><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati repo add {}</code></li><li>Then telling Aati to fetch it for you by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati get {}/{}</code></li></ol>or you can download the version you want of this package below and install it locally by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati install {}-<i>version</i>.lz4</code></div><br />",
+                "<div class=\"installation_guide\"><p>You can install this package by:</p><ol><li>Adding this package repository to Aati by running:<br/><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati repo add {}</code></li><li>Then telling Aati to fetch it for you by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati get {}/{}</code></li></ol>or you can download the version you want of this package below and install it locally by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati install {}-<i>version</i>.tar.lz4</code></div><br />",
                 repo_url,
                 repo_name,
                 package_name,
@@ -1141,7 +1141,7 @@ pub fn generate_apr_html(
                 let checksum = version["checksum"].as_str().unwrap();
 
                 header.push_str(&format!(
-                    "<tr><td><a href=\"{}/{}/{}/{}-{}.lz4\">{}</a></td><td>{}</td></tr>",
+                    "<tr><td><a href=\"{}/{}/{}/{}-{}.tar.lz4\">{}</a></td><td>{}</td></tr>",
                     repo_url, package_target, package_name, package_name, tag, tag, checksum
                 ));
             }
@@ -1379,14 +1379,14 @@ pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&Pat
                 }
 
                 "system" => {
+                    let mut command = Command::new(tokens[1]);
+                    command.args(tokens[2..].to_vec());
+
                     if let Some(package_directory_path_buf) = package_directory_path_buf {
-                        Command::new("cd")
-                            .arg(package_directory_path_buf.to_str().unwrap())
-                            .output()
-                            .unwrap();
+                        command.current_dir(package_directory_path_buf);
                     }
 
-                    let output = match Command::new(tokens[1]).args(tokens[2..].to_vec()).output() {
+                    let output = match command.output() {
                         Ok(output) => output,
                         Err(error) => {
                             println!(
