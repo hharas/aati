@@ -1,22 +1,5 @@
-/* بسم الله الرحمن الرحيم
-
-   Aati - Minimal Package Manager written in Rust.
-   Copyright (C) 2023  Husayn Haras
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of version 3 of the GNU General Public License
-   as published by the Free Software Foundation.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-
 use std::fs;
+use std::fs::copy;
 use std::fs::read_to_string;
 use std::fs::File;
 use std::io;
@@ -24,11 +7,12 @@ use std::io::Write;
 use std::path::Path;
 use std::path::PathBuf;
 use std::process::exit;
+use std::process::Command;
 
 use colored::Colorize;
 use ring::digest;
 
-use crate::structs;
+use crate::types;
 
 pub fn is_windows() -> bool {
     std::env::consts::OS == "windows"
@@ -81,7 +65,7 @@ pub fn check_config_dir() {
                 println!(
                     "{}",
                     format!(
-                        "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[19]: {}",
+                        "- FAILED TO CREATE DIRECTORY '{}'! ERROR[19]: {}",
                         &config_dir.display(),
                         error
                     )
@@ -100,7 +84,7 @@ pub fn check_config_dir() {
                 println!(
                     "{}",
                     format!(
-                        "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[20]: {}",
+                        "- FAILED TO CREATE DIRECTORY '{}'! ERROR[20]: {}",
                         &aati_config_dir.display(),
                         error
                     )
@@ -119,7 +103,7 @@ pub fn check_config_dir() {
                 println!(
                     "{}",
                     format!(
-                        "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[21]: {}",
+                        "- FAILED TO CREATE DIRECTORY '{}'! ERROR[21]: {}",
                         &repos_dir.display(),
                         error
                     )
@@ -155,7 +139,7 @@ pub fn get_aati_lock() -> Option<String> {
                 println!(
                     "{}",
                     format!(
-                        "- UNABLE TO CREATE FILE '{}'! ERROR[22]: {}",
+                        "- FAILED TO CREATE FILE '{}'! ERROR[22]: {}",
                         &aati_lock_path.display(),
                         error
                     )
@@ -173,7 +157,7 @@ pub fn get_aati_lock() -> Option<String> {
                 println!(
                     "{}",
                     format!(
-                        "- UNABLE TO WRITE INTO FILE '{}'! ERROR[24]: {}",
+                        "- FAILED TO WRITE INTO FILE '{}'! ERROR[24]: {}",
                         &aati_lock_path.display(),
                         error
                     )
@@ -185,11 +169,18 @@ pub fn get_aati_lock() -> Option<String> {
         }
 
         if !is_windows() {
-            println!("{}", "+ Make sure to add ~/.local/bin to PATH. You can do this by appending this line at the end of your .bashrc file:\n\n    export PATH=\"$HOME/.local/bin:$PATH\"".yellow());
+            println!(
+                "{}",
+                "+ Make sure to add ~/.local/bin to PATH and ~/.local/lib to LD_LIBRARY_PATH.
+  You can do this by appending these two lines at the end of your .bashrc file:
+    export PATH=\"$HOME/.local/bin:$PATH\"
+    export LD_LIBRARY_PATH=\"$HOME/.local/lib:$LD_LIBRARY_PATH\""
+                    .yellow()
+            );
         } else {
             println!(
                 "{}",
-                "+ Make sure to add C:\\Program Files\\Aati\\Binaries to PATH.".yellow()
+                "+ Make sure to add C:\\Program Files\\Aati\\Binaries to %PATH%.".yellow()
             );
         }
     }
@@ -200,7 +191,7 @@ pub fn get_aati_lock() -> Option<String> {
             println!(
                 "{}",
                 format!(
-                    "- UNABLE TO READ FILE '{}'! ERROR[23]: {}",
+                    "- FAILED TO READ FILE '{}'! ERROR[23]: {}",
                     &aati_lock_path.display(),
                     error
                 )
@@ -246,7 +237,7 @@ pub fn get_repo_config(repo_name: &str) -> Option<String> {
             println!(
                 "{}",
                 format!(
-                    "- UNABLE TO READ FILE '{}'! ERROR[25]: {}",
+                    "- FAILED TO READ FILE '{}'! ERROR[25]: {}",
                     repo_config_path_buf.display(),
                     error
                 )
@@ -285,7 +276,7 @@ pub fn get_aati_config() -> Option<String> {
                 println!(
                     "{}",
                     format!(
-                        "- UNABLE TO CREATE FILE '{}'! ERROR[26]: {}",
+                        "- FAILED TO CREATE FILE '{}'! ERROR[26]: {}",
                         &aati_config_path_buf.display(),
                         error
                     )
@@ -306,7 +297,7 @@ pub fn get_aati_config() -> Option<String> {
                 println!(
                     "{}",
                     format!(
-                        "- UNABLE TO WRITE INTO FILE '{}'! ERROR[27]: {}",
+                        "- FAILED TO WRITE INTO FILE '{}'! ERROR[27]: {}",
                         &aati_config_path_buf.display(),
                         error
                     )
@@ -326,7 +317,7 @@ pub fn get_aati_config() -> Option<String> {
             println!(
                 "{}",
                 format!(
-                    "- UNABLE TO READ FILE '{}'! ERROR[28]: {}",
+                    "- FAILED TO READ FILE '{}'! ERROR[28]: {}",
                     aati_config_path.display(),
                     error
                 )
@@ -347,7 +338,7 @@ fn flush_output() {
             println!(
                 "{}",
                 format!(
-                    "- UNABLE TO FLUSH THE STANDARD OUTPUT! ERROR[34]: {}",
+                    "- FAILED TO FLUSH THE STANDARD OUTPUT! ERROR[34]: {}",
                     error
                 )
                 .bright_red()
@@ -428,7 +419,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
 
     if !name.is_empty() || !version.is_empty() {
         // Searching for conflicts
-        let mut results: Vec<structs::Package> = Vec::new();
+        let mut results: Vec<types::Package> = Vec::new();
 
         if !added_repos.is_empty() {
             if repo_name == "$unprovided$" {
@@ -441,7 +432,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                             if available_package["name"].as_str().unwrap() == text
                                 && available_package["target"].as_str().unwrap() == get_target()
                             {
-                                results.push(structs::Package {
+                                results.push(types::Package {
                                     name: available_package["name"].as_str().unwrap().to_string(),
                                     version: available_package["current"]
                                         .as_str()
@@ -451,6 +442,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                                         .as_str()
                                         .unwrap()
                                         .to_string(),
+                                    removal: vec!["$uninitialised$".to_string()],
                                 })
                             }
                         }
@@ -466,7 +458,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                             if available_package["name"].as_str().unwrap() == text
                                 && available_package["target"].as_str().unwrap() == get_target()
                             {
-                                results.push(structs::Package {
+                                results.push(types::Package {
                                     name: available_package["name"].as_str().unwrap().to_string(),
                                     version: available_package["current"]
                                         .as_str()
@@ -476,6 +468,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                                         .as_str()
                                         .unwrap()
                                         .to_string(),
+                                    removal: vec!["$uninitialised$".to_string()],
                                 })
                             }
                         }
@@ -494,7 +487,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                                         && available_package["target"].as_str().unwrap()
                                             == get_target()
                                     {
-                                        results.push(structs::Package {
+                                        results.push(types::Package {
                                             name: available_package["name"]
                                                 .as_str()
                                                 .unwrap()
@@ -504,6 +497,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                                                 .as_str()
                                                 .unwrap()
                                                 .to_string(),
+                                            removal: vec!["$uninitialised$".to_string()],
                                         })
                                     }
                                 }
@@ -519,10 +513,11 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                         if available_package["name"].as_str().unwrap() == text_to_be_extracted
                             && available_package["target"].as_str().unwrap() == get_target()
                         {
-                            results.push(structs::Package {
+                            results.push(types::Package {
                                 name: available_package["name"].as_str().unwrap().to_string(),
                                 version: available_package["current"].as_str().unwrap().to_string(),
                                 source: added_repo["repo"]["name"].as_str().unwrap().to_string(),
+                                removal: vec!["$uninitialised$".to_string()],
                             })
                         }
                     }
@@ -537,10 +532,11 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                         if available_package["name"].as_str().unwrap() == text_to_be_extracted
                             && available_package["target"].as_str().unwrap() == get_target()
                         {
-                            results.push(structs::Package {
+                            results.push(types::Package {
                                 name: available_package["name"].as_str().unwrap().to_string(),
                                 version: available_package["current"].as_str().unwrap().to_string(),
                                 source: added_repo["repo"]["name"].as_str().unwrap().to_string(),
+                                removal: vec!["$uninitialised$".to_string()],
                             })
                         }
                     }
@@ -556,7 +552,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                                 if package_version["tag"].as_str().unwrap() == version
                                     && available_package["target"].as_str().unwrap() == get_target()
                                 {
-                                    results.push(structs::Package {
+                                    results.push(types::Package {
                                         name: available_package["name"]
                                             .as_str()
                                             .unwrap()
@@ -566,6 +562,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                                             .as_str()
                                             .unwrap()
                                             .to_string(),
+                                        removal: vec!["$uninitialised$".to_string()],
                                     })
                                 }
                             }
@@ -671,7 +668,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                     Err(error) => {
                         println!(
                             "{}",
-                            format!("- UNABLE TO PARSE INPUT! ERROR[10]: {}", error).bright_red()
+                            format!("- FAILED TO PARSE INPUT! ERROR[10]: {}", error).bright_red()
                         );
                         exit(1);
                     }
@@ -872,13 +869,13 @@ pub fn display_package(
     );
 }
 
-pub fn parse_filename(mut filename: &str) -> structs::Package {
-    // Example Usage: parse_filename("dummy-package-0.1.0.lz4");
+pub fn parse_filename(mut filename: &str) -> types::Package {
+    // Example Usage: parse_filename("dummy-package-0.1.0.tar.lz4");
 
     filename = filename.trim();
 
-    if filename.ends_with(".lz4") {
-        let package = if let Some((package, _)) = filename.rsplit_once(".lz4") {
+    if filename.ends_with(".tar.lz4") {
+        let package = if let Some((package, _)) = filename.rsplit_once(".tar.lz4") {
             package
         } else {
             println!(
@@ -908,10 +905,11 @@ pub fn parse_filename(mut filename: &str) -> structs::Package {
 
         // Now: name = "dummy-package", version = "0.1.0"
 
-        structs::Package {
+        types::Package {
             name: name.to_string(),
             version: version.to_string(),
             source: "local".to_string(),
+            removal: vec!["$uninitialised$".to_string()],
         } //         ^^^^^ That's the name of the repo containing locally installed packages.
     } else {
         println!(
@@ -926,32 +924,42 @@ pub fn parse_filename(mut filename: &str) -> structs::Package {
 #[test]
 fn test_parse_filename() {
     let filename1 = "silm-0.3.3.lz4";
-    let expected_result1 = structs::Package {
+    let expected_result1 = types::Package {
         name: "silm".to_string(),
         source: "local".to_string(),
         version: "0.3.3".to_string(),
+        removal: vec!["$uninitialised$".to_string()],
     };
 
     let filename2 = "arsil-server-0.2.1.lz4";
-    let expected_result2 = structs::Package {
+    let expected_result2 = types::Package {
         name: "arsil-server".to_string(),
         source: "local".to_string(),
         version: "0.2.1".to_string(),
+        removal: vec!["$uninitialised$".to_string()],
     };
 
     assert_eq!(parse_filename(filename1), expected_result1);
     assert_eq!(parse_filename(filename2), expected_result2);
 }
 
-pub fn get_installation_path_buf(filename: &str) -> PathBuf {
+pub fn get_bin_path_buf() -> PathBuf {
     let home_dir = dirs::home_dir().unwrap();
+
     if !is_windows() {
-        home_dir.join(format!(".local/bin/{}", filename))
+        home_dir.join(".local/bin")
     } else {
-        PathBuf::from(format!(
-            "C:\\Program Files\\Aati\\Binaries\\{}.exe",
-            filename
-        ))
+        PathBuf::from("C:\\Program Files\\Aati\\Binaries")
+    }
+}
+
+pub fn get_lib_path_buf() -> PathBuf {
+    let home_dir = dirs::home_dir().unwrap();
+
+    if !is_windows() {
+        home_dir.join(".local/lib")
+    } else {
+        PathBuf::from("C:\\Program Files\\Aati\\Binaries")
     }
 }
 
@@ -1198,4 +1206,223 @@ pub fn generate_apr_html(
     response.push_str("</body></html>");
 
     response
+}
+
+pub fn make_executable(installation_path_buf: &PathBuf) {
+    #[cfg(not(target_os = "windows"))]
+    {
+        use std::os::unix::prelude::PermissionsExt;
+
+        println!("{}", "+ Changing Permissions...".bright_green());
+
+        // 10. (non-windows only) Turn it into an executable file, simply: chmod +x ~/.local/bin/<package name>
+
+        let metadata = match fs::metadata(installation_path_buf) {
+            Ok(metadata) => metadata,
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- FAILED TO GET METADATA OF FILE '{}'! ERROR[42]: {}",
+                        &installation_path_buf.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+
+                exit(1);
+            }
+        };
+
+        let mut permissions = metadata.permissions();
+        permissions.set_mode(0o755);
+        match fs::set_permissions(installation_path_buf, permissions) {
+            Ok(_) => {}
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- FAILED TO SET PERMISSIONS OF FILE '{}'! ERROR[43]: {}",
+                        &installation_path_buf.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+
+                exit(1);
+            }
+        }
+    }
+}
+
+pub fn parse_pkgfile(pkgfile: &str) -> (Vec<String>, Vec<String>) {
+    let mut installation_lines = Vec::new();
+    let mut removal_lines = Vec::new();
+    let mut current_section = "";
+
+    for line in pkgfile.lines() {
+        let trimmed_line = line.trim();
+
+        if trimmed_line.is_empty() || trimmed_line.starts_with('#') {
+            continue;
+        }
+
+        if trimmed_line.starts_with('[') && trimmed_line.ends_with(']') {
+            current_section = trimmed_line;
+            continue;
+        }
+
+        if current_section == "[installation]" {
+            installation_lines.push(trimmed_line.to_string());
+        } else if current_section == "[removal]" {
+            removal_lines.push(trimmed_line.to_string());
+        }
+    }
+
+    (installation_lines, removal_lines)
+}
+
+pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&PathBuf>) {
+    if prompt_yn(&format!(
+        "+ Commands to be ran:\n  {}\n/ Do these commands seem safe to execute?",
+        lines.join("\n  ")
+    )) {
+        for line in lines {
+            let line = line
+                .replace("$BIN_INSTALL_DIR$", get_bin_path_buf().to_str().unwrap())
+                .replace("$LIB_INSTALL_DIR$", get_lib_path_buf().to_str().unwrap());
+
+            let tokens: Vec<&str> = line.split_whitespace().collect();
+
+            match tokens[0] {
+                "install" => {
+                    if let Some(ref package_directory_path_buf) = package_directory_path_buf {
+                        let mut source_path_buf = PathBuf::from(package_directory_path_buf);
+                        source_path_buf.push(tokens[1]);
+
+                        let destination = tokens[2];
+                        let destination_path_buf = PathBuf::from(destination);
+
+                        match copy(source_path_buf, &destination_path_buf) {
+                            Ok(_) => {}
+                            Err(error) => {
+                                println!(
+                                    "{}",
+                                    format!(
+                                        "- FAILED TO WRITE INTO FILE '{}'! ERROR[91]: {}",
+                                        &destination_path_buf.display(),
+                                        error
+                                    )
+                                    .bright_red()
+                                );
+
+                                exit(1);
+                            }
+                        }
+
+                        make_executable(&destination_path_buf);
+                    } else {
+                        println!(
+                            "{}",
+                            format!("+ Command '{}' was ignored due to ", line).yellow()
+                        );
+                    }
+                }
+
+                "copy" => {
+                    if let Some(ref package_directory_path_buf) = package_directory_path_buf {
+                        let mut source_path_buf = PathBuf::from(package_directory_path_buf);
+                        source_path_buf.push(tokens[1]);
+
+                        let destination = tokens[2];
+                        let destination_path_buf = PathBuf::from(destination);
+
+                        match copy(source_path_buf, &destination_path_buf) {
+                            Ok(_) => {}
+                            Err(error) => {
+                                println!(
+                                    "{}",
+                                    format!(
+                                        "- FAILED TO WRITE INTO FILE '{}'! ERROR[100]: {}",
+                                        &destination_path_buf.display(),
+                                        error
+                                    )
+                                    .bright_red()
+                                );
+
+                                exit(1);
+                            }
+                        }
+                    } else {
+                        println!(
+                            "{}",
+                            format!("+ Command '{}' was ignored due to ", line).yellow()
+                        );
+                    }
+                }
+
+                "delete" => {
+                    let path = &tokens[1..].join(" ");
+
+                    match fs::remove_file(path) {
+                        Ok(_) => {}
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!("- FAILED TO DELETE FILE {}! ERROR[92]: {}", path, error)
+                                    .as_str()
+                                    .bright_red()
+                            );
+                            exit(1);
+                        }
+                    }
+                }
+
+                "system" => {
+                    if let Some(package_directory_path_buf) = package_directory_path_buf {
+                        Command::new("cd")
+                            .arg(package_directory_path_buf.to_str().unwrap())
+                            .output()
+                            .unwrap();
+                    }
+
+                    let output = match Command::new(tokens[1]).args(tokens[2..].to_vec()).output() {
+                        Ok(output) => output,
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!(
+                                    "- COULD NOT EXECUTE PKGFILE COMMAND! ERROR[86]: {}",
+                                    error
+                                )
+                                .as_str()
+                                .bright_red()
+                            );
+                            exit(1);
+                        }
+                    };
+
+                    if output.status.success() {
+                        let stdout = String::from_utf8_lossy(&output.stdout);
+                        println!("{}", stdout);
+                    } else {
+                        let stderr = String::from_utf8_lossy(&output.stderr);
+                        println!("{}", stderr);
+                    }
+                }
+
+                _ => {
+                    println!(
+                        "{}",
+                        format!("- INVALID PKGFILE COMMAND '{}'!", line).bright_red()
+                    );
+
+                    exit(1);
+                }
+            }
+        }
+    } else {
+        println!("{}", "+ Transaction aborted".bright_green());
+        exit(0);
+    }
 }

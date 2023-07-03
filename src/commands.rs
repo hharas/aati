@@ -1,22 +1,4 @@
-/* بسم الله الرحمن الرحيم
-
-   Aati - Minimal Package Manager written in Rust.
-   Copyright (C) 2023  Husayn Haras
-
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of version 3 of the GNU General Public License
-   as published by the Free Software Foundation.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
-
-use crate::structs;
+use crate::types::*;
 use crate::utils::*;
 
 use ascii::AsciiString;
@@ -25,8 +7,11 @@ use humansize::{format_size, BINARY};
 use lz4::Decoder;
 use lz4::EncoderBuilder;
 use std::collections::HashMap;
+use std::env::temp_dir;
 use std::fs;
 use std::fs::read_to_string;
+use std::fs::remove_dir_all;
+use std::fs::remove_file;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io;
@@ -35,11 +20,9 @@ use std::io::{copy, Write};
 use std::path::PathBuf;
 use std::process::exit;
 use std::str::FromStr;
+use tar::Archive;
 use tiny_http::Header;
 use tiny_http::{Response, Server};
-
-#[cfg(not(target_os = "windows"))]
-use std::os::unix::prelude::PermissionsExt;
 
 pub fn get_command(package_name: &str) {
     // Initialise some variables
@@ -118,7 +101,7 @@ pub fn get_command(package_name: &str) {
             let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
 
             let url = format!(
-                "{}/{}/{}/{}-{}.lz4",
+                "{}/{}/{}/{}-{}.tar.lz4",
                 aati_config["sources"]["repos"]
                     .as_array()
                     .unwrap()
@@ -164,8 +147,8 @@ pub fn get_command(package_name: &str) {
                             Ok(response) => {
                                 let mut reader = response.into_reader();
 
-                                let download_path =
-                                    std::env::temp_dir().join(format!("{}-{}.lz4", name, version));
+                                let download_path = std::env::temp_dir()
+                                    .join(format!("{}-{}.tar.lz4", name, version));
 
                                 let mut downloaded_file = match OpenOptions::new()
                                     .create(true)
@@ -178,7 +161,7 @@ pub fn get_command(package_name: &str) {
                                         println!(
                                             "{}",
                                             format!(
-                                                "- UNABLE TO CREATE FILE '{}'! ERROR[29]: {}",
+                                                "- FAILED TO CREATE FILE '{}'! ERROR[29]: {}",
                                                 &download_path.display(),
                                                 error
                                             )
@@ -197,7 +180,7 @@ pub fn get_command(package_name: &str) {
                                         println!(
                                             "{}",
                                             format!(
-                                                "- UNABLE TO WRITE INTO DOWNLOADED FILE '{}'! ERROR[30]: {}",
+                                                "- FAILED TO WRITE INTO DOWNLOADED FILE '{}'! ERROR[30]: {}",
                                                 &download_path.display(),
                                                 error
                                             )
@@ -220,7 +203,7 @@ pub fn get_command(package_name: &str) {
                                         println!(
                                             "{}",
                                             format!(
-                                                "- UNABLE TO OPEN DOWNLOADED FILE '{}' FOR READING! ERROR[31]: {}",
+                                                "- FAILED TO OPEN DOWNLOADED FILE '{}' FOR READING! ERROR[31]: {}",
                                                 &download_path.display(),
                                                 error
                                             )
@@ -237,7 +220,7 @@ pub fn get_command(package_name: &str) {
                                         println!(
                                             "{}",
                                             format!(
-                                                "- UNABLE TO OPEN DOWNLOADED FILE '{}' FOR READING! ERROR[32]: {}",
+                                                "- FAILED TO OPEN DOWNLOADED FILE '{}' FOR READING! ERROR[32]: {}",
                                                 &download_path.display(),
                                                 error
                                             )
@@ -255,7 +238,7 @@ pub fn get_command(package_name: &str) {
                                         println!(
                                             "{}",
                                             format!(
-                                                "- UNABLE TO READ DOWNLOADED FILE '{}'! ERROR[33]: {}",
+                                                "- FAILED TO READ DOWNLOADED FILE '{}'! ERROR[33]: {}",
                                                 &download_path.display(),
                                                 error
                                             )
@@ -271,16 +254,26 @@ pub fn get_command(package_name: &str) {
                                 if verify_checksum(&body, checksum.to_string()) {
                                     println!("{}", "+ Checksums match!".bright_green());
 
-                                    let installation_path_buf = get_installation_path_buf(&name);
+                                    let mut tar_path_buf = temp_dir();
+                                    tar_path_buf.push(&format!(
+                                        "{}-{}.tar",
+                                        extracted_package[1], extracted_package[2]
+                                    ));
 
-                                    let mut new_file = match File::create(&installation_path_buf) {
+                                    let mut package_directory = temp_dir();
+                                    package_directory.push(&format!(
+                                        "{}-{}",
+                                        extracted_package[1], extracted_package[2]
+                                    ));
+
+                                    let mut tarball = match File::create(&tar_path_buf) {
                                         Ok(file) => file,
                                         Err(error) => {
                                             println!(
                                                 "{}",
                                                 format!(
-                                                    "- UNABLE TO CREATE FILE '{}'! ERROR[35]: {}",
-                                                    &installation_path_buf.display(),
+                                                    "- FAILED TO CREATE FILE '{}'! ERROR[35]: {}",
+                                                    tar_path_buf.display(),
                                                     error
                                                 )
                                                 .bright_red()
@@ -298,7 +291,7 @@ pub fn get_command(package_name: &str) {
                                             println!(
                                                 "{}",
                                                 format!(
-                                            "- UNABLE TO DECODE THE LZ4 COMPRESSED PACKAGE AT '{}'! ERROR[36]: {}",
+                                            "- FAILED TO DECODE THE LZ4 COMPRESSED PACKAGE AT '{}'! ERROR[36]: {}",
                                             download_path.display(),
                                             error
                                         )
@@ -315,7 +308,7 @@ pub fn get_command(package_name: &str) {
                                             println!(
                                                 "{}",
                                                 format!(
-                                            "- UNABLE TO DELETE DOWNLODED FILE '{}'! ERROR[37]: {}",
+                                            "- FAILED TO DELETE DOWNLODED FILE '{}'! ERROR[37]: {}",
                                             download_path.display(),
                                             error
                                         )
@@ -326,19 +319,97 @@ pub fn get_command(package_name: &str) {
                                         }
                                     }
 
-                                    match copy(&mut decoder, &mut new_file) {
+                                    match copy(&mut decoder, &mut tarball) {
                                         Ok(_) => {}
                                         Err(error) => {
                                             println!(
                                                 "{}",
                                                 format!(
-                                            "- UNABLE TO WRITE INTO FILE '{}'! ERROR[38]: {}",
-                                            &installation_path_buf.display(),
+                                            "- FAILED TO WRITE INTO FILE '{}'! ERROR[38]: {}",
+                                            tar_path_buf.display(),
                                             error
                                         )
                                                 .bright_red()
                                             );
 
+                                            exit(1);
+                                        }
+                                    }
+
+                                    let tarball = File::open(&tar_path_buf).unwrap();
+
+                                    let mut archive = Archive::new(tarball);
+
+                                    match archive.unpack(temp_dir()) {
+                                        Ok(_) => {}
+                                        Err(error) => {
+                                            println!(
+                                                "{}",
+                                                format!(
+                                                    "- FAILED TO EXTRACT TARBALL '{}'! ERROR[89]: {}",
+                                                    tar_path_buf.display(),
+                                                    error
+                                                )
+                                                .bright_red()
+                                            );
+
+                                            exit(1);
+                                        }
+                                    }
+
+                                    match remove_file(tar_path_buf) {
+                                        Ok(_) => {}
+                                        Err(error) => {
+                                            println!(
+                                                "{}",
+                                                format!(
+                                                    "- COULD NOT DELETE TEMPORARY PACKAGE TARBALL! ERROR[93]: {}",
+                                                    error
+                                                )
+                                                .as_str()
+                                                .bright_red()
+                                            );
+                                            exit(1);
+                                        }
+                                    }
+
+                                    let mut pkgfile_path_buf = package_directory.clone();
+                                    pkgfile_path_buf.push("PKGFILE");
+
+                                    let pkgfile = match fs::read_to_string(&pkgfile_path_buf) {
+                                        Ok(contents) => contents,
+                                        Err(error) => {
+                                            println!(
+                                                "{}",
+                                                format!(
+                                                    "- FAILED TO READ FILE '{}'! ERROR[90]: {}",
+                                                    pkgfile_path_buf.display(),
+                                                    error
+                                                )
+                                                .bright_red()
+                                            );
+
+                                            exit(1);
+                                        }
+                                    };
+
+                                    let (installation_lines, removal_lines) =
+                                        parse_pkgfile(&pkgfile);
+
+                                    execute_lines(installation_lines, Some(&package_directory));
+
+                                    match remove_dir_all(package_directory) {
+                                        Ok(_) => {}
+                                        Err(error) => {
+                                            println!(
+                                                "{}",
+                                                format!(
+                                                    "- COULD NOT DELETE TEMPORARY PACKAGE DIRECTORY! ERROR[83]: {}",
+                                                    error
+                                                )
+                                                .as_str()
+                                                .bright_red()
+                                            );
                                             exit(1);
                                         }
                                     }
@@ -359,7 +430,7 @@ pub fn get_command(package_name: &str) {
                                                 println!(
                                                     "{}",
                                                     format!(
-                                                "- UNABLE TO READ LOCKFILE AT '{}'! ERROR[39]: {}",
+                                                "- FAILED TO READ LOCKFILE AT '{}'! ERROR[39]: {}",
                                                 &aati_lock_path_buf.display(),
                                                 error
                                             )
@@ -369,13 +440,14 @@ pub fn get_command(package_name: &str) {
                                                 exit(1);
                                             }
                                         };
-                                    let mut lock_file: structs::LockFile =
+                                    let mut lock_file: LockFile =
                                         toml::from_str(&lock_file_str).unwrap();
 
-                                    let package = structs::Package {
+                                    let package = Package {
                                         name,
                                         source: extracted_package[0].to_string(),
                                         version,
+                                        removal: removal_lines,
                                     };
 
                                     lock_file.package.push(package);
@@ -390,7 +462,7 @@ pub fn get_command(package_name: &str) {
                                             println!(
                                                     "{}",
                                                     format!(
-                                                "- UNABLE TO OPEN LOCKFILE AT '{}' FOR WRITING! ERROR[40]: {}",
+                                                "- FAILED TO OPEN LOCKFILE AT '{}' FOR WRITING! ERROR[40]: {}",
                                                 &aati_lock_path_buf.display(),
                                                 error
                                             )
@@ -408,7 +480,7 @@ pub fn get_command(package_name: &str) {
                                             println!(
                                                 "{}",
                                                 format!(
-                                            "- UNABLE TO WRITE INTO LOCKFILE AT '{}'! ERROR[41]: {}",
+                                            "- FAILED TO WRITE INTO LOCKFILE AT '{}'! ERROR[41]: {}",
                                             &aati_lock_path_buf.display(),
                                             error
                                         )
@@ -416,52 +488,6 @@ pub fn get_command(package_name: &str) {
                                             );
 
                                             exit(1);
-                                        }
-                                    }
-
-                                    #[cfg(not(target_os = "windows"))]
-                                    {
-                                        println!("{}", "+ Changing Permissions...".bright_green());
-
-                                        // 10. (non-windows only) Turn it into an executable file, simply: chmod +x ~/.local/bin/<package name>
-
-                                        let metadata = match fs::metadata(&installation_path_buf) {
-                                            Ok(metadata) => metadata,
-                                            Err(error) => {
-                                                println!(
-                                                        "{}",
-                                                        format!(
-                                                    "- UNABLE TO GET METADATA OF FILE '{}'! ERROR[42]: {}",
-                                                    &installation_path_buf.display(),
-                                                    error
-                                                )
-                                                        .bright_red()
-                                                    );
-
-                                                exit(1);
-                                            }
-                                        };
-
-                                        let mut permissions = metadata.permissions();
-                                        permissions.set_mode(0o755);
-                                        match fs::set_permissions(
-                                            &installation_path_buf,
-                                            permissions,
-                                        ) {
-                                            Ok(_) => {}
-                                            Err(error) => {
-                                                println!(
-                                                    "{}",
-                                                    format!(
-                                                "- UNABLE TO SET PERMISSIONS OF FILE '{}'! ERROR[43]: {}",
-                                                &installation_path_buf.display(),
-                                                error
-                                            )
-                                                    .bright_red()
-                                                );
-
-                                                exit(1);
-                                            }
                                         }
                                     }
 
@@ -637,9 +663,8 @@ pub fn upgrade_command(choice: Option<&str>) {
             println!("{}", "+   None!".bright_green());
             println!(
                 "{}",
-                "- You have no packages installed to upgrade!".bright_red()
+                "+ You have no packages installed to upgrade!".bright_green()
             );
-            exit(1);
         }
     }
 }
@@ -671,105 +696,94 @@ pub fn uninstall_command(package_name: &str) {
                 )
                 .as_str(),
             ) {
-                println!(
-                    "{}",
-                    format!("+ Deleting '{}' binary...", package_name)
-                        .as_str()
-                        .bright_green()
-                );
+                let aati_lock_path_buf = get_aati_lock_path_buf();
 
-                let path = get_installation_path_buf(package_name);
-
-                match fs::remove_file(path) {
-                    Ok(_) => {
-                        println!(
-                            "{}",
-                            "+ Removing package from the Lockfile...".bright_green()
-                        );
-
-                        let aati_lock_path_buf = get_aati_lock_path_buf();
-
-                        let lock_file_str = match fs::read_to_string(&aati_lock_path_buf) {
-                            Ok(contents) => contents,
-                            Err(error) => {
-                                println!(
-                                    "{}",
-                                    format!(
-                                        "- UNABLE TO READ LOCKFILE AT '{}'! ERROR[45]: {}",
-                                        &aati_lock_path_buf.display(),
-                                        error
-                                    )
-                                    .bright_red()
-                                );
-
-                                exit(1);
-                            }
-                        };
-                        let mut lock_file: structs::LockFile =
-                            toml::from_str(&lock_file_str).unwrap();
-
-                        lock_file
-                            .package
-                            .retain(|package| package.name != package_name);
-
-                        let mut file = match OpenOptions::new()
-                            .write(true)
-                            .truncate(true)
-                            .open(&aati_lock_path_buf)
-                        {
-                            Ok(file) => file,
-                            Err(error) => {
-                                println!(
-                                    "{}",
-                                    format!(
-                            "- UNABLE TO OPEN LOCKFILE AT '{}' FOR WRITING! ERROR[46]: {}",
-                            &aati_lock_path_buf.display(),
-                            error
-                        )
-                                    .bright_red()
-                                );
-
-                                exit(1);
-                            }
-                        };
-
-                        let toml_str = toml::to_string_pretty(&lock_file).unwrap();
-                        match file.write_all(toml_str.as_bytes()) {
-                            Ok(_) => {}
-                            Err(error) => {
-                                println!(
-                                    "{}",
-                                    format!(
-                                        "- UNABLE TO WRITE INTO LOCKFILE AT'{}'! ERROR[47]: {}",
-                                        &aati_lock_path_buf.display(),
-                                        error
-                                    )
-                                    .bright_red()
-                                );
-
-                                exit(1);
-                            }
-                        }
-
-                        println!(
-                            "{}",
-                            "+ Uninstallation finished successfully!".bright_green()
-                        );
-                    }
-
+                let lock_file_str = match fs::read_to_string(&aati_lock_path_buf) {
+                    Ok(contents) => contents,
                     Err(error) => {
                         println!(
                             "{}",
                             format!(
-                                "- COULD NOT DELETE {}'S BINARY! ERROR[2]: {}",
-                                package_name, error
+                                "- FAILED TO READ LOCKFILE AT '{}'! ERROR[45]: {}",
+                                &aati_lock_path_buf.display(),
+                                error
                             )
-                            .as_str()
                             .bright_red()
                         );
+
+                        exit(1);
+                    }
+                };
+                let mut lock_file: LockFile = toml::from_str(&lock_file_str).unwrap();
+
+                println!("{}", "+ Executing removal commands...".bright_green());
+
+                let found_package = match lock_file
+                    .package
+                    .iter()
+                    .find(|pkg| pkg.name == package_name)
+                {
+                    Some(found_package) => found_package,
+                    None => {
+                        println!("{}", "- PACKAGE NOT FOUND IN THE LOCKFILE!".bright_red());
+                        exit(1);
+                    }
+                };
+
+                execute_lines(found_package.removal.clone(), None);
+
+                println!(
+                    "{}",
+                    "+ Removing package from the Lockfile...".bright_green()
+                );
+
+                lock_file
+                    .package
+                    .retain(|package| package.name != package_name);
+
+                let mut file = match OpenOptions::new()
+                    .write(true)
+                    .truncate(true)
+                    .open(&aati_lock_path_buf)
+                {
+                    Ok(file) => file,
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- FAILED TO OPEN LOCKFILE AT '{}' FOR WRITING! ERROR[46]: {}",
+                                &aati_lock_path_buf.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
+
+                        exit(1);
+                    }
+                };
+
+                let toml_str = toml::to_string_pretty(&lock_file).unwrap();
+                match file.write_all(toml_str.as_bytes()) {
+                    Ok(_) => {}
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- FAILED TO WRITE INTO LOCKFILE AT'{}'! ERROR[47]: {}",
+                                &aati_lock_path_buf.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
+
                         exit(1);
                     }
                 }
+
+                println!(
+                    "{}",
+                    "+ Uninstallation finished successfully!".bright_green()
+                );
             } else {
                 println!("{}", "+ Transaction aborted".bright_green());
             }
@@ -1057,7 +1071,7 @@ pub fn sync_command() {
                                 println!(
                                     "{}",
                                     format!(
-                                        "- UNABLE TO CREATE FILE '{}'! ERROR[88]: {}",
+                                        "- FAILED TO CREATE FILE '{}'! ERROR[88]: {}",
                                         repo_config_path_buf.display(),
                                         error
                                     )
@@ -1083,7 +1097,7 @@ pub fn sync_command() {
                                 println!(
                                     "{}",
                                     format!(
-                                        "- UNABLE TO WRITE INTO REPO CONFIG AT '{}'! ERROR[48]: {}",
+                                        "- FAILED TO WRITE INTO REPO CONFIG AT '{}'! ERROR[48]: {}",
                                         &repo_config_path_buf.display(),
                                         error
                                     )
@@ -1104,7 +1118,7 @@ pub fn sync_command() {
                         println!(
                             "{}",
                             format!(
-                                "- UNABLE TO REQUEST ({})! ERROR[5]: {}",
+                                "- FAILED TO REQUEST ({})! ERROR[5]: {}",
                                 requested_url, error
                             )
                             .bright_red()
@@ -1122,7 +1136,7 @@ pub fn sync_command() {
             println!(
                 "{}",
                 format!(
-                    "- ERROR[8]: UNABLE TO PARSE INFO FROM {}! TRY: aati repo <repo url>",
+                    "- ERROR[8]: FAILED TO PARSE INFO FROM {}! TRY: aati repo <repo url>",
                     aati_config_path_buf.display()
                 )
                 .bright_red()
@@ -1144,8 +1158,8 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
             let repo_description = prompt("* What's the Description of the Repository?");
 
             let repo_dir = PathBuf::from("aati_repo");
-            let x86_64_dir = PathBuf::from("aati_repo/x86_64-linux");
-            let x86_64_dummy_package_dir = PathBuf::from("aati_repo/x86_64-linux/dummy-package");
+            let x86_64_dir = PathBuf::from("aati_repo/x86-64-linux");
+            let x86_64_dummy_package_dir = PathBuf::from("aati_repo/x86-64-linux/dummy-package");
             let aarch64_dir = PathBuf::from("aati_repo/aarch64-linux");
             let aarch_64_dummy_package_dir = PathBuf::from("aati_repo/aarch64-linux/dummy-package");
 
@@ -1165,7 +1179,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[49]: {}",
+                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[49]: {}",
                             &repo_dir.display(),
                             error
                         )
@@ -1180,7 +1194,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO CREATE FILE '{}'! ERROR[50]: {}",
+                            "- FAILED TO CREATE FILE '{}'! ERROR[50]: {}",
                             &repo_toml_path_buf.display(),
                             error
                         )
@@ -1197,7 +1211,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[51]: {}",
+                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[51]: {}",
                             &x86_64_dir.display(),
                             error
                         )
@@ -1213,7 +1227,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[52]: {}",
+                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[52]: {}",
                             &x86_64_dummy_package_dir.display(),
                             error
                         )
@@ -1229,7 +1243,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[53]: {}",
+                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[53]: {}",
                             &aarch64_dir.display(),
                             error
                         )
@@ -1245,7 +1259,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO CREATE DIRECTORY '{}'! ERROR[54]: {}",
+                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[54]: {}",
                             &aarch_64_dummy_package_dir.display(),
                             error
                         )
@@ -1262,7 +1276,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO CREATE FILE '{}'! ERROR[55]: {}",
+                            "- FAILED TO CREATE FILE '{}'! ERROR[55]: {}",
                             &dummy1_path.display(),
                             error
                         )
@@ -1278,7 +1292,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO CREATE FILE '{}'! ERROR[56]: {}",
+                            "- FAILED TO CREATE FILE '{}'! ERROR[56]: {}",
                             &dummy2_path.display(),
                             error
                         )
@@ -1294,7 +1308,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO CREATE FILE '{}'! ERROR[57]: {}",
+                            "- FAILED TO CREATE FILE '{}'! ERROR[57]: {}",
                             &dummy3_path.display(),
                             error
                         )
@@ -1310,7 +1324,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO CREATE FILE '{}'! ERROR[58]: {}",
+                            "- FAILED TO CREATE FILE '{}'! ERROR[58]: {}",
                             &dummy4_path.display(),
                             error
                         )
@@ -1328,7 +1342,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                         println!(
                             "{}",
                             format!(
-                                "- UNABLE TO WRITE INTO FILE '{}'! ERROR[59]: {}",
+                                "- FAILED TO WRITE INTO FILE '{}'! ERROR[59]: {}",
                                 &dummy1_path.display(),
                                 error
                             )
@@ -1346,7 +1360,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                         println!(
                             "{}",
                             format!(
-                                "- UNABLE TO WRITE INTO FILE '{}'! ERROR[60]: {}",
+                                "- FAILED TO WRITE INTO FILE '{}'! ERROR[60]: {}",
                                 &dummy2_path.display(),
                                 error
                             )
@@ -1364,7 +1378,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                         println!(
                             "{}",
                             format!(
-                                "- UNABLE TO WRITE INTO FILE '{}'! ERROR[61]: {}",
+                                "- FAILED TO WRITE INTO FILE '{}'! ERROR[61]: {}",
                                 &dummy3_path.display(),
                                 error
                             )
@@ -1382,7 +1396,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                         println!(
                             "{}",
                             format!(
-                                "- UNABLE TO WRITE INTO FILE '{}'! ERROR[62]: {}",
+                                "- FAILED TO WRITE INTO FILE '{}'! ERROR[62]: {}",
                                 &dummy4_path.display(),
                                 error
                             )
@@ -1404,7 +1418,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO DELETE FILE '{}'! ERROR[63]: {}",
+                            "- FAILED TO DELETE FILE '{}'! ERROR[63]: {}",
                             dummy1_path.display(),
                             error
                         )
@@ -1420,7 +1434,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO DELETE FILE '{}'! ERROR[64]: {}",
+                            "- FAILED TO DELETE FILE '{}'! ERROR[64]: {}",
                             dummy2_path.display(),
                             error
                         )
@@ -1436,7 +1450,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO DELETE FILE '{}'! ERROR[65]: {}",
+                            "- FAILED TO DELETE FILE '{}'! ERROR[65]: {}",
                             dummy3_path.display(),
                             error
                         )
@@ -1452,7 +1466,7 @@ pub fn repo_command(first_argument_option: Option<&str>, second_argument_option:
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO DELETE FILE '{}'! ERROR[66]: {}",
+                            "- FAILED TO DELETE FILE '{}'! ERROR[66]: {}",
                             dummy4_path.display(),
                             error
                         )
@@ -1487,7 +1501,7 @@ packages = [
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO WRITE INTO FILE '{}'! ERROR[67]: {}",
+                            "- FAILED TO WRITE INTO FILE '{}'! ERROR[67]: {}",
                             repo_toml_path_buf.display(),
                             error
                         )
@@ -1562,7 +1576,7 @@ packages = [
                                     println!(
                                         "{}",
                                         format!(
-                                            "- UNABLE TO CREATE FILE '{}'! ERROR[68]: {}",
+                                            "- FAILED TO CREATE FILE '{}'! ERROR[68]: {}",
                                             &repo_config_path_buf.display(),
                                             error
                                         )
@@ -1588,7 +1602,7 @@ packages = [
                                     println!(
                                         "{}",
                                         format!(
-                                            "- UNABLE TO WRITE INTO REPO CONFIG AT '{}'! ERROR[69]: {}",
+                                            "- FAILED TO WRITE INTO REPO CONFIG AT '{}'! ERROR[69]: {}",
                                             repo_config_path_buf.display(),
                                             error
                                         )
@@ -1605,10 +1619,10 @@ packages = [
 
                             let config_file_str = get_aati_config().unwrap();
 
-                            let mut config_file: structs::ConfigFile =
+                            let mut config_file: ConfigFile =
                                 toml::from_str(&config_file_str).unwrap();
 
-                            let repo = structs::Repo {
+                            let repo = Repo {
                                 name: repo_name.to_string(),
                                 url: second_argument.to_string(),
                             };
@@ -1627,7 +1641,7 @@ packages = [
                                     println!(
                                             "{}",
                                             format!(
-                                                "- UNABLE TO OPEN CONFIG FILE AT '{}' FOR WRITING! ERROR[70]: {}",
+                                                "- FAILED TO OPEN CONFIG FILE AT '{}' FOR WRITING! ERROR[70]: {}",
                                                 &aati_config_path_buf.display(),
                                                 error
                                             )
@@ -1645,7 +1659,7 @@ packages = [
                                     println!(
                                         "{}",
                                         format!(
-                                            "- UNABLE TO WRITE INTO CONFIG FILE AT '{}'! ERROR[71]: {}",
+                                            "- FAILED TO WRITE INTO CONFIG FILE AT '{}'! ERROR[71]: {}",
                                             aati_config_path_buf.display(),
                                             error
                                         )
@@ -1666,7 +1680,7 @@ packages = [
                             println!(
                                 "{}",
                                 format!(
-                                    "- UNABLE TO REQUEST ({})! ERROR[6]: {}",
+                                    "- FAILED TO REQUEST ({})! ERROR[6]: {}",
                                     requested_url, error
                                 )
                                 .bright_red()
@@ -1709,7 +1723,7 @@ packages = [
                                     println!(
                                         "{}",
                                         format!(
-                                            "- UNABLE TO READ CONFIG FILE AT '{}'! ERROR[72]: {}",
+                                            "- FAILED TO READ CONFIG FILE AT '{}'! ERROR[72]: {}",
                                             &aati_config_path_buf.display(),
                                             error
                                         )
@@ -1719,7 +1733,7 @@ packages = [
                                     exit(1);
                                 }
                             };
-                        let mut config_file: structs::ConfigFile =
+                        let mut config_file: ConfigFile =
                             toml::from_str(&config_file_str).unwrap();
 
                         config_file.sources.repos.retain(|r| {
@@ -1737,7 +1751,7 @@ packages = [
                                     println!(
                                             "{}",
                                             format!(
-                                                "- UNABLE TO OPEN CONFIG FILE AT '{}' FOR WRITING! ERROR[73]: {}",
+                                                "- FAILED TO OPEN CONFIG FILE AT '{}' FOR WRITING! ERROR[73]: {}",
                                                 &aati_config_path_buf.display(),
                                                 error
                                             )
@@ -1755,7 +1769,7 @@ packages = [
                                 println!(
                                     "{}",
                                     format!(
-                                        "- UNABLE TO WRITE INTO CONFIG FILE AT '{}'! ERROR[74]: {}",
+                                        "- FAILED TO WRITE INTO CONFIG FILE AT '{}'! ERROR[74]: {}",
                                         aati_config_path_buf.display(),
                                         error
                                     )
@@ -1776,7 +1790,7 @@ packages = [
                                 println!(
                                     "{}",
                                     format!(
-                                        "- UNABLE TO DELETE FILE '{}'! ERROR[29]: {}",
+                                        "- FAILED TO DELETE FILE '{}'! ERROR[79]: {}",
                                         repo_path_buf.display(),
                                         error
                                     )
@@ -2025,7 +2039,7 @@ pub fn info_command(text: &str, repo_name: Option<&str>) {
                     Err(error) => {
                         println!(
                             "{}",
-                            format!("- UNABLE TO PARSE INPUT! ERROR[9]: {}", error).bright_red()
+                            format!("- FAILED TO PARSE INPUT! ERROR[9]: {}", error).bright_red()
                         );
                         exit(1);
                     }
@@ -2058,7 +2072,7 @@ pub fn package_command(filename: &str) {
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO CREATE FILE '{}'! ERROR[75]: {}",
+                            "- FAILED TO CREATE FILE '{}'! ERROR[75]: {}",
                             &destination.display(),
                             error
                         )
@@ -2090,7 +2104,7 @@ pub fn package_command(filename: &str) {
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO WRITE DATA INTO THE LZ4 ENCODER! ERROR[77]: {}",
+                            "- FAILED TO WRITE DATA INTO THE LZ4 ENCODER! ERROR[77]: {}",
                             error
                         )
                         .bright_red()
@@ -2106,7 +2120,7 @@ pub fn package_command(filename: &str) {
                     println!(
                         "{}",
                         format!(
-                            "- UNABLE TO COMPRESS FINE '{}' USING LZ4! ERROR[78]: {}",
+                            "- FAILED TO COMPRESS FINE '{}' USING LZ4! ERROR[78]: {}",
                             source.display(),
                             error
                         )
@@ -2127,7 +2141,7 @@ pub fn package_command(filename: &str) {
             println!(
                 "{}",
                 format!(
-                    "- UNABLE TO OPEN FILE '{}' FOR READING! ERROR[7]: {}",
+                    "- FAILED TO OPEN FILE '{}' FOR READING! ERROR[7]: {}",
                     source.display(),
                     error
                 )
@@ -2153,7 +2167,7 @@ pub fn install_command(filename: &str) {
         .iter()
         .any(|pkg| pkg["name"].as_str().unwrap() == name)
     {
-        match File::open(filename_path_buf) {
+        match File::open(&filename_path_buf) {
             Ok(input_file) => {
                 if prompt_yn(
                     format!(
@@ -2162,18 +2176,20 @@ pub fn install_command(filename: &str) {
                     )
                     .as_str(),
                 ) {
-                    println!("{}", "+ Decoding LZ4...".bright_green());
+                    let mut tar_path_buf = temp_dir();
+                    tar_path_buf.push(&format!("{}-{}.tar", name, version));
 
-                    let installation_path_buf = get_installation_path_buf(name);
+                    let mut package_directory = temp_dir();
+                    package_directory.push(&format!("{}-{}", name, version));
 
-                    let mut new_file = match File::create(&installation_path_buf) {
+                    let mut tarball = match File::create(&tar_path_buf) {
                         Ok(file) => file,
                         Err(error) => {
                             println!(
                                 "{}",
                                 format!(
-                                    "- UNABLE TO CREATE FILE '{}'! ERROR[79]: {}",
-                                    &installation_path_buf.display(),
+                                    "- FAILED TO CREATE FILE '{}'! ERROR[94]: {}",
+                                    tar_path_buf.display(),
                                     error
                                 )
                                 .bright_red()
@@ -2187,24 +2203,27 @@ pub fn install_command(filename: &str) {
                         Ok(decoder) => decoder,
                         Err(error) => {
                             println!(
-                                "{}",
-                                format!("- FAILED TO INITIALISE LZ4 DECODER! ERROR[80]: {}", error)
-                                    .bright_red()
-                            );
+                                                "{}",
+                                                format!(
+                                            "- FAILED TO DECODE THE LZ4 COMPRESSED PACKAGE AT '{}'! ERROR[95]: {}",
+                                            filename_path_buf.display(),
+                                            error
+                                        )
+                                                .bright_red()
+                                            );
 
                             exit(1);
                         }
                     };
 
-                    println!("{}", "+ Copying package executable...".bright_green());
-
-                    match copy(&mut decoder, &mut new_file) {
+                    match fs::remove_file(&filename_path_buf) {
                         Ok(_) => {}
                         Err(error) => {
                             println!(
                                 "{}",
                                 format!(
-                                    "- UNABLE TO WRITE DATA INTO THE LZ4 DECODER! ERROR[81]: {}",
+                                    "- FAILED TO DELETE DOWNLODED FILE '{}'! ERROR[96]: {}",
+                                    filename_path_buf.display(),
                                     error
                                 )
                                 .bright_red()
@@ -2214,18 +2233,71 @@ pub fn install_command(filename: &str) {
                         }
                     }
 
-                    println!("{}", "+ Adding package to the Lockfile...".bright_green());
+                    match copy(&mut decoder, &mut tarball) {
+                        Ok(_) => {}
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!(
+                                    "- FAILED TO WRITE INTO FILE '{}'! ERROR[97]: {}",
+                                    tar_path_buf.display(),
+                                    error
+                                )
+                                .bright_red()
+                            );
 
-                    let aati_lock_path_buf = get_aati_lock_path_buf();
+                            exit(1);
+                        }
+                    }
 
-                    let lock_file_str = match fs::read_to_string(&aati_lock_path_buf) {
+                    let tarball = File::open(&tar_path_buf).unwrap();
+
+                    let mut archive = Archive::new(tarball);
+
+                    match archive.unpack(temp_dir()) {
+                        Ok(_) => {}
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!(
+                                    "- FAILED TO EXTRACT TARBALL '{}'! ERROR[81]: {}",
+                                    tar_path_buf.display(),
+                                    error
+                                )
+                                .bright_red()
+                            );
+
+                            exit(1);
+                        }
+                    }
+
+                    match remove_file(tar_path_buf) {
+                        Ok(_) => {}
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!(
+                                    "- COULD NOT DELETE TEMPORARY PACKAGE TARBALL! ERROR[84]: {}",
+                                    error
+                                )
+                                .as_str()
+                                .bright_red()
+                            );
+                            exit(1);
+                        }
+                    }
+
+                    let mut pkgfile_path_buf = package_directory.clone();
+                    pkgfile_path_buf.push("PKGFILE");
+
+                    let pkgfile = match fs::read_to_string(&pkgfile_path_buf) {
                         Ok(contents) => contents,
                         Err(error) => {
                             println!(
                                 "{}",
                                 format!(
-                                    "- UNABLE TO READ FILE '{}'! ERROR[85]: {}",
-                                    &aati_lock_path_buf.display(),
+                                    "- FAILED TO READ FILE '{}'! ERROR[82]: {}",
+                                    pkgfile_path_buf.display(),
                                     error
                                 )
                                 .bright_red()
@@ -2235,12 +2307,53 @@ pub fn install_command(filename: &str) {
                         }
                     };
 
-                    let mut lock_file: structs::LockFile = toml::from_str(&lock_file_str).unwrap();
+                    let (installation_lines, removal_lines) = parse_pkgfile(&pkgfile);
 
-                    let package = structs::Package {
+                    execute_lines(installation_lines, Some(&package_directory));
+
+                    match remove_dir_all(package_directory) {
+                        Ok(_) => {}
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!(
+                                    "- COULD NOT DELETE TEMPORARY PACKAGE DIRECTORY! ERROR[85]: {}",
+                                    error
+                                )
+                                .as_str()
+                                .bright_red()
+                            );
+                            exit(1);
+                        }
+                    }
+
+                    println!("{}", "+ Adding Package to the Lockfile...".bright_green());
+
+                    let aati_lock_path_buf = get_aati_lock_path_buf();
+
+                    let lock_file_str = match fs::read_to_string(&aati_lock_path_buf) {
+                        Ok(contents) => contents,
+                        Err(error) => {
+                            println!(
+                                "{}",
+                                format!(
+                                    "- FAILED TO READ LOCKFILE AT '{}'! ERROR[98]: {}",
+                                    &aati_lock_path_buf.display(),
+                                    error
+                                )
+                                .bright_red()
+                            );
+
+                            exit(1);
+                        }
+                    };
+                    let mut lock_file: LockFile = toml::from_str(&lock_file_str).unwrap();
+
+                    let package = Package {
                         name: name.to_string(),
                         source: source.to_string(),
                         version: version.to_string(),
+                        removal: removal_lines,
                     };
 
                     lock_file.package.push(package);
@@ -2255,8 +2368,8 @@ pub fn install_command(filename: &str) {
                             println!(
                                 "{}",
                                 format!(
-                                    "- UNABLE TO OPEN FILE '{}' FOR WRITING! ERROR[82]: {}",
-                                    aati_lock_path_buf.display(),
+                                    "- FAILED TO OPEN LOCKFILE AT '{}' FOR WRITING! ERROR[80]: {}",
+                                    &aati_lock_path_buf.display(),
                                     error
                                 )
                                 .bright_red()
@@ -2273,55 +2386,14 @@ pub fn install_command(filename: &str) {
                             println!(
                                 "{}",
                                 format!(
-                                    "- UNABLE TO WRITE INTO FILE '{}'! ERROR[86]: {}",
-                                    aati_lock_path_buf.display(),
+                                    "- FAILED TO WRITE INTO LOCKFILE AT '{}'! ERROR[2]: {}",
+                                    &aati_lock_path_buf.display(),
                                     error
                                 )
                                 .bright_red()
                             );
 
                             exit(1);
-                        }
-                    }
-
-                    #[cfg(not(target_os = "windows"))]
-                    {
-                        println!("{}", "+ Changing Permissions...".bright_green());
-
-                        let metadata = match fs::metadata(&installation_path_buf) {
-                            Ok(metadata) => metadata,
-                            Err(error) => {
-                                println!(
-                                    "{}",
-                                    format!(
-                                        "- UNABLE TO GET METADATA OF FILE '{}'! ERROR[83]: {}",
-                                        &installation_path_buf.display(),
-                                        error
-                                    )
-                                    .bright_red()
-                                );
-
-                                exit(1);
-                            }
-                        };
-
-                        let mut permissions = metadata.permissions();
-                        permissions.set_mode(0o755);
-                        match fs::set_permissions(&installation_path_buf, permissions) {
-                            Ok(_) => {}
-                            Err(error) => {
-                                println!(
-                                    "{}",
-                                    format!(
-                                        "- UNABLE TO SET PERMISSIONS OF FILE '{}'! ERROR[84]: {}",
-                                        &installation_path_buf.display(),
-                                        error
-                                    )
-                                    .bright_red()
-                                );
-
-                                exit(1);
-                            }
                         }
                     }
 
@@ -2434,7 +2506,7 @@ pub fn generate_command() {
                             println!(
                                 "{}",
                                 format!(
-                                    "- UNABLE TO CREATE FILE '{}'! ERROR[14]: {}",
+                                    "- FAILED TO CREATE FILE '{}'! ERROR[14]: {}",
                                     filepath.display(),
                                     error
                                 )
@@ -2450,7 +2522,7 @@ pub fn generate_command() {
                             println!(
                                 "{}",
                                 format!(
-                                    "- UNABLE TO WRITE INTO FILE '{}'! ERROR[87]: {}",
+                                    "- FAILED TO WRITE INTO FILE '{}'! ERROR[87]: {}",
                                     filepath.display(),
                                     error
                                 )

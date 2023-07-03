@@ -17,7 +17,7 @@
 */
 
 mod commands;
-mod structs;
+mod types;
 mod utils;
 mod version;
 
