@@ -45,11 +45,11 @@ Commands:
     list [installed/available]  List installed or available packages
     sync                        Update package index
     repo                        Package Repository Management
-        add <url://to/repo>       Add a package repository
-        remove <repo name>        Remove a package repository
-        list                      List all added package repositories
-        info <repo name>          Show an overview of a repository
-        init                      Initialise a new package repository
+      add <url://to/repo>         Add a package repository
+      remove <repo name>          Remove a package repository
+      list                        List all added package repositories
+      info <repo name>            Show an overview of a repository
+      init                        Initialise a new package repository
     info <package>              Show a package's info
     package <path/to/binary>    Compress a binary into LZ4
     generate                    Generate .html files for a package repository
@@ -59,6 +59,8 @@ Options:
     -V, --version Print version info
         --help    Show this help message
 
+Copyright (C) 2023  Husayn Haras
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of version 3 of the GNU General Public License
 as published by the Free Software Foundation.
@@ -66,7 +68,9 @@ as published by the Free Software Foundation.
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details."
+GNU General Public License for more details.
+
+Issue tracker: https://github.com/hharas/aati/issues"
                 );
             }
 

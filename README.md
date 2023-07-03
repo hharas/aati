@@ -39,20 +39,15 @@ After answering the prompts, you will be left with this tree structure:
 aati_repo/
     repo.toml
     aarch64-linux/
-        dummy-package/
-            dummy-package-0.1.0.lz4
-            dummy-package-0.1.1.lz4
     x86_64-linux/
-        dummy-package/
-            dummy-package-0.1.0.lz4
-            dummy-package-0.1.1.lz4
+    x86_64-windows/
 ```
 
 - `aati_repo/`: your repository's directory, in it you can initialise a git repository and host it somewhere, like on Codeberg or GitLab.
 - `repo.toml`: the file that contains the data needed to be able to host this package repository.
-- `x86_64-linux`: where amd64 linux packages are located. Windows packages, for example, would be under a directory named `x86_64-windows`.
+- `x86_64-linux`: where amd64 linux packages are located.
+- `x86_64-windows`: where amd64 windows packages are located.
 - `aarch64-linux`: where ARMv8 linux packages are located.
-- `dummy-package/`: a directory that contains LZ4 compressed packages of the default dummy package.
 
 `repo.toml` is the most important file. It contains the following template at first:
 
@@ -64,14 +59,10 @@ description = "<description>"
 
 [index]
 packages = [
-    { name = "dummy-package", current = "0.1.1", target = "aarch64-linux", versions = [
-        { tag = "0.1.0", checksum = "fd54f3db9f9b001d836654dec8b50a3f76f9003e5b86afc9fb0e2ef42c98a935" },
-        { tag = "0.1.1", checksum = "41a5dbe93c5641969374a2c369d486168d28fa6e5049730770f72a64c83afd61" },
-    ], author = "<maintainer>", description = "Aati Dummy Package. This is a Package created as a template.", url = "https://codeberg.org/amad/aati" },
-    { name = "dummy-package", current = "0.1.1", target = "x86_64-linux", versions = [
-        { tag = "0.1.0", checksum = "11b3cb26f62469bd04ce1175e9593ae9d1a02920c4e3bd69f3ac4fbde6dc856f" },
-        { tag = "0.1.1", checksum = "c8e6b84c85602b774c15c1efefdd9be11c739d73f541f3a92193cf10054a11a0" },
-    ], author = "<maintainer>", description = "Aati Dummy Package. This is a Package created as a template.", url = "https://codeberg.org/amad/aati" }
+#   { name = "package-name-here", current = "0.1.1", target = "x86_64-linux", versions = [
+#       { tag = "0.1.0", checksum = "sha256-sum-here" },
+#       { tag = "0.1.1", checksum = "sha256-sum-here" },
+#   ], author = "<maintainer>", description = "Package description here.", url = "https://github.com/hharas/aati" },
 ]
 ```
 
@@ -85,21 +76,9 @@ Under `[repo]` there's general information about the Repository. Under `[index]`
 
 In order to add a package, you need to perform two actions:
 
-1. Add your Package to the file structure by creating a directory under `aati_repo/<target>/` named after your package's name. In it you will be putting your binaries in the following format: `package-name-x.x.x`. Afterwards you will run `aati package package-name-x.x.x` in order to compress your binary using LZ4, then delete the original binary.
+1. Add your Package to the file structure by creating a directory under `aati_repo/<target>/` named after your package's name. In it you will be making a folder named in the following format: `package-name-x.x.x`. In it you will make a PKGFILE that tells Aati how to install and uninstall your package. See the PKGFILE Manual [here](#pkgfile-manual). Afterwards you will run `aati package package-name-x.x.x` in order to archive your folder into a tarball then compress it using LZ4.
 
-2. Add your package to the `repo.toml` file. Although this step will be replaced by adding a main `index.toml` file for this job, however this hasn't been implemented yet. In order to add it to the `repo.toml` file, you need to generate a sha256 hash of your LZ4 compressed package, then add that as a package entry to the `packages` array. If you're adding a new version to your program, then add it to the `versions` array inside your package's object.
-
-If you want to test things out only, then do the following:
-
-1. `$ aati repo init`
-2. `$ cd aati_repo`
-3. `$ python -m http.server`
-4. `$ aati repo add http://localhost:8000`
-5. Now you're all set. Try installing the dummy package.
-6. `$ aati get dummy-package`
-7. `$ dummy-package`
-
-Here you go! You set up a local Aati repository that you can use to test things out.
+2. Add your package to the `repo.toml` file. In order to add it to the `repo.toml` file, you need to generate a SHA256 hash of your LZ4 compressed package, then add that as a package entry to the `packages` array. If you're adding a new version to your program, then add it to the `versions` array inside your package's object and update the `current` field to the latest version.
 
 ### Installation Guide for Windows Users
 
@@ -126,6 +105,50 @@ mkdir "C:\Program Files\Aati" && mkdir "C:\Program Files\Aati\Binaries" && copy 
 4. Add `C:\Program Files\Aati\Binaries` to `%PATH%`, since that's where all of your installed packages (including `aati.exe` itself) will be located.
 
 5. Open your Terminal as Administrator and run any Aati command you wish.
+
+### PKGFILE Manual
+
+The PKGFILE is the essence of Aati's packaging system, as it describes to Aati how to install and uninstall software through it. The PKGFILE is separated into two TOML-like looking fields, `[installation]` and `[removal]`.
+
+```
+[installation]
+...
+
+[removal]
+...
+```
+
+When Aati installs a package, it looks for the commands under the `[installation]` field. Commands under the `[installation]` field are ran knowing the current working directory, that is somewhere under the operating system's temporary directory, unlike commands under the `[removal]` field, which are ran without context at all. We'll get to this later in more detail.
+
+Now, you may be wondering: "What are those commands that Aati can execute from the PKGFILE?"  
+Well, those commands currently are:
+- `install`: copies a file to a destination and (if it's a UNIX operating system) makes it an executable, e.g. `install program $bin_dir/program`
+- `copy`: copies a file to a destination only, e.g. `copy lib.so $lib_dir/lib.so`
+- `system`: invokes a system command, e.g. `system wget https://picsum.photos/400 -O image.jpeg`
+- `delete`: deletes a file from the system, e.g. `delete $bin_dir/program`
+
+The PKGFILE also recognises global variables, which are currently limited to:
+- `$bin_dir`: directory for binary executables, `~/.local/bin` for UNIX and `C:\Program Files\Aati\Binaries` for Windows.
+- `$lib_dir`: directory for DLLs, `~/.local/lib` for UNIX and `C:\Program Files\Aati\Binaries` for Windows.
+- `$home_dir`: user home directory, `~`/`$HOME` for UNIX and `C:\Users\<username>` for Windows.
+
+An Example of a PKGFILE summing up all of what we said above can be:
+```bash
+[installation]
+# Aati executes this section first while acknowledging the current working directory
+# This is why we can easily refer to files here using relative paths (i.e. application, library.so, image.jpeg)
+install application $bin_dir/application
+copy library.so $lib_dir/lib.so
+system wget https://picsum.photos/400 -O image.jpeg
+copy image.jpeg $home_dir/image.jpeg
+
+[removal]
+# Here there's no current working directory involved
+# so all the commands in this section can't make use of it
+delete $bin_dir/application
+delete $lib_dir/lib.so
+delete $home_dir/image.jpeg
+```
 
 # But why?
 
