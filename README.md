@@ -135,8 +135,9 @@ The PKGFILE also recognises global variables, which are currently limited to:
 An Example of a PKGFILE summing up all of what we said above can be:
 ```bash
 [installation]
-# Aati executes this section first while acknowledging the current working directory
-# This is why we can easily refer to files here using relative paths (i.e. application, library.so, image.jpeg)
+# Aati executes this section first while acknowledging the current
+# working directory, this is why we can easily refer to files
+# here using relative paths (i.e. application, library.so, image.jpeg)
 install application $bin_dir/application
 copy library.so $lib_dir/lib.so
 system wget https://picsum.photos/400 -O image.jpeg
