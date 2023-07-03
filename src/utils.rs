@@ -923,7 +923,7 @@ pub fn parse_filename(mut filename: &str) -> types::Package {
 
 #[test]
 fn test_parse_filename() {
-    let filename1 = "silm-0.3.3.lz4";
+    let filename1 = "silm-0.3.3.tar.lz4";
     let expected_result1 = types::Package {
         name: "silm".to_string(),
         source: "local".to_string(),
@@ -931,7 +931,7 @@ fn test_parse_filename() {
         removal: vec!["$uninitialised$".to_string()],
     };
 
-    let filename2 = "arsil-server-0.2.1.lz4";
+    let filename2 = "arsil-server-0.2.1.tar.lz4";
     let expected_result2 = types::Package {
         name: "arsil-server".to_string(),
         source: "local".to_string(),
