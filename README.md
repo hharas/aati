@@ -10,8 +10,8 @@ Minimal package manager written in Rust
 
 ### As a user
 
-First off, install Aati by running `cargo install --path .` in your terminal after cloning the repo. If you wish to install Aati on Windows, see [this section](#installation-guide-for-windows-users).  
-Aati relies on Aati Package Repositories (APRs), and so you need to add one in order to you use it. In order to set a repository, you need to run `aati repo add <repo url>`. You can add the [Amad Project Package Repository](https://amad.codeberg.page) if you want to try it out. Afterwards, if you run `aati list available`, you will see the available packages in the repo and their versions that you can install. If you wish to install the latest version of a package, you can run:
+First off, install Aati by running `cargo install aati` in your terminal. If you're installing Aati on Windows, see [this section](#installation-guide-for-windows-users).  
+Aati relies on Aati Package Repositories (APRs), and so you need to add one in order to use it. In order to add a repository, you need to run `aati repo add <repo url>`. You can add the [Amad Project Package Repository](https://amad.codeberg.page) if you want to try Aati out. Afterwards, if you run `aati list available`, you will see the available packages in the repo and their versions that you can install. If you wish to install the latest version of a package, you can run:
 
 ```bash
 aati get <package name>
@@ -23,17 +23,17 @@ or:
 aati get <name>-<version>
 ```
 
-if you wish to install a specific version. If you wish to uninstall a package, you should run `aati remove <name>`. In order to stay in sync with the online repository, you should run `aati sync`, and in case a package got flagged as outdated, you should run `aati upgrade` or `aati upgrade <package>` to upgrade your packages.
+if you wish to install a specific version. If you wish to uninstall a package, you can run `aati remove <name>`. In order to stay in sync with the online repository, you can run `aati sync`, and in case a package got flagged as outdated, you can run `aati upgrade` or `aati upgrade <package>` to upgrade your package/s.
 
 ### As a repository maintainer
 
-After installing aati, you must initialise an Aati Package Repository. You can do that by running:
+After installing aati, you can initialise an Aati Package Repository. You can do that by running:
 
 ```bash
 aati repo init
 ```
 
-After answering the prompts, you will be left with this tree structure:
+After answering the prompts, you'll be left with this tree structure:
 
 ```
 aati_repo/
@@ -43,11 +43,11 @@ aati_repo/
     x86_64-windows/
 ```
 
-- `aati_repo/`: your repository's directory, in it you can initialise a git repository and host it somewhere, like on Codeberg or GitLab.
-- `repo.toml`: the file that contains the data needed to be able to host this package repository.
-- `x86_64-linux`: where amd64 linux packages are located.
-- `x86_64-windows`: where amd64 windows packages are located.
-- `aarch64-linux`: where ARMv8 linux packages are located.
+- `aati_repo/`: is your repository's directory, in it you can initialise a git repository and host it somewhere, like on Codeberg or GitLab.
+- `repo.toml`: is the file that contains the data needed to be able to host this package repository.
+- `x86_64-linux`: is where amd64 linux packages are located.
+- `x86_64-windows`: is where amd64 windows packages are located.
+- `aarch64-linux`: is where ARMv8 linux packages are located.
 
 `repo.toml` is the most important file. It contains the following template at first:
 
@@ -157,8 +157,8 @@ Simply: It was so fun to develop. I always thought of building my own package ma
 
 # Contribution
 
-Any contributions to the Aati Package Manager are welcomed. This Project is definitely incomplete and immature, so any development is appreciated.
+Any contributions to Aati are welcomed. This Project is definitely incomplete and immature, so any development is appreciated.
 
 # License
 
-Aati is licensed under the GNU General Public License V3.0.
+The Aati Package Manager is licensed under the GNU General Public License V3.0.
