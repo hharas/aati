@@ -6,12 +6,13 @@ use std::{
     process::exit,
 };
 
-use crate::commands::{
-    common::{check_config_dir, get_repo_config, get_repo_config_path_buf, prompt},
+use crate::{
+    commons::{
+        check_config_dir, get_aati_config, get_aati_config_path_buf, get_repo_config,
+        get_repo_config_path_buf, prompt, prompt_yn,
+    },
     types::{ConfigFile, Repo},
 };
-
-use super::common::{get_aati_config, get_aati_config_path_buf, prompt_yn};
 
 pub fn command(first_argument_option: Option<&str>, second_argument_option: Option<&str>) {
     if let Some(first_argument) = first_argument_option {

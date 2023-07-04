@@ -17,6 +17,8 @@
 */
 
 mod commands;
+mod commons;
+mod types;
 mod version;
 use std::{env, process::exit};
 

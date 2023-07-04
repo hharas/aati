@@ -2,9 +2,9 @@ use std::{process::exit, str::FromStr};
 
 use colored::Colorize;
 
-use crate::commands::common::prompt;
-
-use super::common::{display_package, get_aati_config, get_aati_lock, get_repo_config, get_target};
+use crate::commons::{
+    display_package, get_aati_config, get_aati_lock, get_repo_config, get_target, prompt,
+};
 
 pub fn command(text: &str, repo_name: Option<&str>) {
     // Initialising main variables

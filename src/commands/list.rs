@@ -1,8 +1,6 @@
 use colored::Colorize;
 
-use crate::commands::common::{get_repo_config, get_target};
-
-use super::common::{get_aati_config, get_aati_lock};
+use crate::commons::{get_aati_config, get_aati_lock, get_repo_config, get_target};
 
 pub fn command(choice_option: Option<&str>) {
     let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();

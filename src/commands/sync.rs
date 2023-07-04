@@ -1,10 +1,9 @@
 use std::{fs::File, io::Write, process::exit};
 
-use crate::commands::common::{
-    check_config_dir, get_aati_config_path_buf, get_repo_config_path_buf,
+use crate::commons::{
+    check_config_dir, get_aati_config, get_aati_config_path_buf, get_repo_config_path_buf,
 };
 
-use super::common::get_aati_config;
 use colored::Colorize;
 
 pub fn command() {

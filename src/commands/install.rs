@@ -9,12 +9,13 @@ use std::{
 };
 use tar::Archive;
 
-use crate::commands::{
-    common::{execute_lines, get_aati_lock_path_buf, parse_pkgfile},
+use crate::{
+    commons::{
+        execute_lines, get_aati_lock, get_aati_lock_path_buf, parse_filename, parse_pkgfile,
+        prompt_yn,
+    },
     types::{LockFile, Package},
 };
-
-use super::common::{get_aati_lock, parse_filename, prompt_yn};
 
 pub fn command(filename: &str) {
     let filename_path_buf = PathBuf::from(filename);

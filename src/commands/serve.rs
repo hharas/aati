@@ -4,9 +4,7 @@ use std::{fs::read_to_string, process::exit};
 
 use tiny_http::{Header, Response, Server};
 
-use crate::commands::common::generate_apr_html;
-
-use super::common::prompt;
+use crate::commons::{generate_apr_html, prompt};
 
 pub fn command(address_option: Option<&str>) {
     let address;

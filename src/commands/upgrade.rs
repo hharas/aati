@@ -2,12 +2,11 @@ use std::process::exit;
 
 use colored::Colorize;
 
-use crate::commands::common::{get_target, prompt_yn};
-
-use super::{
-    common::{extract_package, get_aati_config, get_aati_lock, get_repo_config},
-    get, remove,
+use crate::commons::{
+    extract_package, get_aati_config, get_aati_lock, get_repo_config, get_target, prompt_yn,
 };
+
+use super::{get, remove};
 
 pub fn command(choice: Option<&str>) {
     let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
@@ -114,7 +113,7 @@ pub fn command(choice: Option<&str>) {
                 if prompt_yn("/ Are you sure you want to continue this Transaction?") {
                     for package in to_be_upgraded {
                         remove::command(package);
-                        get(package);
+                        get::command(package);
                     }
 
                     println!("{}", "+ Finished upgrading!".bright_green());

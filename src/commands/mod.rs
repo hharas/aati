@@ -1,4 +1,3 @@
-mod common;
 mod generate;
 mod get;
 mod info;
@@ -9,7 +8,6 @@ mod remove;
 mod repo;
 mod serve;
 mod sync;
-mod types;
 mod upgrade;
 
 pub fn get(package_name: &str) {

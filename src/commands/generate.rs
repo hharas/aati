@@ -7,7 +7,7 @@ use std::{
     process::exit,
 };
 
-use super::common::{generate_apr_html, prompt};
+use crate::commons::{generate_apr_html, prompt};
 
 pub fn command() {
     match read_to_string("repo.toml") {

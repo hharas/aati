@@ -5,12 +5,10 @@ use std::{
     process::exit,
 };
 
-use crate::commands::{
-    common::{execute_lines, get_aati_lock_path_buf},
+use crate::{
+    commons::{execute_lines, get_aati_lock, get_aati_lock_path_buf, prompt_yn},
     types::LockFile,
 };
-
-use super::common::{get_aati_lock, prompt_yn};
 
 pub fn command(package_name: &str) {
     let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();

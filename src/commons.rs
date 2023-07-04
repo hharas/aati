@@ -2,7 +2,10 @@ use colored::Colorize;
 use dirs::home_dir;
 use ring::digest;
 use std::{
-    fs::{copy, create_dir_all, metadata, read_to_string, remove_file, set_permissions, File},
+    fs::{
+        copy, create_dir_all, metadata, read_to_string, remove_dir_all, remove_file,
+        set_permissions, File,
+    },
     io::{stdin, stdout, Write},
     path::{Path, PathBuf},
     process::{exit, Command},
@@ -1420,6 +1423,26 @@ pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&Pat
         }
     } else {
         println!("{}", "+ Transaction aborted".bright_green());
+
+        if let Some(package_directory_path_buf) = package_directory_path_buf {
+            match remove_dir_all(package_directory_path_buf) {
+                Ok(_) => println!("{}", "+ Deleted temporary package directory".bright_green()),
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- FAILED TO DELETE DIRECTORY '{}'! ERROR[92]: {}",
+                            package_directory_path_buf.display(),
+                            error
+                        )
+                        .as_str()
+                        .bright_red()
+                    );
+                    exit(1);
+                }
+            }
+        }
+
         exit(0);
     }
 }

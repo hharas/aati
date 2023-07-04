@@ -5,18 +5,17 @@ use std::{
     process::exit,
 };
 
-use crate::commands::{
-    common::{execute_lines, get_aati_lock_path_buf, parse_pkgfile, verify_checksum},
+use crate::{
+    commons::{
+        execute_lines, extract_package, get_aati_config, get_aati_lock, get_aati_lock_path_buf,
+        get_repo_config, get_target, parse_pkgfile, prompt_yn, verify_checksum,
+    },
     types::{LockFile, Package},
 };
 use colored::Colorize;
 use humansize::{format_size, BINARY};
 use lz4::Decoder;
 use tar::Archive;
-
-use super::common::{
-    extract_package, get_aati_config, get_aati_lock, get_repo_config, get_target, prompt_yn,
-};
 
 pub fn command(package_name: &str) {
     // Initialise some variables
