@@ -18,25 +18,7 @@ pub fn is_windows() -> bool {
 }
 
 pub fn get_target() -> String {
-    if cfg!(target_arch = "x86_64") {
-        if cfg!(target_os = "windows") {
-            "x86_64-windows".to_string()
-        } else if cfg!(target_os = "linux") {
-            "x86_64-linux".to_string()
-        } else {
-            "x86_64-unknown".to_string()
-        }
-    } else if cfg!(target_arch = "aarch64") {
-        if cfg!(target_os = "windows") {
-            "aarch64-windows".to_string()
-        } else if cfg!(target_os = "linux") {
-            "aarch64-linux".to_string()
-        } else {
-            "aarch64-unknown".to_string()
-        }
-    } else {
-        "unknown".to_string()
-    }
+    format!("{}-{}", std::env::consts::ARCH, std::env::consts::OS)
 }
 
 pub fn check_config_dir() {
