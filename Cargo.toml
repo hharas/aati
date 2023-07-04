@@ -1,9 +1,12 @@
 [package]
 name = "aati"
+description = "Minimal package manager written in Rust."
 authors = ["Husayn Haras <husayn@dnmx.org>"]
 readme = "README.md"
 license = "GPL-3.0-only"
-version = "0.10.1"
+repository = "https://github.com/hharas/aati"
+documentation = "https://github.com/hharas/aati/blob/master/README.md"
+version = "0.10.2"
 edition = "2021"
 
 [dependencies]

@@ -173,7 +173,7 @@ pub fn get_aati_lock() -> Option<String> {
                 "+ Make sure to add ~/.local/bin to PATH and ~/.local/lib to LD_LIBRARY_PATH.
   You can do this by appending these two lines at the end of your .bashrc file:
     export PATH=\"$HOME/.local/bin:$PATH\"
-    export LD_LIBRARY_PATH=\"$HOME/.local/lib:$LD_LIBRARY_PATH\""
+    export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:$HOME/.local/lib\""
                     .yellow()
             );
         } else {
@@ -1391,12 +1391,9 @@ pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&Pat
                         Err(error) => {
                             println!(
                                 "{}",
-                                format!(
-                                    "- COULD NOT EXECUTE PKGFILE COMMAND! ERROR[86]: {}",
-                                    error
-                                )
-                                .as_str()
-                                .bright_red()
+                                format!("- FAILED RUNNING COMMAND: '{}'! ERROR: {}", line, error)
+                                    .as_str()
+                                    .bright_red()
                             );
                             exit(1);
                         }

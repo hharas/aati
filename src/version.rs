@@ -16,4 +16,4 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-pub const VERSION: &str = "0.10.1";
+pub const VERSION: &str = "0.10.2";
