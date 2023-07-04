@@ -1,0 +1,203 @@
+use std::{process::exit, str::FromStr};
+
+use colored::Colorize;
+
+use crate::commands::common::prompt;
+
+use super::common::{display_package, get_aati_config, get_aati_lock, get_repo_config, get_target};
+
+pub fn command(text: &str, repo_name: Option<&str>) {
+    // Initialising main variables
+    let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+    let repos = aati_config["sources"]["repos"].as_array().unwrap();
+
+    let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
+    let installed_packages = aati_lock["package"].as_array().unwrap();
+
+    // Some placeholders too
+    let mut is_installed = false;
+    let mut is_up_to_date = false;
+    let mut installed_package_version = "0.0.0";
+
+    if !text.contains('/') {
+        let mut results: Vec<Vec<toml::Value>> = Vec::new();
+
+        if let Some(repo_name) = repo_name {
+            let repo_toml: toml::Value = get_repo_config(repo_name).unwrap().parse().unwrap();
+            let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+
+            for available_package in available_packages {
+                if available_package["name"].as_str().unwrap() == text
+                    && available_package["target"].as_str().unwrap() == get_target()
+                {
+                    results.push(vec![
+                        available_package.clone(),
+                        toml::Value::from_str(
+                            format!(
+                                "name = \"{}\"\nurl = \"{}\"",
+                                repo_name,
+                                repos
+                                    .iter()
+                                    .find(|r| r["name"].as_str().unwrap() == repo_name)
+                                    .unwrap()["url"]
+                                    .as_str()
+                                    .unwrap()
+                            )
+                            .as_str(),
+                        )
+                        .unwrap(),
+                    ]);
+                }
+            }
+        } else {
+            for repo in repos {
+                let repo_name = repo["name"].as_str().unwrap();
+
+                let repo_toml: toml::Value = get_repo_config(repo_name).unwrap().parse().unwrap();
+                let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
+
+                for available_package in available_packages {
+                    if available_package["name"].as_str().unwrap() == text
+                        && available_package["target"].as_str().unwrap() == get_target()
+                    {
+                        results.push(vec![
+                            available_package.clone(),
+                            toml::Value::from_str(
+                                format!(
+                                    "name = \"{}\"\nurl = \"{}\"",
+                                    repo_name,
+                                    repo["url"].as_str().unwrap()
+                                )
+                                .as_str(),
+                            )
+                            .unwrap(),
+                        ]);
+                    }
+                }
+            }
+        }
+
+        if !results.is_empty() {
+            if results.len() == 1 {
+                let package = results[0][0].clone();
+                let repo_name = results[0][1]["name"].as_str().unwrap();
+                let repo_url = results[0][1]["url"].as_str().unwrap();
+
+                // Check if it's installed / up-to-date
+
+                for installed_package in installed_packages {
+                    if installed_package["name"] == package["name"]
+                        && installed_package["source"].as_str().unwrap() == repo_name
+                    {
+                        installed_package_version = installed_package["version"].as_str().unwrap();
+
+                        is_installed = true;
+                        if installed_package["version"] == package["current"] {
+                            is_up_to_date = true;
+                        }
+                    }
+                }
+
+                // Display!
+
+                display_package(
+                    package,
+                    repo_name,
+                    repo_url,
+                    is_installed,
+                    is_up_to_date,
+                    installed_package_version,
+                );
+            } else {
+                let conflicts: Vec<_> = results
+                    .iter()
+                    .enumerate()
+                    .map(|(i, value)| {
+                        [
+                            (i + 1).to_string(),
+                            value[0]["name"].as_str().unwrap().to_string(),
+                            value[1]["name"].as_str().unwrap().to_string(),
+                        ]
+                    })
+                    .collect();
+
+                println!(
+                    "{}",
+                    "+ This Package exists with the same name in multiple repositories:".yellow()
+                );
+
+                for conflict in conflicts.clone() {
+                    println!(
+                        "{}    ({}) {}/{}",
+                        "+".yellow(),
+                        conflict[0],
+                        conflict[2],
+                        conflict[1],
+                    );
+                }
+
+                let input = prompt("* Enter the number of the package you choose:");
+
+                match input.parse::<usize>() {
+                    Ok(response) => {
+                        let mut is_valid = false;
+
+                        for conflict in conflicts {
+                            if conflict[0] == response.to_string() {
+                                is_valid = true;
+                            }
+                        }
+
+                        if is_valid {
+                            let package = results[response - 1][0].clone();
+                            let repo_name = results[response - 1][1]["name"].as_str().unwrap();
+                            let repo_url = results[response - 1][1]["url"].as_str().unwrap();
+
+                            for installed_package in installed_packages {
+                                if installed_package["name"] == package["name"]
+                                    && installed_package["source"].as_str().unwrap() == repo_name
+                                {
+                                    is_installed = true;
+                                    if installed_package["version"] == package["current"] {
+                                        is_up_to_date = true;
+                                        installed_package_version =
+                                            installed_package["version"].as_str().unwrap()
+                                    }
+                                }
+                            }
+
+                            // Display!
+
+                            display_package(
+                                package,
+                                repo_name,
+                                repo_url,
+                                is_installed,
+                                is_up_to_date,
+                                installed_package_version,
+                            );
+                        } else {
+                            println!("{}", "- INVALID CHOICE!".bright_red());
+                            exit(1);
+                        }
+                    }
+
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!("- FAILED TO PARSE INPUT! ERROR[9]: {}", error).bright_red()
+                        );
+                        exit(1);
+                    }
+                }
+            }
+        } else {
+            println!("{}", "- Package not found!".bright_red());
+            exit(1);
+        }
+    } else {
+        let (repo_name, text_to_be_extracted) = text.split_once('/').unwrap();
+
+        command(text_to_be_extracted, Some(repo_name));
+    }
+}

@@ -17,10 +17,7 @@
 */
 
 mod commands;
-mod types;
-mod utils;
 mod version;
-
 use std::{env, process::exit};
 
 use colored::Colorize;
@@ -39,9 +36,8 @@ Usage: aati [COMMANDS/OPTIONS]
 Commands:
     get <package>               Download a package from the Repository and install it
     install <path/to/archive>   Install a package from an LZ4 Archive
-    upgrade [package]           Upgrade a package or all packages
-    uninstall <package>/<-all>  Uninstall a package
-    remove <package>/<-all>     Alias of uninstall
+    upgrade [package]           Upgrade a package or all packages (alias: update)
+    remove <package>/<-all>     Uninstall a package (alias: uninstall)
     list [installed/available]  List installed or available packages
     sync                        Update package index
     repo                        Package Repository Management
@@ -82,7 +78,7 @@ Issue tracker: https://github.com/hharas/aati/issues"
 
             Some("get") => match args.get(2) {
                 Some(package_name) => {
-                    commands::get_command(package_name);
+                    commands::get(package_name);
                 }
 
                 None => {
@@ -91,18 +87,18 @@ Issue tracker: https://github.com/hharas/aati/issues"
                 }
             },
 
-            Some("upgrade") => {
+            Some("upgrade") | Some("update") => {
                 if let Some(arg) = args.get(2) {
                     let choice = arg;
-                    commands::upgrade_command(Some(choice));
+                    commands::upgrade(Some(choice));
                 } else {
-                    commands::upgrade_command(None);
+                    commands::upgrade(None);
                 }
             }
 
             Some("uninstall") | Some("remove") => match args.get(2) {
                 Some(package_name) => {
-                    commands::uninstall_command(package_name);
+                    commands::remove(package_name);
                 }
 
                 None => {
@@ -114,29 +110,29 @@ Issue tracker: https://github.com/hharas/aati/issues"
             Some("list") => {
                 if let Some(arg) = args.get(2) {
                     let choice = arg;
-                    commands::list_command(Some(choice));
+                    commands::list(Some(choice));
                 } else {
-                    commands::list_command(None);
+                    commands::list(None);
                 }
             }
 
-            Some("sync") => commands::sync_command(),
+            Some("sync") => commands::sync(),
 
             Some("repo") => {
                 if let Some(arg1) = args.get(2) {
                     if let Some(arg2) = args.get(3) {
-                        commands::repo_command(Some(arg1), Some(arg2));
+                        commands::repo(Some(arg1), Some(arg2));
                     } else {
-                        commands::repo_command(Some(arg1), None)
+                        commands::repo(Some(arg1), None)
                     }
                 } else {
-                    commands::repo_command(None, None);
+                    commands::repo(None, None);
                 }
             }
 
             Some("info") => match args.get(2) {
                 Some(package_name) => {
-                    commands::info_command(package_name, None);
+                    commands::info(package_name, None);
                 }
 
                 None => {
@@ -147,7 +143,7 @@ Issue tracker: https://github.com/hharas/aati/issues"
 
             Some("package") => match args.get(2) {
                 Some(package_directory) => {
-                    commands::package_command(package_directory.to_string());
+                    commands::package(package_directory.to_string());
                 }
 
                 None => {
@@ -158,7 +154,7 @@ Issue tracker: https://github.com/hharas/aati/issues"
 
             Some("install") => match args.get(2) {
                 Some(package_name) => {
-                    commands::install_command(package_name);
+                    commands::install(package_name);
                 }
 
                 None => {
@@ -167,15 +163,15 @@ Issue tracker: https://github.com/hharas/aati/issues"
                 }
             },
 
-            Some("generate") => commands::generate_command(),
+            Some("generate") => commands::generate(),
 
             Some("serve") => match args.get(2) {
                 Some(address) => {
-                    commands::serve_command(Some(address));
+                    commands::serve(Some(address));
                 }
 
                 None => {
-                    commands::serve_command(None);
+                    commands::serve(None);
                 }
             },
 

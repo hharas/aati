@@ -1,19 +1,14 @@
-use std::fs;
-use std::fs::copy;
-use std::fs::read_to_string;
-use std::fs::File;
-use std::io;
-use std::io::Write;
-use std::path::Path;
-use std::path::PathBuf;
-use std::process::exit;
-use std::process::Command;
-
 use colored::Colorize;
 use dirs::home_dir;
 use ring::digest;
+use std::{
+    fs::{copy, create_dir_all, metadata, read_to_string, remove_file, set_permissions, File},
+    io::{stdin, stdout, Write},
+    path::{Path, PathBuf},
+    process::{exit, Command},
+};
 
-use crate::types;
+use super::types::Package;
 
 pub fn is_windows() -> bool {
     std::env::consts::OS == "windows"
@@ -59,7 +54,7 @@ pub fn check_config_dir() {
     };
 
     if !config_dir.exists() {
-        match fs::create_dir_all(&config_dir) {
+        match create_dir_all(&config_dir) {
             Ok(_) => {}
 
             Err(error) => {
@@ -78,7 +73,7 @@ pub fn check_config_dir() {
     }
 
     if !aati_config_dir.exists() {
-        match fs::create_dir_all(&aati_config_dir) {
+        match create_dir_all(&aati_config_dir) {
             Ok(_) => {}
 
             Err(error) => {
@@ -97,7 +92,7 @@ pub fn check_config_dir() {
     }
 
     if !repos_dir.exists() {
-        match fs::create_dir_all(&repos_dir) {
+        match create_dir_all(&repos_dir) {
             Ok(_) => {}
 
             Err(error) => {
@@ -333,7 +328,7 @@ pub fn get_aati_config() -> Option<String> {
 }
 
 fn flush_output() {
-    match io::stdout().flush() {
+    match stdout().flush() {
         Ok(_) => {}
         Err(error) => {
             println!(
@@ -355,7 +350,7 @@ pub fn prompt(prompt_text: &str) -> String {
     flush_output();
 
     let mut input = String::new();
-    match io::stdin().read_line(&mut input) {
+    match stdin().read_line(&mut input) {
         Ok(_) => {}
 
         Err(error) => {
@@ -375,7 +370,7 @@ pub fn prompt_yn(prompt_text: &str) -> bool {
     flush_output();
 
     let mut input = String::new();
-    match io::stdin().read_line(&mut input) {
+    match stdin().read_line(&mut input) {
         Ok(_) => {}
 
         Err(error) => {
@@ -420,7 +415,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
 
     if !name.is_empty() || !version.is_empty() {
         // Searching for conflicts
-        let mut results: Vec<types::Package> = Vec::new();
+        let mut results: Vec<Package> = Vec::new();
 
         if !added_repos.is_empty() {
             if repo_name == "$unprovided$" {
@@ -433,7 +428,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                             if available_package["name"].as_str().unwrap() == text
                                 && available_package["target"].as_str().unwrap() == get_target()
                             {
-                                results.push(types::Package {
+                                results.push(Package {
                                     name: available_package["name"].as_str().unwrap().to_string(),
                                     version: available_package["current"]
                                         .as_str()
@@ -459,7 +454,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                             if available_package["name"].as_str().unwrap() == text
                                 && available_package["target"].as_str().unwrap() == get_target()
                             {
-                                results.push(types::Package {
+                                results.push(Package {
                                     name: available_package["name"].as_str().unwrap().to_string(),
                                     version: available_package["current"]
                                         .as_str()
@@ -488,7 +483,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                                         && available_package["target"].as_str().unwrap()
                                             == get_target()
                                     {
-                                        results.push(types::Package {
+                                        results.push(Package {
                                             name: available_package["name"]
                                                 .as_str()
                                                 .unwrap()
@@ -514,7 +509,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                         if available_package["name"].as_str().unwrap() == text_to_be_extracted
                             && available_package["target"].as_str().unwrap() == get_target()
                         {
-                            results.push(types::Package {
+                            results.push(Package {
                                 name: available_package["name"].as_str().unwrap().to_string(),
                                 version: available_package["current"].as_str().unwrap().to_string(),
                                 source: added_repo["repo"]["name"].as_str().unwrap().to_string(),
@@ -533,7 +528,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                         if available_package["name"].as_str().unwrap() == text_to_be_extracted
                             && available_package["target"].as_str().unwrap() == get_target()
                         {
-                            results.push(types::Package {
+                            results.push(Package {
                                 name: available_package["name"].as_str().unwrap().to_string(),
                                 version: available_package["current"].as_str().unwrap().to_string(),
                                 source: added_repo["repo"]["name"].as_str().unwrap().to_string(),
@@ -553,7 +548,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
                                 if package_version["tag"].as_str().unwrap() == version
                                     && available_package["target"].as_str().unwrap() == get_target()
                                 {
-                                    results.push(types::Package {
+                                    results.push(Package {
                                         name: available_package["name"]
                                             .as_str()
                                             .unwrap()
@@ -870,7 +865,7 @@ pub fn display_package(
     );
 }
 
-pub fn parse_filename(mut filename: &str) -> types::Package {
+pub fn parse_filename(mut filename: &str) -> Package {
     // Example Usage: parse_filename("dummy-package-0.1.0.tar.lz4");
 
     filename = filename.trim();
@@ -906,7 +901,7 @@ pub fn parse_filename(mut filename: &str) -> types::Package {
 
         // Now: name = "dummy-package", version = "0.1.0"
 
-        types::Package {
+        Package {
             name: name.to_string(),
             version: version.to_string(),
             source: "local".to_string(),
@@ -925,7 +920,7 @@ pub fn parse_filename(mut filename: &str) -> types::Package {
 #[test]
 fn test_parse_filename() {
     let filename1 = "silm-0.3.3.tar.lz4";
-    let expected_result1 = types::Package {
+    let expected_result1 = Package {
         name: "silm".to_string(),
         source: "local".to_string(),
         version: "0.3.3".to_string(),
@@ -933,7 +928,7 @@ fn test_parse_filename() {
     };
 
     let filename2 = "arsil-server-0.2.1.tar.lz4";
-    let expected_result2 = types::Package {
+    let expected_result2 = Package {
         name: "arsil-server".to_string(),
         source: "local".to_string(),
         version: "0.2.1".to_string(),
@@ -1218,7 +1213,7 @@ pub fn make_executable(installation_path_buf: &PathBuf) {
 
         // 10. (non-windows only) Turn it into an executable file, simply: chmod +x ~/.local/bin/<package name>
 
-        let metadata = match fs::metadata(installation_path_buf) {
+        let metadata = match metadata(installation_path_buf) {
             Ok(metadata) => metadata,
             Err(error) => {
                 println!(
@@ -1237,7 +1232,7 @@ pub fn make_executable(installation_path_buf: &PathBuf) {
 
         let mut permissions = metadata.permissions();
         permissions.set_mode(0o755);
-        match fs::set_permissions(installation_path_buf, permissions) {
+        match set_permissions(installation_path_buf, permissions) {
             Ok(_) => {}
             Err(error) => {
                 println!(
@@ -1366,7 +1361,7 @@ pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&Pat
                 "delete" => {
                     let path = &tokens[1..].join(" ");
 
-                    match fs::remove_file(path) {
+                    match remove_file(path) {
                         Ok(_) => {}
                         Err(error) => {
                             println!(
