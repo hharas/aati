@@ -1282,7 +1282,7 @@ pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&Pat
                         let mut source_path_buf = PathBuf::from(package_directory_path_buf);
                         source_path_buf.push(tokens[1]);
 
-                        let destination = tokens[2];
+                        let destination = tokens[2..].join(" ");
                         let destination_path_buf = PathBuf::from(destination);
 
                         match copy(source_path_buf, &destination_path_buf) {
@@ -1316,7 +1316,7 @@ pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&Pat
                         let mut source_path_buf = PathBuf::from(package_directory_path_buf);
                         source_path_buf.push(tokens[1]);
 
-                        let destination = tokens[2];
+                        let destination = tokens[2..].join(" ");
                         let destination_path_buf = PathBuf::from(destination);
 
                         match copy(source_path_buf, &destination_path_buf) {
