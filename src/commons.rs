@@ -2,10 +2,7 @@ use colored::Colorize;
 use dirs::home_dir;
 use ring::digest;
 use std::{
-    fs::{
-        copy, create_dir_all, metadata, read_to_string, remove_dir_all, remove_file,
-        set_permissions, File,
-    },
+    fs::{copy, create_dir_all, read_to_string, remove_dir_all, remove_file, File},
     io::{stdin, stdout, Write},
     path::{Path, PathBuf},
     process::{exit, Command},
@@ -1189,23 +1186,26 @@ pub fn generate_apr_html(
     response
 }
 
-pub fn make_executable(installation_path_buf: &PathBuf) {
+pub fn make_executable(_installation_path_buf: &PathBuf) {
     #[cfg(not(target_os = "windows"))]
     {
-        use std::os::unix::prelude::PermissionsExt;
+        use std::{
+            fs::{metadata, set_permissions},
+            os::unix::prelude::PermissionsExt,
+        };
 
         println!("{}", "+ Changing Permissions...".bright_green());
 
         // 10. (non-windows only) Turn it into an executable file, simply: chmod +x ~/.local/bin/<package name>
 
-        let metadata = match metadata(installation_path_buf) {
+        let metadata = match metadata(_installation_path_buf) {
             Ok(metadata) => metadata,
             Err(error) => {
                 println!(
                     "{}",
                     format!(
                         "- FAILED TO GET METADATA OF FILE '{}'! ERROR[42]: {}",
-                        &installation_path_buf.display(),
+                        &_installation_path_buf.display(),
                         error
                     )
                     .bright_red()
@@ -1217,14 +1217,14 @@ pub fn make_executable(installation_path_buf: &PathBuf) {
 
         let mut permissions = metadata.permissions();
         permissions.set_mode(0o755);
-        match set_permissions(installation_path_buf, permissions) {
+        match set_permissions(_installation_path_buf, permissions) {
             Ok(_) => {}
             Err(error) => {
                 println!(
                     "{}",
                     format!(
                         "- FAILED TO SET PERMISSIONS OF FILE '{}'! ERROR[43]: {}",
-                        &installation_path_buf.display(),
+                        &_installation_path_buf.display(),
                         error
                     )
                     .bright_red()
