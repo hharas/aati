@@ -6,7 +6,7 @@ readme = "README.md"
 license = "GPL-3.0-only"
 repository = "https://github.com/hharas/aati"
 documentation = "https://github.com/hharas/aati/blob/master/README.md"
-version = "0.10.4"
+version = "0.10.5"
 edition = "2021"
 
 [dependencies]
