@@ -104,7 +104,7 @@ mkdir "C:\Users\<username>\Aati" && mkdir "C:\Users\<username>\Aati\Binaries" &&
 
 4. Add `C:\Users\<username>\Aati\Binaries` to `%PATH%`, since that's where all of your installed packages (including `aati.exe` itself) will be located.
 
-5. Open your Terminal as Administrator and run any Aati command you wish.
+5. Open your Terminal and run any Aati command you wish.
 
 ### PKGFILE Manual
 
