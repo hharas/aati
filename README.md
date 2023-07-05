@@ -96,13 +96,13 @@ git clone https://codeberg.org/amad/aati.git && cd aati
 cargo build --release
 ```
 
-3. Make a Directory named `Aati\` under `C:\Program Files\`, another directory named `Binaries\` under `Aati\` and copy the released executable into it:
+3. Make a Directory named `Aati\` under your user home directory, and under it another directory named `Binaries\` and then copy the released executable into it:
 
 ```batch
-mkdir "C:\Program Files\Aati" && mkdir "C:\Program Files\Aati\Binaries" && copy target/release/aati.exe "C:\Program Files\Aati\Binaries\aati.exe"
+mkdir "C:\Users\<username>\Aati" && mkdir "C:\Users\<username>\Aati\Binaries" && copy target\release\aati.exe "C:\Users\<username>\Aati\Binaries\aati.exe"
 ```
 
-4. Add `C:\Program Files\Aati\Binaries` to `%PATH%`, since that's where all of your installed packages (including `aati.exe` itself) will be located.
+4. Add `C:\Users\<username>\Aati\Binaries` to `%PATH%`, since that's where all of your installed packages (including `aati.exe` itself) will be located.
 
 5. Open your Terminal as Administrator and run any Aati command you wish.
 
@@ -128,8 +128,8 @@ Well, those commands currently are:
 - `delete`: deletes a file from the system, e.g. `delete $bin_dir/program`
 
 The PKGFILE also recognises global variables, which are currently limited to:
-- `$bin_dir`: directory for binary executables, `~/.local/bin` for UNIX and `C:\Program Files\Aati\Binaries` for Windows.
-- `$lib_dir`: directory for DLLs, `~/.local/lib` for UNIX and `C:\Program Files\Aati\Binaries` for Windows.
+- `$bin_dir`: directory for binary executables, `~/.local/bin` for UNIX and `C:\Users\<username>\Aati\Binaries` for Windows.
+- `$lib_dir`: directory for DLLs, `~/.local/lib` for UNIX and `C:\Users\<username>\Aati\Binaries` for Windows.
 - `$home_dir`: user home directory, `~`/`$HOME` for UNIX and `C:\Users\<username>` for Windows.
 
 An Example of a PKGFILE summing up all of what we said above can be:

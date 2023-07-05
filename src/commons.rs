@@ -20,19 +20,19 @@ pub fn get_target() -> String {
 
 pub fn check_config_dir() {
     let config_dir = if !is_windows() {
-        dirs::home_dir().unwrap().join(".config")
+        home_dir().unwrap().join(".config")
     } else {
-        PathBuf::from("C:\\Program Files\\Aati\\Binaries")
+        home_dir().unwrap().join("Aati\\Binaries")
     };
     let aati_config_dir = if !is_windows() {
-        dirs::home_dir().unwrap().join(".config/aati")
+        home_dir().unwrap().join(".config/aati")
     } else {
-        PathBuf::from("C:\\Program Files\\Aati")
+        home_dir().unwrap().join("Aati")
     };
     let repos_dir = if !is_windows() {
-        dirs::home_dir().unwrap().join(".config/aati/repos")
+        home_dir().unwrap().join(".config/aati/repos")
     } else {
-        PathBuf::from("C:\\Program Files\\Aati\\Repositories")
+        home_dir().unwrap().join("Aati\\Repositories")
     };
 
     if !config_dir.exists() {
@@ -100,12 +100,11 @@ pub fn get_aati_lock() -> Option<String> {
     let aati_lock_path;
 
     if !is_windows() {
-        let home_dir = dirs::home_dir().unwrap();
-        aati_lock_path_buf = home_dir.join(".config/aati/lock.toml");
+        aati_lock_path_buf = home_dir().unwrap().join(".config/aati/lock.toml");
 
         aati_lock_path = aati_lock_path_buf.as_path();
     } else {
-        aati_lock_path_buf = PathBuf::from("C:\\Program Files\\Aati\\Lock.toml");
+        aati_lock_path_buf = home_dir().unwrap().join("Aati\\Lock.toml");
 
         aati_lock_path = aati_lock_path_buf.as_path();
     }
@@ -158,7 +157,11 @@ pub fn get_aati_lock() -> Option<String> {
         } else {
             println!(
                 "{}",
-                "+ Make sure to add C:\\Program Files\\Aati\\Binaries to %PATH%.".yellow()
+                format!(
+                    "+ Make sure to add {}\\Aati\\Binaries to %PATH%.",
+                    home_dir().unwrap().display()
+                )
+                .yellow()
             );
         }
     }
@@ -187,14 +190,13 @@ pub fn get_repo_config(repo_name: &str) -> Option<String> {
     check_config_dir();
 
     let repo_config_path_buf = if !is_windows() {
-        let home_dir = dirs::home_dir().unwrap();
-
-        home_dir.join(format!(".config/aati/repos/{}.toml", repo_name))
+        home_dir()
+            .unwrap()
+            .join(format!(".config/aati/repos/{}.toml", repo_name))
     } else {
-        PathBuf::from(format!(
-            "C:\\Program Files\\Aati\\Repositories\\{}.toml",
-            repo_name
-        ))
+        home_dir()
+            .unwrap()
+            .join(format!("Aati\\Repositories\\{}.toml", repo_name))
     };
 
     if !repo_config_path_buf.exists() {
@@ -236,13 +238,11 @@ pub fn get_aati_config() -> Option<String> {
     let aati_config_path;
 
     if !is_windows() {
-        let home_dir = dirs::home_dir().unwrap();
-
-        aati_config_path_buf = home_dir.join(".config/aati/rc.toml");
+        aati_config_path_buf = home_dir().unwrap().join(".config/aati/rc.toml");
 
         aati_config_path = Path::new(&aati_config_path_buf);
     } else {
-        aati_config_path_buf = PathBuf::from("C:\\Program Files\\Aati\\Config.toml");
+        aati_config_path_buf = home_dir().unwrap().join("Aati\\Config.toml");
 
         aati_config_path = Path::new(&aati_config_path_buf);
     }
@@ -922,52 +922,52 @@ fn test_parse_filename() {
 }
 
 pub fn get_bin_path_buf() -> PathBuf {
-    let home_dir = dirs::home_dir().unwrap();
+    let home_dir = home_dir().unwrap();
 
     if !is_windows() {
         home_dir.join(".local/bin")
     } else {
-        PathBuf::from("C:\\Program Files\\Aati\\Binaries")
+        home_dir.join("Aati\\Binaries")
     }
 }
 
 pub fn get_lib_path_buf() -> PathBuf {
-    let home_dir = dirs::home_dir().unwrap();
+    let home_dir = home_dir().unwrap();
 
     if !is_windows() {
         home_dir.join(".local/lib")
     } else {
-        PathBuf::from("C:\\Program Files\\Aati\\Binaries")
+        home_dir.join("Aati\\Binaries")
     }
 }
 
 pub fn get_aati_config_path_buf() -> PathBuf {
+    let home_dir = home_dir().unwrap();
+
     if !is_windows() {
-        let home_dir = dirs::home_dir().unwrap();
         home_dir.join(".config/aati/rc.toml")
     } else {
-        PathBuf::from("C:\\Program Files\\Aati\\Config.toml")
+        home_dir.join("Aati\\Config.toml")
     }
 }
 
 pub fn get_aati_lock_path_buf() -> PathBuf {
+    let home_dir = home_dir().unwrap();
+
     if !is_windows() {
-        let home_dir = dirs::home_dir().unwrap();
         home_dir.join(".config/aati/lock.toml")
     } else {
-        PathBuf::from("C:\\Program Files\\Aati\\Lock.toml")
+        home_dir.join("Aati\\Lock.toml")
     }
 }
 
 pub fn get_repo_config_path_buf(repo_name: &str) -> PathBuf {
+    let home_dir = home_dir().unwrap();
+
     if !is_windows() {
-        let home_dir = dirs::home_dir().unwrap();
         home_dir.join(format!(".config/aati/repos/{}.toml", repo_name))
     } else {
-        PathBuf::from(format!(
-            "C:\\Program Files\\Aati\\Repositories\\{}.toml",
-            repo_name
-        ))
+        home_dir.join(format!("Aati\\Repositories\\{}.toml", repo_name))
     }
 }
 
