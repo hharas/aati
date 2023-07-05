@@ -31,6 +31,15 @@ pub fn command(address_option: Option<&str>) {
                         "aarch64-linux",
                         "x86_64-windows",
                         "aarch64-windows",
+                        "aarch64-android",
+                        "aarch64-freebsd",
+                        "x86_64-freebsd",
+                        "aarch64-netbsd",
+                        "x86_64-netbsd",
+                        "aarch64-openbsd",
+                        "x86_64-openbsd",
+                        "aarch64-dragonfly",
+                        "x86_64-dragonfly",
                     ];
 
                     println!(
