@@ -6,7 +6,7 @@
 
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/hharas/aati/rust.yml?logo=github) ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/hharas/aati/master) ![GitHub issues](https://img.shields.io/github/issues/hharas/aati) ![GitHub top language](https://img.shields.io/github/languages/top/hharas/aati?logo=rust) ![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/cargo/aati) ![Crates.io](https://img.shields.io/crates/v/aati)  ![GitHub](https://img.shields.io/github/license/hharas/aati?logo=gnu)
 
-**IMPORTANT NOTE: THE AATI PACKAGE MANAGER IS AN INCOMPLETE PROJECT! IT CAN HAVE BERAKING CHANGES AT ANY MOMENT WITHOUT NOTICES! USE AATI AT YOUR OWN RISK!**
+**IMPORTANT NOTE: THE AATI PACKAGE MANAGER IS AN INCOMPLETE PROJECT! IT CAN HAVE BREAKING CHANGES AT ANY MOMENT WITHOUT NOTICES! USE AATI AT YOUR OWN RISK!**
 
 Cross-platform package manager written in Rust
 
