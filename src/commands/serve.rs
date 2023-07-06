@@ -30,7 +30,6 @@ use crate::{
 pub fn command(address_option: Option<&str>) {
     let address;
     let website_url;
-    let repo_url;
 
     if let Some(given_address) = address_option {
         address = given_address;
@@ -40,7 +39,7 @@ pub fn command(address_option: Option<&str>) {
         website_url = "http://localhost:8887".to_string();
     };
 
-    repo_url = prompt("On what URL is the package repository hosted?");
+    let repo_url = prompt("On what URL is the package repository hosted?");
 
     match Server::http(address) {
         Ok(server) => match read_to_string("repo.toml") {
