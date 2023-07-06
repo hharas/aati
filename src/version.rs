@@ -1,6 +1,6 @@
 /* بسم الله الرحمن الرحيم
 
-   Aati - Minimal Package Manager written in Rust.
+   Aati - Cross-platform Package Manager written in Rust.
    Copyright (C) 2023  Husayn Haras
 
    This program is free software: you can redistribute it and/or modify

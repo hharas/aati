@@ -1,10 +1,31 @@
+/* بسم الله الرحمن الرحيم
+
+   Aati - Cross-platform Package Manager written in Rust.
+   Copyright (C) 2023  Husayn Haras
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of version 3 of the GNU General Public License
+   as published by the Free Software Foundation.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 use ascii::AsciiString;
 use colored::Colorize;
 use std::{fs::read_to_string, process::exit};
 
 use tiny_http::{Header, Response, Server};
 
-use crate::commons::{generate_apr_html, prompt};
+use crate::{
+    commons::{generate_apr_html, prompt},
+    globals::VALID_TARGETS,
+};
 
 pub fn command(address_option: Option<&str>) {
     let address;
@@ -14,33 +35,19 @@ pub fn command(address_option: Option<&str>) {
     if let Some(given_address) = address_option {
         address = given_address;
         website_url = prompt("On what URL will this index be hosted (e.g. http://example.com)?");
-        repo_url = prompt("On what URL is the package repository hosted?");
     } else {
         address = "localhost:8887";
         website_url = "http://localhost:8887".to_string();
-        repo_url = "http://localhost:8887".to_string();
     };
+
+    repo_url = prompt("On what URL is the package repository hosted?");
 
     match Server::http(address) {
         Ok(server) => match read_to_string("repo.toml") {
             Ok(repo_toml) => match repo_toml.parse::<toml::Value>() {
                 Ok(repo_config) => {
                     let packages = repo_config["index"]["packages"].as_array().unwrap();
-                    let targets = vec![
-                        "x86_64-linux",
-                        "aarch64-linux",
-                        "x86_64-windows",
-                        "aarch64-windows",
-                        "aarch64-android",
-                        "aarch64-freebsd",
-                        "x86_64-freebsd",
-                        "aarch64-netbsd",
-                        "x86_64-netbsd",
-                        "aarch64-openbsd",
-                        "x86_64-openbsd",
-                        "aarch64-dragonfly",
-                        "x86_64-dragonfly",
-                    ];
+                    let targets = VALID_TARGETS;
 
                     println!(
                         "{}",

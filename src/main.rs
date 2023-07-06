@@ -1,6 +1,6 @@
 /* بسم الله الرحمن الرحيم
 
-   Aati - Minimal Package Manager written in Rust.
+   Aati - Cross-platform Package Manager written in Rust.
    Copyright (C) 2023  Husayn Haras
 
    This program is free software: you can redistribute it and/or modify
@@ -18,6 +18,7 @@
 
 mod commands;
 mod commons;
+mod globals;
 mod types;
 mod version;
 use std::{env, process::exit};
@@ -31,7 +32,7 @@ fn main() {
         match args.get(1).map(String::as_str) {
             Some("--help") => {
                 println!(
-                    "aati - Minimal package manager written in Rust
+                    "aati - Cross-platform package manager written in Rust
 
 Usage: aati [COMMANDS/OPTIONS]
 

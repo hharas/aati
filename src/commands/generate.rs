@@ -1,3 +1,21 @@
+/* بسم الله الرحمن الرحيم
+
+   Aati - Cross-platform Package Manager written in Rust.
+   Copyright (C) 2023  Husayn Haras
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of version 3 of the GNU General Public License
+   as published by the Free Software Foundation.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 use colored::Colorize;
 use std::{
     collections::HashMap,
@@ -7,7 +25,10 @@ use std::{
     process::exit,
 };
 
-use crate::commons::{generate_apr_html, prompt};
+use crate::{
+    commons::{generate_apr_html, prompt},
+    globals::VALID_TARGETS,
+};
 
 pub fn command() {
     match read_to_string("repo.toml") {
@@ -18,21 +39,7 @@ pub fn command() {
                 let repo_url = prompt("On what URL is the package repository hosted?");
 
                 let available_packages = repo_config["index"]["packages"].as_array().unwrap();
-                let targets = vec![
-                    "x86_64-linux",
-                    "aarch64-linux",
-                    "x86_64-windows",
-                    "aarch64-windows",
-                    "aarch64-android",
-                    "aarch64-freebsd",
-                    "x86_64-freebsd",
-                    "aarch64-netbsd",
-                    "x86_64-netbsd",
-                    "aarch64-openbsd",
-                    "x86_64-openbsd",
-                    "aarch64-dragonfly",
-                    "x86_64-dragonfly",
-                ];
+                let targets = VALID_TARGETS;
 
                 let mut html_files: HashMap<PathBuf, String> = HashMap::new();
 

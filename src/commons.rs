@@ -1,3 +1,21 @@
+/* بسم الله الرحمن الرحيم
+
+   Aati - Cross-platform Package Manager written in Rust.
+   Copyright (C) 2023  Husayn Haras
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of version 3 of the GNU General Public License
+   as published by the Free Software Foundation.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 use colored::Colorize;
 use dirs::home_dir;
 use ring::digest;
@@ -8,6 +26,8 @@ use std::{
     process::{exit, Command},
 };
 
+use crate::globals::VALID_TARGETS;
+
 use super::types::Package;
 
 pub fn is_windows() -> bool {
@@ -15,7 +35,14 @@ pub fn is_windows() -> bool {
 }
 
 pub fn get_target() -> String {
-    format!("{}-{}", std::env::consts::ARCH, std::env::consts::OS)
+    let target = format!("{}-{}", std::env::consts::ARCH, std::env::consts::OS);
+
+    if VALID_TARGETS.iter().any(|t| t == &target) {
+        target
+    } else {
+        println!("- Unsupported Instruction Set Architecture / Operating System!");
+        exit(1);
+    }
 }
 
 pub fn check_config_dir() {
@@ -1010,21 +1037,7 @@ pub fn generate_apr_html(
             available_packages.len()
         ));
 
-        let targets = vec![
-            "x86_64-linux",
-            "aarch64-linux",
-            "x86_64-windows",
-            "aarch64-windows",
-            "aarch64-android",
-            "aarch64-freebsd",
-            "x86_64-freebsd",
-            "aarch64-netbsd",
-            "x86_64-netbsd",
-            "aarch64-openbsd",
-            "x86_64-openbsd",
-            "aarch64-dragonfly",
-            "x86_64-dragonfly",
-        ];
+        let targets = VALID_TARGETS;
 
         header.push_str("<ul>");
         for target in targets {

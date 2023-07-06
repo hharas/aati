@@ -6,13 +6,16 @@
 
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/hharas/aati/rust.yml?logo=github) ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/hharas/aati/master) ![GitHub issues](https://img.shields.io/github/issues/hharas/aati) ![GitHub top language](https://img.shields.io/github/languages/top/hharas/aati?logo=rust) ![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/cargo/aati) ![Crates.io](https://img.shields.io/crates/v/aati)  ![GitHub](https://img.shields.io/github/license/hharas/aati?logo=gnu)
 
-Minimal package manager written in Rust
+Cross-platform package manager written in Rust
+
+## Installation
+
+For Linux users, just install the Rust Programming Language on your System, then use cargo to directly install Aati by running `cargo install aati`. If you're on Termux, run `pkg install rust` and then do the same thing. For Windows users, see [this dedicated Section](#installation-guide-for-windows-users).
 
 ## How can I use it?
 
 ### As a user
 
-First off, install Aati by running `cargo install aati` in your terminal. If you're installing Aati on Windows, see [this section](#installation-guide-for-windows-users).  
 Aati relies on Aati Package Repositories (APRs), and so you need to add one in order to use it. In order to add a repository, you need to run `aati repo add <repo url>`. You can add the [Amad Project Package Repository](https://amad.codeberg.page) if you want to try Aati out. Afterwards, if you run `aati list available`, you will see the available packages in the repo and their versions that you can install. If you wish to install the latest version of a package, you can run:
 
 ```bash
@@ -89,7 +92,7 @@ Since Batch Code and PowerShell Scripts suck (I had a serious struggle writing i
 1. Clone the Repository & cd into it:
 
 ```batch
-git clone https://codeberg.org/amad/aati.git && cd aati
+git clone https://github.com/hharas/aati.git && cd aati
 ```
 
 2. Build Aati from source with the `--release` profile:
@@ -104,7 +107,7 @@ cargo build --release
 mkdir "C:\Users\<username>\Aati" && mkdir "C:\Users\<username>\Aati\Binaries" && copy target\release\aati.exe "C:\Users\<username>\Aati\Binaries\aati.exe"
 ```
 
-4. Add `C:\Users\<username>\Aati\Binaries` to `%PATH%`, since that's where all of your installed packages (including `aati.exe` itself) will be located.
+4. Add `C:\Users\<username>\Aati\Binaries` to your user-specific `%PATH%` system variable, since that's where all of your installed packages (including `aati.exe` itself) will be located.
 
 5. Open your Terminal and run any Aati command you wish.
 
