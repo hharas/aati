@@ -4,7 +4,13 @@
 
 # The Aati Package Manager
 
-![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/hharas/aati/rust.yml?logo=github) ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/hharas/aati/master) ![GitHub issues](https://img.shields.io/github/issues/hharas/aati) ![GitHub top language](https://img.shields.io/github/languages/top/hharas/aati?logo=rust) ![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/cargo/aati) ![Crates.io](https://img.shields.io/crates/v/aati)  ![GitHub](https://img.shields.io/github/license/hharas/aati?logo=gnu)
+[![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/hharas/aati/rust.yml?logo=github)](https://github.com/hharas/aati/actions/workflows/rust.yml)
+[![GitHub last commit (branch)](https://img.shields.io/github/last-commit/hharas/aati/master)](https://github.com/hharas/aati/commit/HEAD)
+[![GitHub issues](https://img.shields.io/github/issues/hharas/aati)](https://github.com/hharas/aati/issues)
+[![GitHub top language](https://img.shields.io/github/languages/top/hharas/aati?logo=rust)](https://github.com/hharas/aati/search?l=rust)
+[![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/cargo/aati)](https://libraries.io/cargo/aati)
+[![Crates.io](https://img.shields.io/crates/v/aati)](https://crates.io/crates/aati)
+[![GitHub](https://img.shields.io/github/license/hharas/aati?logo=gnu)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 **IMPORTANT NOTE: THE AATI PACKAGE MANAGER IS AN INCOMPLETE PROJECT! IT CAN HAVE BREAKING CHANGES AT ANY MOMENT WITHOUT NOTICES! USE AATI AT YOUR OWN RISK!**
 
