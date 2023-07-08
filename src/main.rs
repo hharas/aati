@@ -80,8 +80,8 @@ Issue tracker: https://github.com/hharas/aati/issues"
             }
 
             Some("get") => match args.get(2) {
-                Some(package_name) => {
-                    commands::get(package_name);
+                Some(_) => {
+                    commands::get(&args[2..]);
                 }
 
                 None => {

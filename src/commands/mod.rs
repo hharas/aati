@@ -33,8 +33,10 @@ mod serve;
 mod sync;
 mod upgrade;
 
-pub fn get(package_name: &str) {
-    get::command(package_name);
+pub fn get(arguments: &[String]) {
+    for package_name in arguments {
+        get::command(package_name);
+    }
 }
 
 pub fn upgrade(choice: Option<&str>) {
