@@ -19,12 +19,13 @@
 use ascii::AsciiString;
 use colored::Colorize;
 use std::{fs::read_to_string, process::exit};
+use toml::Value;
 
 use tiny_http::{Header, Response, Server};
 
 use crate::{
-    commons::{generate_apr_html, prompt},
     globals::VALID_TARGETS,
+    utils::{generate_apr_html, prompt},
 };
 
 pub fn command(address_option: Option<&str>) {
@@ -43,7 +44,7 @@ pub fn command(address_option: Option<&str>) {
 
     match Server::http(address) {
         Ok(server) => match read_to_string("repo.toml") {
-            Ok(repo_toml) => match repo_toml.parse::<toml::Value>() {
+            Ok(repo_toml) => match repo_toml.parse::<Value>() {
                 Ok(repo_config) => {
                     let packages = repo_config["index"]["packages"].as_array().unwrap();
                     let targets = VALID_TARGETS;

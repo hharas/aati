@@ -17,14 +17,15 @@
 */
 
 use colored::Colorize;
+use toml::Value;
 
-use crate::commons::{get_aati_config, get_aati_lock, get_repo_config, get_target};
+use crate::utils::{get_aati_config, get_aati_lock, get_repo_config, get_target};
 
 pub fn command(choice_option: Option<&str>) {
-    let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+    let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let repos = aati_config["sources"]["repos"].as_array().unwrap();
 
-    let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     if let Some(choice) = choice_option {
@@ -36,7 +37,7 @@ pub fn command(choice_option: Option<&str>) {
                     if installed_package["source"].as_str().unwrap() != "local" {
                         match get_repo_config(installed_package["source"].as_str().unwrap())
                             .unwrap()
-                            .parse::<toml::Value>()
+                            .parse::<Value>()
                             .unwrap()["index"]["packages"]
                             .as_array()
                             .unwrap()
@@ -103,8 +104,7 @@ pub fn command(choice_option: Option<&str>) {
                 for repo in repos {
                     let repo_name = repo["name"].as_str().unwrap();
 
-                    let repo_toml: toml::Value =
-                        get_repo_config(repo_name).unwrap().parse().unwrap();
+                    let repo_toml: Value = get_repo_config(repo_name).unwrap().parse().unwrap();
                     let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
                     println!("{}   {}/", "+".bright_green(), repo_name);
@@ -150,8 +150,7 @@ pub fn command(choice_option: Option<&str>) {
                 for repo in repos {
                     let repo_name = repo["name"].as_str().unwrap();
 
-                    let repo_toml: toml::Value =
-                        get_repo_config(repo_name).unwrap().parse().unwrap();
+                    let repo_toml: Value = get_repo_config(repo_name).unwrap().parse().unwrap();
                     let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
                     println!("{}   {}/", "+".yellow(), repo_name);
@@ -190,7 +189,7 @@ pub fn command(choice_option: Option<&str>) {
                 if installed_package["source"].as_str().unwrap() != "local" {
                     match get_repo_config(installed_package["source"].as_str().unwrap())
                         .unwrap()
-                        .parse::<toml::Value>()
+                        .parse::<Value>()
                         .unwrap()["index"]["packages"]
                         .as_array()
                         .unwrap()

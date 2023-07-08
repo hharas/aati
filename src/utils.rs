@@ -25,6 +25,7 @@ use std::{
     path::PathBuf,
     process::{exit, Command},
 };
+use toml::Value;
 
 use crate::globals::VALID_TARGETS;
 
@@ -497,7 +498,7 @@ pub fn prompt_yn(prompt_text: &str) -> bool {
 }
 
 // This function goes hard. Feel free to copy & paste.
-pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec<String>> {
+pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<String>> {
     let mut repo_name = "$unprovided$";
     let mut name;
     let mut version;
@@ -693,7 +694,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<toml::Value>) -> Option<Vec
 
                 let repo_name = found_package.source.as_str();
 
-                let repo_toml: &toml::Value = added_repos
+                let repo_toml: &Value = added_repos
                     .iter()
                     .find(|repo| repo["repo"]["name"].as_str().unwrap() == repo_name)
                     .unwrap();
@@ -820,7 +821,7 @@ packages = [
     ], author = "Husayn Haras", description = "Package made to test the extract_package() function", url = "https://github.com/hharas/aati" },
 ]"#;
 
-    let repo_config: toml::Value = repo_toml.parse().unwrap();
+    let repo_config: Value = repo_toml.parse().unwrap();
     let added_repos = vec![repo_config];
 
     assert_eq!(
@@ -924,7 +925,7 @@ pub fn verify_checksum(body: &[u8], checksum: String) -> bool {
 }
 
 pub fn display_package(
-    package: toml::Value,
+    package: Value,
     repo_name: &str,
     repo_url: &str,
     is_installed: bool,
@@ -1051,9 +1052,9 @@ fn test_parse_filename() {
 }
 
 pub fn generate_apr_html(
-    repo_config: &toml::Value,
+    repo_config: &Value,
     template: &str,
-    current_package: Option<&toml::Value>,
+    current_package: Option<&Value>,
     website_url: &str,
     repo_url: &str,
 ) -> String {
@@ -1212,7 +1213,7 @@ pub fn generate_apr_html(
 
         // Borrow Checker headache, had to do all this
         let mut these_available_packages = available_packages.clone();
-        let retained_available_packages: &mut Vec<toml::Value> = these_available_packages.as_mut();
+        let retained_available_packages: &mut Vec<Value> = these_available_packages.as_mut();
         retained_available_packages.retain(|package| package["target"].as_str().unwrap() == target);
 
         header.push_str(&format!(
@@ -1496,4 +1497,35 @@ pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&Pat
 
         exit(0);
     }
+}
+
+pub fn is_installed(package_name: &str) -> (bool, Option<Value>) {
+    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
+    let repo_list = aati_config["sources"]["repos"].as_array().unwrap();
+    let mut installed = false;
+    let mut package_option = None;
+    let mut added_repos: Vec<Value> = Vec::new();
+
+    for repo_info in repo_list {
+        added_repos.push(
+            get_repo_config(repo_info["name"].as_str().unwrap())
+                .unwrap()
+                .parse::<Value>()
+                .unwrap(),
+        );
+    }
+
+    let installed_packages = aati_lock["package"].as_array().unwrap();
+
+    if let Some(extracted_package) = extract_package(package_name, &added_repos) {
+        for installed_package in installed_packages {
+            if installed_package["name"].as_str().unwrap() == extracted_package[1] {
+                package_option = Some(installed_package.clone());
+                installed = true;
+            }
+        }
+    }
+
+    (installed, package_option)
 }

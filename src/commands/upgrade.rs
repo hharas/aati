@@ -19,37 +19,38 @@
 use std::process::exit;
 
 use colored::Colorize;
+use toml::Value;
 
-use crate::commons::{
+use crate::utils::{
     extract_package, get_aati_config, get_aati_lock, get_repo_config, get_target, prompt_yn,
 };
 
 use super::{get, remove};
 
 pub fn command(choice: Option<&str>) {
-    let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+    let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let repo_list = aati_config["sources"]["repos"].as_array().unwrap();
-    let mut added_repos: Vec<toml::Value> = Vec::new();
+    let mut added_repos: Vec<Value> = Vec::new();
 
     for repo_info in repo_list {
         added_repos.push(
             get_repo_config(repo_info["name"].as_str().unwrap())
                 .unwrap()
-                .parse::<toml::Value>()
+                .parse::<Value>()
                 .unwrap(),
         );
     }
 
-    let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
 
     let repos = aati_config["sources"]["repos"].as_array().unwrap();
-    let mut repos_toml: Vec<toml::Value> = Vec::new();
+    let mut repos_toml: Vec<Value> = Vec::new();
 
     for repo in repos {
         repos_toml.push(
             get_repo_config(repo["name"].as_str().unwrap())
                 .unwrap()
-                .parse::<toml::Value>()
+                .parse::<Value>()
                 .unwrap(),
         )
     }
@@ -75,7 +76,7 @@ pub fn command(choice: Option<&str>) {
 
                 if is_installed {
                     if !is_up_to_date {
-                        remove::command(package_name);
+                        remove(&[package_name.into()]);
                         get::command(package_name);
                     } else {
                         println!("{}", "+ That Package is already up to date!".bright_green());
@@ -130,7 +131,7 @@ pub fn command(choice: Option<&str>) {
             if !to_be_upgraded.is_empty() {
                 if prompt_yn("/ Are you sure you want to continue this Transaction?") {
                     for package in to_be_upgraded {
-                        remove::command(package);
+                        remove(&[package.into()]);
                         get::command(package);
                     }
 

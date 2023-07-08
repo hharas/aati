@@ -24,30 +24,31 @@ use std::{
 };
 
 use crate::{
-    commons::{
+    types::{LockFile, Package},
+    utils::{
         execute_lines, extract_package, get_aati_config, get_aati_lock, get_aati_lock_path_buf,
         get_repo_config, get_target, parse_pkgfile, prompt_yn, verify_checksum,
     },
-    types::{LockFile, Package},
 };
 use colored::Colorize;
 use humansize::{format_size, BINARY};
 use lz4::Decoder;
 use tar::Archive;
+use toml::Value;
 
 pub fn command(package_name: &str) {
     // Initialise some variables
 
-    let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
-    let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let repo_list = aati_config["sources"]["repos"].as_array().unwrap();
-    let mut added_repos: Vec<toml::Value> = Vec::new();
+    let mut added_repos: Vec<Value> = Vec::new();
 
     for repo_info in repo_list {
         added_repos.push(
             get_repo_config(repo_info["name"].as_str().unwrap())
                 .unwrap()
-                .parse::<toml::Value>()
+                .parse::<Value>()
                 .unwrap(),
         );
     }
@@ -55,7 +56,7 @@ pub fn command(package_name: &str) {
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     if let Some(extracted_package) = extract_package(package_name, &added_repos) {
-        let repo_toml: toml::Value = get_repo_config(extracted_package[0].as_str())
+        let repo_toml: Value = get_repo_config(extracted_package[0].as_str())
             .unwrap()
             .parse()
             .unwrap();
@@ -109,7 +110,7 @@ pub fn command(package_name: &str) {
             let name = extracted_package[1].clone();
             let version = extracted_package[2].clone();
 
-            let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+            let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
 
             let url = format!(
                 "{}/{}/{}/{}-{}.tar.lz4",

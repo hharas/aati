@@ -23,18 +23,19 @@ use std::{
     path::PathBuf,
     process::exit,
 };
+use toml::Value;
 
 use crate::{
-    commons::{
+    types::{ConfigFile, Repo},
+    utils::{
         check_config_dirs, get_aati_config, get_aati_config_path_buf, get_repo_config,
         get_repo_config_path_buf, prompt, prompt_yn,
     },
-    types::{ConfigFile, Repo},
 };
 
 pub fn command(first_argument_option: Option<&str>, second_argument_option: Option<&str>) {
     if let Some(first_argument) = first_argument_option {
-        let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+        let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
 
         let aati_config_path_buf = get_aati_config_path_buf();
 
@@ -187,7 +188,7 @@ packages = [
             }
         } else if first_argument == "add" {
             if let Some(second_argument) = second_argument_option {
-                let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+                let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
                 let added_repos = aati_config["sources"]["repos"].as_array().unwrap();
 
                 let mut is_added = false;
@@ -215,7 +216,7 @@ packages = [
                         Ok(repo_toml) => {
                             let repo_toml = repo_toml.into_string().unwrap();
 
-                            let repo_value: toml::Value = repo_toml.parse().unwrap();
+                            let repo_value: Value = repo_toml.parse().unwrap();
 
                             let repo_name = repo_value["repo"]["name"].as_str().unwrap();
 
@@ -351,12 +352,12 @@ packages = [
             }
         } else if first_argument == "remove" {
             if let Some(second_argument) = second_argument_option {
-                let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+                let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
                 let added_repos = aati_config["sources"]["repos"].as_array().unwrap();
 
                 let mut is_added = false;
-                let mut repo: &toml::Value =
-                    &toml::Value::from("name = \"dummy-repo\"\nurl = \"http://localhost:8000\"");
+                let mut repo: &Value =
+                    &Value::from("name = \"dummy-repo\"\nurl = \"http://localhost:8000\"");
 
                 for added_repo in added_repos {
                     if added_repo["name"].as_str().unwrap() == second_argument {
@@ -478,12 +479,12 @@ packages = [
         } else if first_argument == "info" {
             if let Some(second_argument) = second_argument_option {
                 let aati_config = get_aati_config().unwrap();
-                let aati_toml: toml::Value = aati_config.parse().unwrap();
+                let aati_toml: Value = aati_config.parse().unwrap();
 
                 let repos = aati_toml["sources"]["repos"].as_array().unwrap();
 
                 let repo_config = get_repo_config(second_argument).unwrap();
-                let repo_toml: toml::Value = repo_config.parse().unwrap();
+                let repo_toml: Value = repo_config.parse().unwrap();
 
                 let url = repos
                     .iter()

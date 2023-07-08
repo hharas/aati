@@ -17,9 +17,9 @@
 */
 
 mod commands;
-mod commons;
 mod globals;
 mod types;
+mod utils;
 mod version;
 use std::{env, process::exit};
 
@@ -40,7 +40,7 @@ Commands:
     get <package>               Download a package from the Repository and install it
     install <path/to/archive>   Install a package from an LZ4 Archive
     upgrade [package]           Upgrade a package or all packages (alias: update)
-    remove <package>/<-all>     Uninstall a package (alias: uninstall)
+    remove <package>/<-all>     Remove a package (alias: uninstall)
     list [installed/available]  List installed or available packages
     sync                        Update package index
     repo                        Package Repository Management
@@ -100,8 +100,8 @@ Issue tracker: https://github.com/hharas/aati/issues"
             }
 
             Some("uninstall") | Some("remove") => match args.get(2) {
-                Some(package_name) => {
-                    commands::remove(package_name);
+                Some(_) => {
+                    commands::remove(&args[2..]);
                 }
 
                 None => {

@@ -24,15 +24,16 @@ use std::{
     path::PathBuf,
     process::exit,
 };
+use toml::Value;
 
 use crate::{
-    commons::{generate_apr_html, prompt},
     globals::VALID_TARGETS,
+    utils::{generate_apr_html, prompt},
 };
 
 pub fn command() {
     match read_to_string("repo.toml") {
-        Ok(repo_toml) => match repo_toml.parse::<toml::Value>() {
+        Ok(repo_toml) => match repo_toml.parse::<Value>() {
             Ok(repo_config) => {
                 let website_url =
                     prompt("On what URL will this index be hosted (e.g. http://example.com)?");

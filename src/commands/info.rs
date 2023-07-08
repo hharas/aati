@@ -19,17 +19,18 @@
 use std::{process::exit, str::FromStr};
 
 use colored::Colorize;
+use toml::Value;
 
-use crate::commons::{
+use crate::utils::{
     display_package, get_aati_config, get_aati_lock, get_repo_config, get_target, prompt,
 };
 
 pub fn command(text: &str, repo_name: Option<&str>) {
     // Initialising main variables
-    let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+    let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let repos = aati_config["sources"]["repos"].as_array().unwrap();
 
-    let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     // Some placeholders too
@@ -38,10 +39,10 @@ pub fn command(text: &str, repo_name: Option<&str>) {
     let mut installed_package_version = "0.0.0";
 
     if !text.contains('/') {
-        let mut results: Vec<Vec<toml::Value>> = Vec::new();
+        let mut results: Vec<Vec<Value>> = Vec::new();
 
         if let Some(repo_name) = repo_name {
-            let repo_toml: toml::Value = get_repo_config(repo_name).unwrap().parse().unwrap();
+            let repo_toml: Value = get_repo_config(repo_name).unwrap().parse().unwrap();
             let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
             for available_package in available_packages {
@@ -50,7 +51,7 @@ pub fn command(text: &str, repo_name: Option<&str>) {
                 {
                     results.push(vec![
                         available_package.clone(),
-                        toml::Value::from_str(
+                        Value::from_str(
                             format!(
                                 "name = \"{}\"\nurl = \"{}\"",
                                 repo_name,
@@ -71,7 +72,7 @@ pub fn command(text: &str, repo_name: Option<&str>) {
             for repo in repos {
                 let repo_name = repo["name"].as_str().unwrap();
 
-                let repo_toml: toml::Value = get_repo_config(repo_name).unwrap().parse().unwrap();
+                let repo_toml: Value = get_repo_config(repo_name).unwrap().parse().unwrap();
                 let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
                 for available_package in available_packages {
@@ -80,7 +81,7 @@ pub fn command(text: &str, repo_name: Option<&str>) {
                     {
                         results.push(vec![
                             available_package.clone(),
-                            toml::Value::from_str(
+                            Value::from_str(
                                 format!(
                                     "name = \"{}\"\nurl = \"{}\"",
                                     repo_name,

@@ -18,14 +18,15 @@
 
 use std::{fs::File, io::Write, process::exit};
 
-use crate::commons::{
+use crate::utils::{
     check_config_dirs, get_aati_config, get_aati_config_path_buf, get_repo_config_path_buf,
 };
 
 use colored::Colorize;
+use toml::Value;
 
 pub fn command() {
-    let aati_config: toml::Value = get_aati_config().unwrap().parse().unwrap();
+    let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
 
     match aati_config
         .get("sources")
@@ -46,7 +47,7 @@ pub fn command() {
                     Ok(repo_toml) => {
                         let repo_toml = repo_toml.into_string().unwrap();
 
-                        let repo_value: toml::Value = repo_toml.parse().unwrap();
+                        let repo_value: Value = repo_toml.parse().unwrap();
 
                         let repo_name = repo_value["repo"]["name"].as_str().unwrap();
 

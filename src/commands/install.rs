@@ -26,13 +26,14 @@ use std::{
     process::exit,
 };
 use tar::Archive;
+use toml::Value;
 
 use crate::{
-    commons::{
+    types::{LockFile, Package},
+    utils::{
         execute_lines, get_aati_lock, get_aati_lock_path_buf, parse_filename, parse_pkgfile,
         prompt_yn,
     },
-    types::{LockFile, Package},
 };
 
 pub fn command(filename: &str) {
@@ -43,7 +44,7 @@ pub fn command(filename: &str) {
     let name = parsed_package.name.as_str();
     let version = parsed_package.version.as_str();
 
-    let aati_lock: toml::Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     if !installed_packages
