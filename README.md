@@ -137,7 +137,7 @@ Now, you may be wondering: "What are those commands that Aati can execute from t
 Well, those commands currently are:
 - `install`: copies a file to a destination and (if it's a UNIX operating system) makes it an executable, e.g. `install program $bin_dir/program`
 - `copy`: copies a file to a destination only, e.g. `copy lib.so $lib_dir/lib.so`
-- `system`: invokes a system command, e.g. `system wget https://picsum.photos/400 -O image.jpeg`
+- `system`: invokes a system command, `sh -c` on UNIX and `cmd /C` on Windows, e.g. `system wget https://picsum.photos/400 -O image.jpeg` will be
 - `delete`: deletes a file from the system, e.g. `delete $bin_dir/program`
 
 The PKGFILE also recognises global variables, which are currently limited to:
