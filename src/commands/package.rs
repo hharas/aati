@@ -141,7 +141,7 @@ pub fn command(mut directory_name: String) {
             println!(
                 "{}",
                 format!(
-                    "- FAILED TO OPEN FILE '{}' FOR READING! ERROR[103]: {}",
+                    "- FAILED TO OPEN FILE '{}' FOR READING! ERROR[96]: {}",
                     tar_destination.display(),
                     error
                 )

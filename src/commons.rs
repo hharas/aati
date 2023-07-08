@@ -952,6 +952,45 @@ pub fn get_bin_path_buf() -> PathBuf {
     let home_dir = home_dir().unwrap();
 
     if !is_windows() {
+        let local_dir = home_dir.join(".local");
+        let bin_dir = home_dir.join(".local/bin");
+
+        if local_dir.exists() {
+            match create_dir_all(&local_dir) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[99]: {}",
+                            local_dir.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+                    exit(1);
+                }
+            }
+        }
+
+        if bin_dir.exists() {
+            match create_dir_all(&bin_dir) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[55]: {}",
+                            bin_dir.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+                    exit(1);
+                }
+            }
+        }
+
         home_dir.join(".local/bin")
     } else {
         home_dir.join("Aati\\Binaries")
@@ -962,6 +1001,45 @@ pub fn get_lib_path_buf() -> PathBuf {
     let home_dir = home_dir().unwrap();
 
     if !is_windows() {
+        let local_dir = home_dir.join(".local");
+        let lib_dir = home_dir.join(".local/lib");
+
+        if local_dir.exists() {
+            match create_dir_all(&local_dir) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[56]: {}",
+                            local_dir.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+                    exit(1);
+                }
+            }
+        }
+
+        if lib_dir.exists() {
+            match create_dir_all(&lib_dir) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[57]: {}",
+                            lib_dir.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+                    exit(1);
+                }
+            }
+        }
+
         home_dir.join(".local/lib")
     } else {
         home_dir.join("Aati\\Binaries")
@@ -1430,7 +1508,7 @@ pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&Pat
                     println!(
                         "{}",
                         format!(
-                            "- FAILED TO DELETE DIRECTORY '{}'! ERROR[92]: {}",
+                            "- FAILED TO DELETE DIRECTORY '{}'! ERROR[86]: {}",
                             package_directory_path_buf.display(),
                             error
                         )
