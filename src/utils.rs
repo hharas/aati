@@ -23,7 +23,7 @@ use std::{
     fs::{copy, create_dir_all, read_to_string, remove_dir_all, remove_file, File},
     io::{stdin, stdout, Write},
     path::PathBuf,
-    process::{exit, Command},
+    process::{exit, Command, Stdio},
 };
 use toml::Value;
 
@@ -1342,7 +1342,7 @@ pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&Pat
         lines.join("\n  ")
     )) {
         for line in lines {
-            let line = line
+            let mut line = line
                 .replace("$bin_dir", get_bin_path_buf().to_str().unwrap())
                 .replace("$lib_dir", get_lib_path_buf().to_str().unwrap())
                 .replace("$home_dir", home_dir().unwrap().to_str().unwrap());
@@ -1434,33 +1434,44 @@ pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&Pat
                 }
 
                 "system" => {
-                    let mut command = Command::new(tokens[1]);
-                    command.args(tokens[2..].to_vec());
+                    // let mut command = Command::new(tokens[1]);
+                    // command.args(tokens[2..].to_vec());
+
+                    let mut command = if !is_windows() {
+                        Command::new("sh")
+                    } else {
+                        Command::new("cmd")
+                    };
+
+                    if !is_windows() {
+                        command.arg("-c")
+                    } else {
+                        command.arg("/C")
+                    };
+
+                    command
+                        .arg(line.split_off(7))
+                        .stdout(Stdio::inherit())
+                        .stderr(Stdio::inherit());
 
                     if let Some(package_directory_path_buf) = package_directory_path_buf {
                         command.current_dir(package_directory_path_buf);
                     }
 
-                    let output = match command.output() {
+                    match command.output() {
                         Ok(output) => output,
                         Err(error) => {
                             println!(
                                 "{}",
-                                format!("- FAILED RUNNING COMMAND: '{}'! ERROR: {}", line, error)
-                                    .as_str()
-                                    .bright_red()
+                                format!(
+                                    "- FAILED RUNNING COMMAND: '{}'! GIVEN ERROR: {}",
+                                    line, error
+                                )
+                                .bright_red()
                             );
                             exit(1);
                         }
                     };
-
-                    if output.status.success() {
-                        let stdout = String::from_utf8_lossy(&output.stdout);
-                        println!("{}", stdout);
-                    } else {
-                        let stderr = String::from_utf8_lossy(&output.stderr);
-                        println!("{}", stderr);
-                    }
                 }
 
                 _ => {
