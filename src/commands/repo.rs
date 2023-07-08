@@ -26,7 +26,7 @@ use std::{
 
 use crate::{
     commons::{
-        check_config_dir, get_aati_config, get_aati_config_path_buf, get_repo_config,
+        check_config_dirs, get_aati_config, get_aati_config_path_buf, get_repo_config,
         get_repo_config_path_buf, prompt, prompt_yn,
     },
     types::{ConfigFile, Repo},
@@ -219,7 +219,7 @@ packages = [
 
                             let repo_name = repo_value["repo"]["name"].as_str().unwrap();
 
-                            check_config_dir();
+                            check_config_dirs();
 
                             let repo_config_path_buf = get_repo_config_path_buf(repo_name);
 

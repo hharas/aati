@@ -22,7 +22,7 @@ use ring::digest;
 use std::{
     fs::{copy, create_dir_all, read_to_string, remove_dir_all, remove_file, File},
     io::{stdin, stdout, Write},
-    path::{Path, PathBuf},
+    path::PathBuf,
     process::{exit, Command},
 };
 
@@ -45,21 +45,25 @@ pub fn get_target() -> String {
     }
 }
 
-pub fn check_config_dir() {
+pub fn check_config_dirs() {
+    let home_dir = home_dir().unwrap();
+
     let config_dir = if !is_windows() {
-        home_dir().unwrap().join(".config")
+        home_dir.join(".config")
     } else {
-        home_dir().unwrap().join("Aati\\Binaries")
+        home_dir.join("Aati")
     };
-    let aati_config_dir = if !is_windows() {
-        home_dir().unwrap().join(".config/aati")
+
+    let aati_dir = if !is_windows() {
+        home_dir.join(".config/aati")
     } else {
-        home_dir().unwrap().join("Aati")
+        home_dir.join("Aati")
     };
+
     let repos_dir = if !is_windows() {
-        home_dir().unwrap().join(".config/aati/repos")
+        home_dir.join(".config/aati/repos")
     } else {
-        home_dir().unwrap().join("Aati\\Repositories")
+        home_dir.join("Aati\\Repositories")
     };
 
     if !config_dir.exists() {
@@ -81,8 +85,8 @@ pub fn check_config_dir() {
         }
     }
 
-    if !aati_config_dir.exists() {
-        match create_dir_all(&aati_config_dir) {
+    if !aati_dir.exists() {
+        match create_dir_all(&aati_dir) {
             Ok(_) => {}
 
             Err(error) => {
@@ -90,7 +94,7 @@ pub fn check_config_dir() {
                     "{}",
                     format!(
                         "- FAILED TO CREATE DIRECTORY '{}'! ERROR[20]: {}",
-                        &aati_config_dir.display(),
+                        &aati_dir.display(),
                         error
                     )
                     .bright_red()
@@ -120,31 +124,152 @@ pub fn check_config_dir() {
     }
 }
 
-pub fn get_aati_lock() -> Option<String> {
-    check_config_dir();
-
-    let aati_lock_path_buf;
-    let aati_lock_path;
+pub fn get_bin_path_buf() -> PathBuf {
+    let home_dir = home_dir().unwrap();
 
     if !is_windows() {
-        aati_lock_path_buf = home_dir().unwrap().join(".config/aati/lock.toml");
+        let local_dir = home_dir.join(".local");
+        let bin_dir = home_dir.join(".local/bin");
 
-        aati_lock_path = aati_lock_path_buf.as_path();
+        if local_dir.exists() {
+            match create_dir_all(&local_dir) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[99]: {}",
+                            local_dir.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+                    exit(1);
+                }
+            }
+        }
+
+        if bin_dir.exists() {
+            match create_dir_all(&bin_dir) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[55]: {}",
+                            bin_dir.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+                    exit(1);
+                }
+            }
+        }
+
+        home_dir.join(".local/bin")
     } else {
-        aati_lock_path_buf = home_dir().unwrap().join("Aati\\Lock.toml");
-
-        aati_lock_path = aati_lock_path_buf.as_path();
+        home_dir.join("Aati\\Binaries")
     }
+}
 
-    if !aati_lock_path.exists() {
-        let mut aati_lock_file = match File::create(aati_lock_path) {
+pub fn get_lib_path_buf() -> PathBuf {
+    let home_dir = home_dir().unwrap();
+
+    if !is_windows() {
+        let local_dir = home_dir.join(".local");
+        let lib_dir = home_dir.join(".local/lib");
+
+        if local_dir.exists() {
+            match create_dir_all(&local_dir) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[56]: {}",
+                            local_dir.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+                    exit(1);
+                }
+            }
+        }
+
+        if lib_dir.exists() {
+            match create_dir_all(&lib_dir) {
+                Ok(_) => {}
+                Err(error) => {
+                    println!(
+                        "{}",
+                        format!(
+                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[57]: {}",
+                            lib_dir.display(),
+                            error
+                        )
+                        .bright_red()
+                    );
+                    exit(1);
+                }
+            }
+        }
+
+        home_dir.join(".local/lib")
+    } else {
+        home_dir.join("Aati\\Binaries")
+    }
+}
+
+pub fn get_aati_config_path_buf() -> PathBuf {
+    check_config_dirs();
+
+    let home_dir = home_dir().unwrap();
+
+    if !is_windows() {
+        home_dir.join(".config/aati/rc.toml")
+    } else {
+        home_dir.join("Aati\\Config.toml")
+    }
+}
+
+pub fn get_aati_lock_path_buf() -> PathBuf {
+    check_config_dirs();
+
+    let home_dir = home_dir().unwrap();
+
+    if !is_windows() {
+        home_dir.join(".config/aati/lock.toml")
+    } else {
+        home_dir.join("Aati\\Lock.toml")
+    }
+}
+
+pub fn get_repo_config_path_buf(repo_name: &str) -> PathBuf {
+    check_config_dirs();
+
+    let home_dir = home_dir().unwrap();
+
+    if !is_windows() {
+        home_dir.join(format!(".config/aati/repos/{}.toml", repo_name))
+    } else {
+        home_dir.join(format!("Aati\\Repositories\\{}.toml", repo_name))
+    }
+}
+
+pub fn get_aati_lock() -> Option<String> {
+    let aati_lock_path_buf = get_aati_lock_path_buf();
+
+    if !aati_lock_path_buf.exists() {
+        let mut aati_lock_file = match File::create(&aati_lock_path_buf) {
             Ok(file) => file,
             Err(error) => {
                 println!(
                     "{}",
                     format!(
                         "- FAILED TO CREATE FILE '{}'! ERROR[22]: {}",
-                        &aati_lock_path.display(),
+                        &aati_lock_path_buf.display(),
                         error
                     )
                     .bright_red()
@@ -162,7 +287,7 @@ pub fn get_aati_lock() -> Option<String> {
                     "{}",
                     format!(
                         "- FAILED TO WRITE INTO FILE '{}'! ERROR[24]: {}",
-                        &aati_lock_path.display(),
+                        &aati_lock_path_buf.display(),
                         error
                     )
                     .bright_red()
@@ -193,14 +318,14 @@ pub fn get_aati_lock() -> Option<String> {
         }
     }
 
-    let aati_lock = match read_to_string(aati_lock_path) {
+    let aati_lock = match read_to_string(&aati_lock_path_buf) {
         Ok(content) => content,
         Err(error) => {
             println!(
                 "{}",
                 format!(
                     "- FAILED TO READ FILE '{}'! ERROR[23]: {}",
-                    &aati_lock_path.display(),
+                    aati_lock_path_buf.display(),
                     error
                 )
                 .bright_red()
@@ -214,17 +339,7 @@ pub fn get_aati_lock() -> Option<String> {
 }
 
 pub fn get_repo_config(repo_name: &str) -> Option<String> {
-    check_config_dir();
-
-    let repo_config_path_buf = if !is_windows() {
-        home_dir()
-            .unwrap()
-            .join(format!(".config/aati/repos/{}.toml", repo_name))
-    } else {
-        home_dir()
-            .unwrap()
-            .join(format!("Aati\\Repositories\\{}.toml", repo_name))
-    };
+    let repo_config_path_buf = get_repo_config_path_buf(repo_name);
 
     if !repo_config_path_buf.exists() {
         println!(
@@ -259,22 +374,9 @@ pub fn get_repo_config(repo_name: &str) -> Option<String> {
 }
 
 pub fn get_aati_config() -> Option<String> {
-    check_config_dir();
+    let aati_config_path_buf = get_aati_config_path_buf();
 
-    let aati_config_path_buf;
-    let aati_config_path;
-
-    if !is_windows() {
-        aati_config_path_buf = home_dir().unwrap().join(".config/aati/rc.toml");
-
-        aati_config_path = Path::new(&aati_config_path_buf);
-    } else {
-        aati_config_path_buf = home_dir().unwrap().join("Aati\\Config.toml");
-
-        aati_config_path = Path::new(&aati_config_path_buf);
-    }
-
-    if !aati_config_path.exists() {
+    if !aati_config_path_buf.exists() {
         let mut aati_config_file = match File::create(&aati_config_path_buf) {
             Ok(file) => file,
             Err(error) => {
@@ -316,14 +418,14 @@ pub fn get_aati_config() -> Option<String> {
 
     // let aati_config = read_to_string(aati_config_path).unwrap();
 
-    let aati_config = match read_to_string(aati_config_path) {
+    let aati_config = match read_to_string(&aati_config_path_buf) {
         Ok(content) => content,
         Err(error) => {
             println!(
                 "{}",
                 format!(
                     "- FAILED TO READ FILE '{}'! ERROR[28]: {}",
-                    aati_config_path.display(),
+                    aati_config_path_buf.display(),
                     error
                 )
                 .bright_red()
@@ -946,134 +1048,6 @@ fn test_parse_filename() {
 
     assert_eq!(parse_filename(filename1), expected_result1);
     assert_eq!(parse_filename(filename2), expected_result2);
-}
-
-pub fn get_bin_path_buf() -> PathBuf {
-    let home_dir = home_dir().unwrap();
-
-    if !is_windows() {
-        let local_dir = home_dir.join(".local");
-        let bin_dir = home_dir.join(".local/bin");
-
-        if local_dir.exists() {
-            match create_dir_all(&local_dir) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[99]: {}",
-                            local_dir.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-                    exit(1);
-                }
-            }
-        }
-
-        if bin_dir.exists() {
-            match create_dir_all(&bin_dir) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[55]: {}",
-                            bin_dir.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-                    exit(1);
-                }
-            }
-        }
-
-        home_dir.join(".local/bin")
-    } else {
-        home_dir.join("Aati\\Binaries")
-    }
-}
-
-pub fn get_lib_path_buf() -> PathBuf {
-    let home_dir = home_dir().unwrap();
-
-    if !is_windows() {
-        let local_dir = home_dir.join(".local");
-        let lib_dir = home_dir.join(".local/lib");
-
-        if local_dir.exists() {
-            match create_dir_all(&local_dir) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[56]: {}",
-                            local_dir.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-                    exit(1);
-                }
-            }
-        }
-
-        if lib_dir.exists() {
-            match create_dir_all(&lib_dir) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[57]: {}",
-                            lib_dir.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-                    exit(1);
-                }
-            }
-        }
-
-        home_dir.join(".local/lib")
-    } else {
-        home_dir.join("Aati\\Binaries")
-    }
-}
-
-pub fn get_aati_config_path_buf() -> PathBuf {
-    let home_dir = home_dir().unwrap();
-
-    if !is_windows() {
-        home_dir.join(".config/aati/rc.toml")
-    } else {
-        home_dir.join("Aati\\Config.toml")
-    }
-}
-
-pub fn get_aati_lock_path_buf() -> PathBuf {
-    let home_dir = home_dir().unwrap();
-
-    if !is_windows() {
-        home_dir.join(".config/aati/lock.toml")
-    } else {
-        home_dir.join("Aati\\Lock.toml")
-    }
-}
-
-pub fn get_repo_config_path_buf(repo_name: &str) -> PathBuf {
-    let home_dir = home_dir().unwrap();
-
-    if !is_windows() {
-        home_dir.join(format!(".config/aati/repos/{}.toml", repo_name))
-    } else {
-        home_dir.join(format!("Aati\\Repositories\\{}.toml", repo_name))
-    }
 }
 
 pub fn generate_apr_html(
