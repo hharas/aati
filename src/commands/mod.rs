@@ -39,8 +39,16 @@ pub fn get(arguments: &[String]) {
     }
 }
 
-pub fn upgrade(choice: Option<&str>) {
-    upgrade::command(choice);
+pub fn upgrade(arguments: &[String]) {
+    if arguments.is_empty() {
+        upgrade::command(None);
+    } else if arguments.len() == 1 {
+        upgrade::command(Some(arguments.first().unwrap()));
+    } else {
+        for argument in arguments {
+            upgrade::command(Some(argument));
+        }
+    }
 }
 
 pub fn remove(arguments: &[String]) {

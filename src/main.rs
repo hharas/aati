@@ -90,14 +90,7 @@ Issue tracker: https://github.com/hharas/aati/issues"
                 }
             },
 
-            Some("upgrade") | Some("update") => {
-                if let Some(arg) = args.get(2) {
-                    let choice = arg;
-                    commands::upgrade(Some(choice));
-                } else {
-                    commands::upgrade(None);
-                }
-            }
+            Some("upgrade") | Some("update") => commands::upgrade(&args[2..]),
 
             Some("uninstall") | Some("remove") => match args.get(2) {
                 Some(_) => {
