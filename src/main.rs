@@ -37,22 +37,22 @@ fn main() {
 Usage: aati [COMMANDS/OPTIONS]
 
 Commands:
-    get <package>               Download a package from the Repository and install it
-    install <path/to/archive>   Install a package from an LZ4 Archive
-    upgrade [package]           Upgrade a package or all packages (alias: update)
-    remove <package>/<-all>     Remove a package (alias: uninstall)
-    list [installed/available]  List installed or available packages
-    sync                        Update package index
-    repo                        Package Repository Management
-      add <url://to/repo>         Add a package repository
-      remove <repo name>          Remove a package repository
-      list                        List all added package repositories
-      info <repo name>            Show an overview of a repository
-      init                        Initialise a new package repository
-    info <package>              Show a package's info
-    package <path/to/binary>    Compress a binary into LZ4
-    generate                    Generate .html files for a package repository
-    serve [host:port]           Host a package web index (default: localhost:8887)
+    get <package>                    Download a package from the Repository and install it
+    install <path/to/archive>        Install a package from an LZ4 Archive
+    upgrade [package]                Upgrade a package or all packages (alias: update)
+    remove <package>/<-all>[--force] Remove a package (alias: uninstall)
+    list [installed/available]       List installed or available packages
+    sync                             Update package index
+    repo                             Package Repository Management
+      add <url://to/repo>              Add a package repository
+      remove <repo name>               Remove a package repository
+      list                             List all added package repositories
+      info <repo name>                 Show an overview of a repository
+      init                             Initialise a new package repository
+    info <package>                   Show a package's info
+    package <path/to/binary>         Compress a binary into LZ4
+    generate                         Generate .html files for a package repository
+    serve [host:port]                Host a package web index (default: localhost:8887)
 
 Options:
     -V, --version Print version info
@@ -176,10 +176,7 @@ Issue tracker: https://github.com/hharas/aati/issues"
             }
         }
     } else {
-        println!(
-            "{}",
-            "+ Try 'aati --help' for more information".bright_green()
-        );
+        println!("Try 'aati --help' for more information");
     }
 }
 

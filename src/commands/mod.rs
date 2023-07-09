@@ -96,7 +96,7 @@ pub fn remove(arguments: &[String]) {
                     ) {
                         println!(
                             "{}",
-                            format!("+ Removing {}...", package_name).bright_green()
+                            format!("+ Removing '{}'...", package_name).bright_green()
                         );
                         remove::command(&package);
                     } else {
@@ -117,7 +117,7 @@ pub fn remove(arguments: &[String]) {
 
                     println!(
                         "{}",
-                        format!("+ Removing {}...", package_name).bright_green()
+                        format!("+ Removing '{}'...", package_name).bright_green()
                     );
                     remove::remove_from_lockfile(package_name);
                 }
@@ -179,7 +179,7 @@ pub fn remove(arguments: &[String]) {
 
                     println!(
                         "{}",
-                        format!("+ Forcefully removing {}...", package_name).bright_green()
+                        format!("+ Forcefully removing '{}'...", package_name).bright_green()
                     );
                     remove::remove_from_lockfile(package_name);
                 }
