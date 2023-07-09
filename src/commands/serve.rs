@@ -24,7 +24,7 @@ use toml::Value;
 use tiny_http::{Header, Response, Server};
 
 use crate::{
-    globals::VALID_TARGETS,
+    globals::POSSIBLE_TARGETS,
     utils::{generate_apr_html, prompt},
 };
 
@@ -47,7 +47,7 @@ pub fn command(address_option: Option<&str>) {
             Ok(repo_toml) => match repo_toml.parse::<Value>() {
                 Ok(repo_config) => {
                     let packages = repo_config["index"]["packages"].as_array().unwrap();
-                    let targets = VALID_TARGETS;
+                    let targets = POSSIBLE_TARGETS;
 
                     println!(
                         "{}",

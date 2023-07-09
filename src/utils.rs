@@ -27,7 +27,7 @@ use std::{
 };
 use toml::Value;
 
-use crate::globals::VALID_TARGETS;
+use crate::globals::POSSIBLE_TARGETS;
 
 use super::types::Package;
 
@@ -36,14 +36,7 @@ pub fn is_windows() -> bool {
 }
 
 pub fn get_target() -> String {
-    let target = format!("{}-{}", std::env::consts::ARCH, std::env::consts::OS);
-
-    if VALID_TARGETS.iter().any(|t| t == &target) {
-        target
-    } else {
-        println!("- Unsupported Instruction Set Architecture / Operating System!");
-        exit(1);
-    }
+    format!("{}-{}", std::env::consts::ARCH, std::env::consts::OS)
 }
 
 pub fn check_config_dirs() {
@@ -1090,7 +1083,7 @@ pub fn generate_apr_html(
             available_packages.len()
         ));
 
-        let targets = VALID_TARGETS;
+        let targets = POSSIBLE_TARGETS;
 
         header.push_str("<ul>");
         for target in targets {

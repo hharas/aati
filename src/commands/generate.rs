@@ -27,7 +27,7 @@ use std::{
 use toml::Value;
 
 use crate::{
-    globals::VALID_TARGETS,
+    globals::POSSIBLE_TARGETS,
     utils::{generate_apr_html, prompt},
 };
 
@@ -40,7 +40,7 @@ pub fn command() {
                 let repo_url = prompt("On what URL is the package repository hosted?");
 
                 let available_packages = repo_config["index"]["packages"].as_array().unwrap();
-                let targets = VALID_TARGETS;
+                let targets = POSSIBLE_TARGETS;
 
                 let mut html_files: HashMap<PathBuf, String> = HashMap::new();
 
