@@ -69,6 +69,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
+User Guide: https://github.com/hharas/aati/wiki/2.-User-Guide
 Issue tracker: https://github.com/hharas/aati/issues"
                 );
             }
