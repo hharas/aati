@@ -1058,11 +1058,10 @@ pub fn generate_apr_html(
 
     let mut response = "<!DOCTYPE html><html lang=\"en\">".to_string();
 
-    let mut head = "<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><style>table, th, td { border: 1px solid black; border-collapse: collapse; } .installation_guide { background-color: #f0f0f0; }</style>"
-        .to_string();
-
+    let mut head = format!("<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><meta property=\"og:site_name\" content=\"{}\" /><meta property=\"og:description\" content=\"{}\" /><meta property=\"og:type\" content=\"website\" /><meta property=\"twitter:card\" content=\"summary\" /><meta name=\"description\" content=\"{}\"><style>table, th, td {{ border: 1px solid black; border-collapse: collapse; padding: 5px; }} .installation_guide {{ background-color: #f0f0f0; }}</style>", repo_name, repo_description, repo_description);
     let mut header;
 
+    // TODO: Add <meta property=\"og:title\" content=\"{}\" /><meta property=\"og:url\" content=\"{}\" /><meta property=\"og:description\" content=\"{}\" />
     if template == "index" {
         header = format!(
             "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
@@ -1179,15 +1178,47 @@ pub fn generate_apr_html(
             ));
             header.push_str("<p>Available versions:</p>");
 
-            header.push_str("<table><tr><th>Version</th><th>SHA256 Checksum</th></tr>");
+            header.push_str("<table><tr><th>Version</th><th>Changes</th><th>SHA256 Checksum</th><th>Release date</th></tr>");
             for version in package_versions {
-                let tag = version["tag"].as_str().unwrap();
-                let checksum = version["checksum"].as_str().unwrap();
+                let version_table = version.as_table().unwrap();
+                let tag = version_table.get("tag").unwrap().as_str().unwrap();
+                let checksum = version_table.get("checksum").unwrap().as_str().unwrap();
 
-                header.push_str(&format!(
-                    "<tr><td><a href=\"{}/{}/{}/{}-{}.tar.lz4\">{}</a></td><td>{}</td></tr>",
-                    repo_url, package_target, package_name, package_name, tag, tag, checksum
-                ));
+                match version_table.get("date") {
+                    Some(date) => match version_table.get("changes") {
+                        Some(changes) => {
+                            let changes = changes.as_str().unwrap();
+                            header.push_str(&format!(
+                                "<tr><td><a href=\"{}/{}/{}/{}-{}.tar.lz4\">{}</a></td><td><pre><code>{}</code></pre></td><td>{}</td><td>{}</td></tr>",
+                                repo_url, package_target, package_name, package_name, tag, tag, changes, checksum, date.as_str().unwrap()
+                            ));
+                        }
+
+                        None => {
+                            header.push_str(&format!(
+                                "<tr><td><a href=\"{}/{}/{}/{}-{}.tar.lz4\">{}</a></td><td><b>Unavailable</b></td><td>{}</td><td>{}</td></tr>",
+                                repo_url, package_target, package_name, package_name, tag, tag, checksum, date.as_str().unwrap()
+                            ));
+                        }
+                    },
+
+                    None => match version_table.get("changes") {
+                        Some(changes) => {
+                            let changes = changes.as_str().unwrap();
+                            header.push_str(&format!(
+                                "<tr><td><a href=\"{}/{}/{}/{}-{}.tar.lz4\">{}</a></td><td><pre><code>{}</code></pre></td><td>{}</td><td><b>Unavailable</b></td></tr>",
+                                repo_url, package_target, package_name, package_name, tag, tag, changes, checksum
+                            ));
+                        }
+
+                        None => {
+                            header.push_str(&format!(
+                                "<tr><td><a href=\"{}/{}/{}/{}-{}.tar.lz4\">{}</a></td><td><b>Unavailable</b></td><td>{}</td><td><b>Unavailable</b></td></tr>",
+                                repo_url, package_target, package_name, package_name, tag, tag, checksum
+                            ));
+                        }
+                    },
+                }
             }
             header.push_str("</table>");
 

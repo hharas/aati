@@ -170,9 +170,9 @@ pub fn format_changelog(versions: &Vec<Value>, latest_only: bool) -> String {
 
         let tag = version_table.get("tag").unwrap().as_str().unwrap();
 
-        match version_table.iter().find(|(k, _)| k == &"date") {
-            Some((_, date)) => match version_table.iter().find(|(k, _)| k == &"changes") {
-                Some((_, changes)) => {
+        match version_table.get("date") {
+            Some(date) => match version_table.get("changes") {
+                Some(changes) => {
                     returned_string.push_str(&format!(
                         "{} @ {}\n{}\n\n",
                         tag.bold().blue(),
@@ -191,8 +191,8 @@ pub fn format_changelog(versions: &Vec<Value>, latest_only: bool) -> String {
                 }
             },
 
-            None => match version_table.iter().find(|(k, _)| k == &"changes") {
-                Some((_, changes)) => {
+            None => match version_table.get("changes") {
+                Some(changes) => {
                     returned_string.push_str(&format!(
                         "{}\n{}\n\n",
                         tag.bold().blue(),
