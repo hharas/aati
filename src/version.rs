@@ -18,7 +18,7 @@
 
 use toml::Value;
 
-pub const CHANGELOG: &str = include_str!("../Changelog.toml");
+const CHANGELOG: &str = include_str!("../Changelog.toml");
 
 pub fn get_version() -> String {
     let changelog_toml: Value = CHANGELOG.parse().unwrap();
@@ -26,4 +26,10 @@ pub fn get_version() -> String {
     let version = versions.first().unwrap();
     let tag = version["tag"].as_str().unwrap();
     tag.to_string()
+}
+
+pub fn get_versions() -> Vec<Value> {
+    let changelog_toml: Value = CHANGELOG.parse().unwrap();
+    let versions = changelog_toml["version"].as_array().unwrap();
+    versions.to_owned()
 }

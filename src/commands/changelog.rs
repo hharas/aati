@@ -16,8 +16,6 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// TODO: Add `changelog` command functionality
-
 use colored::Colorize;
 use std::{
     env::temp_dir,
@@ -28,10 +26,48 @@ use std::{
 
 use toml::Value;
 
-use crate::utils::is_windows;
+use crate::utils::{extract_package, get_aati_config, get_repo_config, is_windows};
 
-pub fn display(changelog: String, latest_only: bool) {
-    let parsed_changelog = parse_changelog(&changelog, latest_only);
+pub fn get_package_versions(package_name: &str) -> Option<Vec<Value>> {
+    let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
+    let repo_list = aati_config["sources"]["repos"].as_array().unwrap();
+    let mut added_repos: Vec<Value> = Vec::new();
+    let mut versions: Vec<Value> = Vec::new();
+
+    for repo_info in repo_list {
+        added_repos.push(
+            get_repo_config(repo_info["name"].as_str().unwrap())
+                .unwrap()
+                .parse::<Value>()
+                .unwrap(),
+        );
+    }
+
+    match extract_package(package_name, &added_repos) {
+        Some(package_vec) => {
+            let repo_name = &package_vec[0];
+            let package_name = &package_vec[1];
+
+            let repo = added_repos
+                .iter()
+                .find(|r| r["repo"]["name"].as_str().unwrap() == repo_name)
+                .unwrap();
+            let available_packages = repo["index"]["packages"].as_array().unwrap();
+
+            for package in available_packages {
+                if package["name"].as_str().unwrap() == package_name {
+                    versions = package["versions"].as_array().unwrap().to_owned();
+                }
+            }
+
+            Some(versions)
+        }
+        None => None,
+    }
+}
+
+pub fn display(changelog: &Vec<Value>, latest_only: bool) {
+    let parsed_changelog = format_changelog(changelog, latest_only);
 
     if !latest_only {
         let mut temp_changelog_path = temp_dir();
@@ -86,6 +122,7 @@ pub fn display(changelog: String, latest_only: bool) {
 
         if !is_windows() {
             Command::new("less")
+                .arg("-rf")
                 .arg(temp_changelog_path.as_os_str())
                 .stdout(Stdio::inherit())
                 .stderr(Stdio::inherit())
@@ -118,38 +155,63 @@ pub fn display(changelog: String, latest_only: bool) {
     }
 }
 
-pub fn parse_changelog(changelog: &str, latest_only: bool) -> String {
+pub fn format_changelog(versions: &Vec<Value>, latest_only: bool) -> String {
     let mut returned_string = String::new();
-
-    let changelog_toml: Value = changelog.parse().unwrap();
-    let versions = changelog_toml["version"].as_array().unwrap();
+    let mut selected_versions: Vec<&Value> = Vec::new();
 
     if latest_only {
-        let version = versions.first().unwrap();
-
-        let tag = version["tag"].as_str().unwrap();
-        let date = version["date"].as_str().unwrap();
-        let changes = version["changes"].as_str().unwrap();
-
-        returned_string.push_str(&format!(
-            "{} @ {}\n{}",
-            tag.bold().blue(),
-            date.yellow(),
-            changes
-        ));
-
-        returned_string
+        selected_versions.push(versions.first().unwrap());
     } else {
-        for version in versions {
-            let tag = version["tag"].as_str().unwrap();
-            let date = version["date"].as_str().unwrap();
-            let changes = version["changes"].as_str().unwrap();
-
-            returned_string.push_str(&format!("{} @ {}\n{}\n\n", tag, date, changes));
-        }
-
-        let returned_string = returned_string.trim().to_string();
-
-        returned_string
+        selected_versions.extend(versions);
     }
+
+    for version in selected_versions {
+        let version_table = version.as_table().unwrap();
+
+        let tag = version_table.get("tag").unwrap().as_str().unwrap();
+
+        match version_table.iter().find(|(k, _)| k == &"date") {
+            Some((_, date)) => match version_table.iter().find(|(k, _)| k == &"changes") {
+                Some((_, changes)) => {
+                    returned_string.push_str(&format!(
+                        "{} @ {}\n{}\n\n",
+                        tag.bold().blue(),
+                        date.as_str().unwrap().yellow(),
+                        changes.as_str().unwrap()
+                    ));
+                }
+
+                None => {
+                    returned_string.push_str(&format!(
+                        "{} @ {}\n{}\n\n",
+                        tag.bold().blue(),
+                        date.as_str().unwrap().yellow(),
+                        "Empty".bright_red()
+                    ));
+                }
+            },
+
+            None => match version_table.iter().find(|(k, _)| k == &"changes") {
+                Some((_, changes)) => {
+                    returned_string.push_str(&format!(
+                        "{}\n{}\n\n",
+                        tag.bold().blue(),
+                        changes.as_str().unwrap()
+                    ));
+                }
+
+                None => {
+                    returned_string.push_str(&format!(
+                        "{}\n{}\n\n",
+                        tag.bold().blue(),
+                        "Empty".bright_red()
+                    ));
+                }
+            },
+        }
+    }
+
+    let returned_string = returned_string.trim().to_string();
+
+    returned_string
 }

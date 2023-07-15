@@ -16,13 +16,17 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+use std::process::exit;
+
 use colored::Colorize;
 use toml::Value;
 
 use crate::{
     utils::{get_aati_lock, is_installed, prompt_yn},
-    version::CHANGELOG,
+    version::get_versions,
 };
+
+use self::changelog::get_package_versions;
 
 mod changelog;
 mod generate;
@@ -289,10 +293,22 @@ pub fn info(text: &str, repo_name: Option<&str>) {
 }
 
 pub fn changelog(package_name_option: Option<&str>, latest_only: bool) {
-    if package_name_option.is_some() {
-        println!("{}", "- Unimplemented yet!".bright_red());
+    if let Some(package_name) = package_name_option {
+        match get_package_versions(package_name) {
+            Some(versions) => {
+                changelog::display(&versions, latest_only);
+            }
+
+            None => {
+                println!(
+                    "{}",
+                    "- Package not found in the added repositories!".bright_red()
+                );
+                exit(1);
+            }
+        }
     } else {
-        changelog::display(CHANGELOG.to_string(), latest_only);
+        changelog::display(&get_versions(), latest_only);
     }
 }
 

@@ -163,6 +163,9 @@ See the Wiki @ https://github.com/hharas/aati/wiki/2.-User-Guide on how to start
                             commands::changelog(Some(arg2), true)
                         } else if arg2 == "--latest" {
                             commands::changelog(Some(arg1), true)
+                        } else {
+                            println!("{}", "- One package at a time!".bright_red());
+                            exit(1);
                         }
                     }
                     None => {

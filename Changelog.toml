@@ -125,8 +125,7 @@ tag = '0.7.5'
 date = 'Fri Jun 16 04:25:38 2023 +0300'
 changes = '''
 - Better web index generation
-- Better APR index.html
-'''
+- Better APR index.html'''
 
 [[version]]
 tag = '0.7.4'
