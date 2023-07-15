@@ -16,4 +16,14 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-pub const VERSION: &str = "0.11.1";
+use toml::Value;
+
+pub const CHANGELOG: &str = include_str!("../Changelog.toml");
+
+pub fn get_version() -> String {
+    let changelog_toml: Value = CHANGELOG.parse().unwrap();
+    let versions = changelog_toml["version"].as_array().unwrap();
+    let version = versions.first().unwrap();
+    let tag = version["tag"].as_str().unwrap();
+    tag.to_string()
+}

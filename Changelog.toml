@@ -1,0 +1,242 @@
+[[version]]
+tag = '0.11.1'
+date = 'Mon Jul 10 09:36:26 2023 +0300'
+changes = '- Added User Guide link to --help message'
+
+[[version]]
+tag = '0.11.0'
+date = 'Mon Jul 10 09:30:11 2023 +0300'
+changes = '''
+- Reimplemented the `remove` subcommand with the new `--force` option
+- Better `system` PKGFILE command
+- `get`, `remove` and `upgrade` subcommands now support multiple arguments
+- All possible targets are supported! no more unsupported targets
+- Updated --help message'''
+
+[[version]]
+tag = '0.10.9'
+date = 'Sat Jul 8 08:54:24 2023 +0300'
+changes = '''
+- Added checks that create .local, .local/bin & .local/lib if they don't exist
+- Updated serve subcommand'''
+
+[[version]]
+tag = '0.10.8'
+date = 'Wed Jul 5 16:27:51 2023 +0300'
+changes = '- Applied support for more targets in package web index generation'
+
+[[version]]
+tag = '0.10.7'
+date = 'Wed Jul 5 12:39:34 2023 +0300'
+changes = '- More targets in package index generation'
+
+[[version]]
+tag = '0.10.6'
+date = 'Wed Jul 5 09:59:32 2023 +0300'
+changes = '''
+- Updated windows's installation path
+Aati on Windows will now reside in C:\Users\<username>\Aati instead of C:\Program Files\Aati to prevent the usage of an admin cmd everytime to use Aati'''
+
+[[version]]
+tag = '0.10.5'
+date = 'Tue Jul 4 12:15:57 2023 +0300'
+changes = '''
+- Patched the install command
+- Removed a bug not allowing windows to install packages'''
+
+[[version]]
+tag = '0.10.4'
+date = 'Tue Jul 4 11:49:08 2023 +0300'
+changes = '- Updated get_target() function'
+
+[[version]]
+tag = '0.10.3'
+date = 'Tue Jul 4 11:23:57 2023 +0300'
+changes = '- Aati is now installable from crates.io!'
+
+[[version]]
+tag = '0.10.2'
+date = 'Tue Jul 4 11:20:53 2023 +0300'
+changes = '- Added new installation method & some changes'
+
+[[version]]
+tag = '0.10.1'
+date = 'Tue Jul 4 09:37:42 2023 +0300'
+changes = '''
+- Patched execute_lines() function
+- Separated commands into their own files under one directory module'''
+
+[[version]]
+tag = '0.10.0'
+date = 'Mon Jul 3 12:29:33 2023 +0300'
+changes = '- Introduced a totally new packaging system using PKGFILEs'
+
+[[version]]
+tag = '0.9.4'
+date = 'Sat Jul 1 11:40:00 2023 +0300'
+changes = '- Patched repo init subcommand'
+
+[[version]]
+tag = '0.9.3'
+date = 'Thu Jun 29 10:07:18 2023 +0300'
+changes = '- Updated --help message'
+
+[[version]]
+tag = '0.9.2'
+date = 'Sun Jun 25 08:41:49 2023 +0300'
+changes = '''
+- Added more error messages
+- Fixed mistypes'''
+
+[[version]]
+tag = '0.9.1'
+date = 'Sun Jun 25 01:51:51 2023 +0300'
+changes = '''- Removed all unnecessary .unwrap()'s (+1kloc increase)'''
+
+[[version]]
+tag = '0.9.0'
+date = 'Sat Jun 24 12:57:51 2023 +0300'
+changes = '- Back to using x86_64 instead of x86-64'
+
+[[version]]
+tag = '0.8.3'
+date = 'Sat Jun 24 12:00:32 2023 +0300'
+changes = '''
+- Updated package index generation
+- Changed is_linux() to !is_windows()'''
+
+[[version]]
+tag = '0.8.2'
+date = 'Tue Jun 20 00:08:37 2023 +0300'
+changes = '- Small fix in subcommand remove --all'
+
+[[version]]
+tag = '0.8.1'
+date = 'Fri Jun 16 18:17:38 2023 +0300'
+changes = '- Added tests to the extract_package() function'
+
+[[version]]
+tag = '0.8.0'
+date = 'Fri Jun 16 13:50:07 2023 +0300'
+changes = '- Added serve subcommand'
+
+[[version]]
+tag = '0.7.5'
+date = 'Fri Jun 16 04:25:38 2023 +0300'
+changes = '''
+- Better web index generation
+- Better APR index.html
+'''
+
+[[version]]
+tag = '0.7.4'
+date = 'Fri Jun 16 01:29:23 2023 +0300'
+changes = '- Patched the generate subcommand further'
+
+[[version]]
+tag = '0.7.3'
+date = 'Thu Jun 15 23:01:07 2023 +0300'
+changes = '''
+- Made better web index generation
+- Updated README.md'''
+
+[[version]]
+tag = '0.7.2'
+date = 'Thu Jun 15 22:10:09 2023 +0300'
+changes = '- Added font-size to target field in package template'
+
+[[version]]
+tag = '0.7.1'
+date = 'Thu Jun 15 21:29:50 2023 +0300'
+changes = '- Improved generate subcommand'
+
+[[version]]
+tag = '0.7.0'
+date = 'Thu Jun 15 20:07:08 2023 +0300'
+changes = '''
+- Added 'generate' subcommand, which creates a website index for an APR
+- Updated 'repo init' subcommand'''
+
+[[version]]
+tag = '0.6.2'
+date = 'Wed Jun 14 08:25:01 2023 +0300'
+changes = '''- Fixed a bug in extract_package() involving not making sure of the packages' target field'''
+
+[[version]]
+tag = '0.6.1'
+date = 'Wed Jun 14 02:44:13 2023 +0300'
+changes = '- Patched an issue regarding aati sync on windows'
+
+[[version]]
+tag = '0.6.0'
+date = 'Sun Jun 4 11:30:07 2023 +0300'
+changes = '''
+- Changed target name from *-unix to *-linux
+- Changed --help command output'''
+
+[[version]]
+tag = '0.5.0'
+date = 'Thu May 4 22:54:10 2023 +0300'
+changes = '''
+- Added Windows support
+- Added Windows Installation Guide to README.md'''
+
+[[version]]
+tag = '0.4.1'
+date = 'Thu May 4 12:42:28 2023 +0300'
+changes = "- Fixed a major bug in 'aati --version'"
+
+[[version]]
+tag = '0.4.0'
+date = 'Thu May 4 12:23:54 2023 +0300'
+changes = '''- Added 'aati install' command for local installation (e.g. 'aati install path/to/package-x.x.x.lz4')'''
+
+[[version]]
+tag = '0.3.0'
+date = 'Tue May 2 16:50:53 2023 +0300'
+changes = '- Added multirepo support'
+
+[[version]]
+tag = '0.2.5'
+date = 'Sat Apr 29 11:41:59 2023 +0300'
+changes = '''
+- Added 'name' variable in repo.toml
+- Fixed a bug in 'aati install'
+- Multi-repo support is coming soon'''
+
+[[version]]
+tag = '0.2.4'
+date = 'Sat Apr 29 11:10:34 2023 +0300'
+changes = '''
+- Added rc.toml that has the repo url set in it
+- Added better error handling
+- no more 'url' variable in repo.toml'''
+
+[[version]]
+tag = '0.2.3'
+date = 'Thu Apr 27 20:13:01 2023 +0300'
+changes = '''
+- Fixed 'aati info <package>' showing the info of another architecture (unfinished)
+- Changed some Bright Red colours to yellow'''
+
+[[version]]
+tag = '0.2.2'
+date = 'Wed Apr 26 05:55:09 2023 +0300'
+changes = '''
+- Fixed 'aati list available'
+- Fixed 'aati repo init' checksums'''
+
+[[version]]
+tag = '0.2.1'
+date = 'Wed Apr 26 04:34:53 2023 +0300'
+changes = '- Stopped saying x86_64 and instead x86-64'
+
+[[version]]
+tag = '0.2.0'
+date = 'Wed Apr 26 04:22:31 2023 +0300'
+changes = '- Added support for multiple architectures (aarch64)'
+
+[[version]]
+tag = '0.1.0'
+date = 'Tue Apr 25 12:34:32 2023 +0300'
+changes = '- Initialisation'

@@ -21,9 +21,9 @@ mod globals;
 mod types;
 mod utils;
 mod version;
-use std::{env, process::exit};
 
 use colored::Colorize;
+use std::{env, process::exit};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -50,12 +50,14 @@ Commands:
       info <repo name>                 Show an overview of a repository
       init                             Initialise a new package repository
     info <package>                   Show a package's info
+    changelog [package]                Show Aati's or a package's changelog
     package <path/to/binary>         Compress a binary into LZ4
     generate                         Generate .html files for a package repository
     serve [host:port]                Host a package web index (default: localhost:8887)
 
 Options:
     -V, --version Print version info
+        --about   Information about Aati
         --help    Show this help message
 
 Copyright (C) 2023  Husayn Haras
@@ -74,8 +76,24 @@ Issue tracker: https://github.com/hharas/aati/issues"
                 );
             }
 
+            Some("--about") => {
+                println!(
+                    "Aati is a Cross-platform Package Manager written in Rust. The Aati Package Manager focuses on providing a Simple,
+Efficient and Performant interface for installing, managing and removing packages. Aati is not made (but can be forked)
+to be a system-wide package manager like Pacman or APT but rather a user-specific package manager. Aati supports
+multiple operating systems including Linux, Windows, Android (on Termux) and more.
+
+Aati also has its own Packaging System revolving around PKGFILEs, that are files describing the installation and removal
+process of packages in a custom TOML-like language, which is a concept somewhat similar to the Arch Build System's
+PKGBUILDs. The Aati Package Manager recognises files ending with `.tar.lz4` as package distributions that can be
+installed, either from an online package repository or from the local filesystem.
+
+See the Wiki @ https://github.com/hharas/aati/wiki/2.-User-Guide on how to start using Aati."
+                );
+            }
+
             Some("-V") | Some("--version") => {
-                let aati_version = version::VERSION;
+                let aati_version = version::get_version();
 
                 println!("aati version {}", aati_version,);
             }
@@ -136,6 +154,27 @@ Issue tracker: https://github.com/hharas/aati/issues"
                     println!("{}", "- No package name?".bright_red());
                     exit(1);
                 }
+            },
+
+            Some("changelog") => match args.get(2) {
+                Some(arg1) => match args.get(3) {
+                    Some(arg2) => {
+                        if arg1 == "--latest" {
+                            commands::changelog(Some(arg2), true)
+                        } else if arg2 == "--latest" {
+                            commands::changelog(Some(arg1), true)
+                        }
+                    }
+                    None => {
+                        if arg1 == "--latest" {
+                            commands::changelog(None, true)
+                        } else {
+                            commands::changelog(Some(arg1), false)
+                        }
+                    }
+                },
+
+                None => commands::changelog(None, false),
             },
 
             Some("package") => match args.get(2) {

@@ -19,8 +19,12 @@
 use colored::Colorize;
 use toml::Value;
 
-use crate::utils::{get_aati_lock, is_installed, prompt_yn};
+use crate::{
+    utils::{get_aati_lock, is_installed, prompt_yn},
+    version::CHANGELOG,
+};
 
+mod changelog;
 mod generate;
 mod get;
 mod info;
@@ -282,6 +286,14 @@ pub fn repo(first_argument_option: Option<&str>, second_argument_option: Option<
 
 pub fn info(text: &str, repo_name: Option<&str>) {
     info::command(text, repo_name);
+}
+
+pub fn changelog(package_name_option: Option<&str>, latest_only: bool) {
+    if package_name_option.is_some() {
+        println!("{}", "- Unimplemented yet!".bright_red());
+    } else {
+        changelog::display(CHANGELOG.to_string(), latest_only);
+    }
 }
 
 pub fn package(directory_name: String) {
