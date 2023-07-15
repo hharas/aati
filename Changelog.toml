@@ -1,4 +1,13 @@
 [[version]]
+tag = '0.11.2'
+date = 'Sat Jul 15 19:31:27 2023 +0300'
+changes = '''
+- Added 'changelog' subcommand
+- Added Changelog.toml for Aati instead of hardcoding versions
+- Added --about option
+- Updated cargo dependencies'''
+
+[[version]]
 tag = '0.11.1'
 date = 'Mon Jul 10 09:36:26 2023 +0300'
 changes = '- Added User Guide link to --help message'
