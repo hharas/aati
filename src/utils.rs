@@ -1058,16 +1058,16 @@ pub fn generate_apr_html(
 
     let mut response = "<!DOCTYPE html><html lang=\"en\">".to_string();
 
-    let mut head = format!("<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><meta property=\"og:site_name\" content=\"{}\" /><meta property=\"og:description\" content=\"{}\" /><meta property=\"og:type\" content=\"website\" /><meta property=\"twitter:card\" content=\"summary\" /><meta name=\"description\" content=\"{}\"><style>table, th, td {{ border: 1px solid black; border-collapse: collapse; padding: 5px; }} .installation_guide {{ background-color: #f0f0f0; }}</style>", repo_name, repo_description, repo_description);
+    let mut head = format!("<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><meta property=\"og:site_name\" content=\"{}\" /><meta property=\"og:type\" content=\"website\" /><meta property=\"twitter:card\" content=\"summary\" /><meta name=\"description\" content=\"{}\"><style>table, th, td {{ border: 1px solid black; border-collapse: collapse; padding: 5px; }} .installation_guide {{ background-color: #f0f0f0; }}</style>", repo_name, repo_description);
     let mut header;
 
-    // TODO: Add <meta property=\"og:title\" content=\"{}\" /><meta property=\"og:url\" content=\"{}\" /><meta property=\"og:description\" content=\"{}\" />
     if template == "index" {
         header = format!(
             "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
             repo_name, website_url, website_url, website_url
         );
 
+        head.push_str(&format!("<meta property=\"og:title\" content=\"index\" /><meta property=\"og:url\" content=\"{}\" /><meta property=\"og:description\" content=\"{}\" />", website_url, repo_description));
         head.push_str(&format!("<title>{}</title></head>", repo_name));
         header.push_str(&format!("<p>{}</p>", repo_description));
         header.push_str(&format!("<p>Add this Package Repository in Aati by running:</p><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati repo add {}</code>", repo_url));
@@ -1115,6 +1115,7 @@ pub fn generate_apr_html(
         }
         header.push_str("</ul>");
 
+        head.push_str(&format!("<meta property=\"og:title\" content=\"packages\" /><meta property=\"og:url\" content=\"{}/packages.html\" /><meta property=\"og:description\" content=\"{} packages available to install\" />", website_url, available_packages.len()));
         head.push_str(&format!("<title>packages - {}</title></head>", repo_name));
     } else if template == "about" {
         header = format!(
@@ -1129,6 +1130,7 @@ pub fn generate_apr_html(
             repo_maintainer
         ));
 
+        head.push_str(&format!("<meta property=\"og:title\" content=\"about\" /><meta property=\"og:url\" content=\"{}/about.html\" /><meta property=\"og:description\" content=\"about {}\" />", website_url, repo_name));
         head.push_str(&format!("<title>about - {}</title></head>", repo_name));
     } else if template == "package" {
         header = format!(
@@ -1222,6 +1224,7 @@ pub fn generate_apr_html(
             }
             header.push_str("</table>");
 
+            head.push_str(&format!("<meta property=\"og:title\" content=\"{}/{}\" /><meta property=\"og:url\" content=\"{}/{}/{}.html\" /><meta property=\"og:description\" content=\"{}\" />", repo_name, package_name, website_url, package_target, package_name, package_description));
             head.push_str(&format!(
                 "<title>{}/{}</title></head>",
                 repo_name, package_name
@@ -1270,6 +1273,7 @@ pub fn generate_apr_html(
             header.push_str("</ul>");
         }
 
+        head.push_str(&format!("<meta property=\"og:title\" content=\"{} packages\" /><meta property=\"og:url\" content=\"{}/{}\" /><meta property=\"og:description\" content=\"{} {} packages available to install\" />", target, website_url, target, retained_available_packages.len(), target));
         head.push_str(&format!(
             "<title>{} packages - {}</title></head>",
             target, repo_name
