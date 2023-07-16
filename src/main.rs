@@ -50,7 +50,7 @@ Commands:
       info <repo name>                 Show an overview of a repository
       init                             Initialise a new package repository
     info <package>                   Show a package's info
-    changelog [package]                Show Aati's or a package's changelog
+    changelog [package] [--latest]   Show Aati's or a package's changelog
     package <path/to/binary>         Compress a binary into LZ4
     generate                         Generate .html files for a package repository
     serve [host:port]                Host a package web index (default: localhost:8887)
