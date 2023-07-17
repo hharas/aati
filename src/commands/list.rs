@@ -22,9 +22,6 @@ use toml::Value;
 use crate::utils::{get_aati_config, get_aati_lock, get_repo_config, get_target};
 
 pub fn installed() {
-    let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
-    let repos = aati_config["sources"]["repos"].as_array().unwrap();
-
     let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
@@ -100,8 +97,6 @@ pub fn available() {
     let repos = aati_config["sources"]["repos"].as_array().unwrap();
 
     let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
-    let installed_packages = aati_lock["package"].as_array().unwrap();
-
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     println!("{}", "+ Available Packages:".bright_green());

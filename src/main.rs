@@ -16,10 +16,8 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#![allow(unused)]
-
 use clap::{Arg, ArgAction, Command};
-use commands::{changelog, get, install, list, package, query, repo, sync, upgrade};
+use commands::{changelog, generate, get, install, list, package, query, repo, sync, upgrade};
 use version::get_version;
 
 mod commands;
@@ -292,7 +290,7 @@ Issue tracker: https://github.com/hharas/aati/issues";
             if list_matches.get_flag("available") {
                 list::available()
             } else {
-                list::available();
+                list::installed();
             }
         }
         Some(("sync", _)) => {
@@ -349,7 +347,9 @@ Issue tracker: https://github.com/hharas/aati/issues";
             let directory_name = package_matches.get_one::<String>("directory").unwrap();
             package::command(directory_name.into());
         }
-        Some(("generate", generate_matches)) => {}
+        Some(("generate", _)) => {
+            generate::command();
+        }
         Some(("serve", serve_matches)) => {}
 
         _ => unreachable!(),

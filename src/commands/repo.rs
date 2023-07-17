@@ -29,7 +29,7 @@ use crate::{
     types::{ConfigFile, Repo},
     utils::{
         check_config_dirs, get_aati_config, get_aati_config_path_buf, get_repo_config,
-        get_repo_config_path_buf, prompt, prompt_yn,
+        get_repo_config_path_buf, prompt_yn,
     },
 };
 
@@ -363,7 +363,6 @@ pub fn info(repo_name: String) {
 
 pub fn list() {
     let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
-    let aati_config_path_buf = get_aati_config_path_buf();
     let repos = aati_config["sources"]["repos"].as_array().unwrap();
 
     if !repos.is_empty() {
