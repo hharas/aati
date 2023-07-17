@@ -1,4 +1,13 @@
 [[version]]
+tag = "0.11.4"
+date = "Mon Jul 17 20:53:22 2023 +0300"
+changes = '''- Migrated to clap-rs instead of vanilla argument parsing
+- Better `get` command
+- Renamed `info` command to `query`
+- New logo
+- Added author email to copyright notice'''
+
+[[version]]
 tag = '0.11.3'
 date = 'Sat Jul 15 21:43:54 2023 +0300'
 changes = '''- Added usage of 'date' and 'changes' fields to the web index generator'''
