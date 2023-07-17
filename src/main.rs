@@ -19,6 +19,7 @@
 #![allow(unused)]
 
 use clap::{Arg, ArgAction, Command};
+use commands::{get, install, list, repo, sync, upgrade};
 use version::get_version;
 
 mod commands;
@@ -122,6 +123,7 @@ Issue tracker: https://github.com/hharas/aati/issues";
             Command::new("repo")
                 .short_flag('P')
                 .about("Manage repositories")
+                .subcommand_required(true)
                 .subcommands([
                     Command::new("add")
                         .short_flag('a')
@@ -153,20 +155,35 @@ Issue tracker: https://github.com/hharas/aati/issues";
                                 .required(true)
                                 .num_args(1),
                         ),
-                ])
-                .args([
-                    Arg::new("list")
-                        .short('l')
-                        .long("list")
-                        .help("List added repositories")
-                        .conflicts_with("init")
-                        .action(ArgAction::SetTrue),
-                    Arg::new("init")
-                        .short('n')
-                        .long("init")
-                        .conflicts_with("list")
-                        .help("Initialise a new repository")
-                        .action(ArgAction::SetTrue),
+                    Command::new("list")
+                        .short_flag('l')
+                        .about("List added repositories"),
+                    Command::new("init")
+                        .short_flag('n')
+                        .about("Initialise a new repository")
+                        .args([
+                            Arg::new("name")
+                                .long("name")
+                                .short('n')
+                                .help("Repository name")
+                                .action(ArgAction::Set)
+                                .required(true)
+                                .num_args(1),
+                            Arg::new("maintainer")
+                                .long("maintainer")
+                                .short('m')
+                                .help("Repository maintainer's name")
+                                .action(ArgAction::Set)
+                                .required(true)
+                                .num_args(1),
+                            Arg::new("description")
+                                .long("description")
+                                .short('d')
+                                .help("Repository description")
+                                .action(ArgAction::Set)
+                                .required(true)
+                                .num_args(1),
+                        ]),
                 ]),
             Command::new("query")
                 .short_flag('Q')
@@ -240,19 +257,23 @@ Issue tracker: https://github.com/hharas/aati/issues";
     match matches.subcommand() {
         Some(("get", get_matches)) => {
             let packages = get_matches.get_many::<String>("packages").unwrap();
-            let packages_vec: Vec<String> = packages.map(|s| s.to_owned()).collect::<Vec<_>>();
-            commands::get(&packages_vec);
+            let packages_vec: Vec<String> = packages.map(|s| s.into()).collect::<Vec<_>>();
+            for package in packages_vec {
+                get::command(&package);
+            }
         }
         Some(("install", install_matches)) => {
             let package = install_matches.get_one::<String>("package").unwrap();
-            commands::install(package);
+            install::command(package);
         }
         Some(("upgrade", upgrade_matches)) => {
             if let Some(packages) = upgrade_matches.get_many::<String>("packages") {
                 let packages_vec: Vec<&str> = packages.map(|s| s.as_str()).collect::<Vec<_>>();
-                commands::upgrade(Some(packages_vec));
+                for package in packages_vec {
+                    upgrade::command(Some(package));
+                }
             } else {
-                commands::upgrade(None);
+                upgrade::command(None);
             }
         }
         Some(("remove", remove_matches)) => {
@@ -268,12 +289,49 @@ Issue tracker: https://github.com/hharas/aati/issues";
             }
         }
         Some(("list", list_matches)) => {
-            commands::list(list_matches.get_flag("available"));
+            if list_matches.get_flag("available") {
+                list::available()
+            } else {
+                list::available();
+            }
         }
-        Some(("sync", sync_matches)) => {
-            commands::sync();
+        Some(("sync", _)) => {
+            sync::command();
         }
-        Some(("repo", repo_matches)) => {}
+        Some(("repo", repo_matches)) => match repo_matches.subcommand() {
+            Some(("add", add_matches)) => {
+                let repository_url = add_matches.get_one::<String>("url").unwrap();
+                repo::add(repository_url.into());
+            }
+
+            Some(("remove", remove_matches)) => {
+                let repo_name = remove_matches.get_one::<String>("name").unwrap();
+                repo::remove(repo_name.into());
+            }
+
+            Some(("info", info_matches)) => {
+                let repository_url = info_matches.get_one::<String>("name").unwrap();
+                repo::info(repository_url.into());
+            }
+
+            Some(("list", _)) => {
+                repo::list();
+            }
+
+            Some(("init", init_matches)) => {
+                let repo_name = init_matches.get_one::<String>("name").unwrap();
+                let repo_maintainer = init_matches.get_one::<String>("maintainer").unwrap();
+                let repo_description = init_matches.get_one::<String>("description").unwrap();
+
+                repo::init(
+                    repo_name.into(),
+                    repo_maintainer.into(),
+                    repo_description.into(),
+                );
+            }
+
+            _ => unreachable!(),
+        },
         Some(("query", query_matches)) => {}
         Some(("changelog", changelog_matches)) => {}
         Some(("package", package_matches)) => {}

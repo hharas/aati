@@ -29,33 +29,17 @@ use crate::{
 use self::changelog::get_package_versions;
 
 mod changelog;
-mod generate;
-mod get;
-mod info;
-mod install;
-mod list;
-mod package;
+pub mod generate;
+pub mod get;
+pub mod info;
+pub mod install;
+pub mod list;
+pub mod package;
 mod remove;
-mod repo;
-mod serve;
-mod sync;
-mod upgrade;
-
-pub fn get(packages: &[String]) {
-    for package_name in packages {
-        get::command(package_name);
-    }
-}
-
-pub fn upgrade(packages_option: Option<Vec<&str>>) {
-    if let Some(packages) = packages_option {
-        for package in packages {
-            upgrade::command(Some(package));
-        }
-    } else {
-        upgrade::command(None);
-    }
-}
+pub mod repo;
+pub mod serve;
+pub mod sync;
+pub mod upgrade;
 
 // Either a Some() of a Vec of Strings or a None which will be treated as --all
 pub fn remove(packages_option: Option<Vec<String>>, force: bool) {
@@ -183,26 +167,6 @@ pub fn remove(packages_option: Option<Vec<String>>, force: bool) {
     }
 }
 
-pub fn list(available: bool) {
-    if available {
-        list::available();
-    } else {
-        list::installed();
-    }
-}
-
-pub fn sync() {
-    sync::command();
-}
-
-pub fn repo(first_argument_option: Option<&str>, second_argument_option: Option<&str>) {
-    repo::command(first_argument_option, second_argument_option);
-}
-
-pub fn info(text: &str, repo_name: Option<&str>) {
-    info::command(text, repo_name);
-}
-
 pub fn changelog(package_name_option: Option<&str>, latest_only: bool) {
     if let Some(package_name) = package_name_option {
         match get_package_versions(package_name) {
@@ -215,26 +179,9 @@ pub fn changelog(package_name_option: Option<&str>, latest_only: bool) {
                     "{}",
                     "- Package not found in the added repositories!".bright_red()
                 );
-                exit(1);
             }
         }
     } else {
         changelog::display(&get_versions(), latest_only);
     }
-}
-
-pub fn package(directory_name: String) {
-    package::command(directory_name);
-}
-
-pub fn install(filename: &str) {
-    install::command(filename);
-}
-
-pub fn generate() {
-    generate::command();
-}
-
-pub fn serve(address_option: Option<&str>) {
-    serve::command(address_option);
 }
