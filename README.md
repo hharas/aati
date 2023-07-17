@@ -1,6 +1,8 @@
-**IMPORTANT NOTE: THE AATI PACKAGE MANAGER IS AN INCOMPLETE PROJECT! IT CAN HAVE BREAKING CHANGES AT ANY MOMENT WITHOUT NOTICES! USE AATI AT YOUR OWN RISK!**
+**IMPORTANT NOTE: THE AATI PACKAGE MANAGER IS AN INCOMPLETE PROJECT! IT CAN EXPERIENCE BREAKING CHANGES AT ANY MOMENT WITHOUT NOTICES! USE AATI AT YOUR OWN RISK!**
 
 <img align="left" style="width: 277px" src="./aati.png" />
+
+**Aati is a Cross-platform Package Manager written in Rust.**
 
 [![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/hharas/aati/rust.yml?logo=github)](https://github.com/hharas/aati/actions/workflows/rust.yml)
 [![GitHub last commit (branch)](https://img.shields.io/github/last-commit/hharas/aati/master)](https://github.com/hharas/aati/commit/HEAD)
@@ -10,8 +12,7 @@
 [![Crates.io](https://img.shields.io/crates/v/aati)](https://crates.io/crates/aati)
 [![GitHub](https://img.shields.io/github/license/hharas/aati?logo=gnu)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
-
-**Aati is a Cross-platform Package Manager written in Rust.** The Aati Package Manager focuses on providing a Simple, Efficient and Performant interface for installing, managing and removing packages. Aati is not made (but can be forked) to be a system-wide package manager like Pacman or APT but rather a user-specific package manager. Aati supports multiple operating systems including Linux, Windows, Android (on Termux) and more.
+The Aati Package Manager focuses on providing a Simple, Efficient and Performant Interface for installing, managing and removing packages that uses a [PKGFILE](https://github.com/hharas/aati/wiki/4.-PKGFILE-Manual)-based packaging system that's easy to use and adopt. Aati can run on both Unix and Windows operating systems.
 
 Read the [Wiki](https://github.com/hharas/aati/wiki) for more Information how to install Aati, use it, package applications for it, etc.
 
