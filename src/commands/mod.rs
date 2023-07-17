@@ -41,21 +41,19 @@ mod serve;
 mod sync;
 mod upgrade;
 
-pub fn get(arguments: &[String]) {
-    for package_name in arguments {
+pub fn get(packages: &[String]) {
+    for package_name in packages {
         get::command(package_name);
     }
 }
 
-pub fn upgrade(arguments: &[String]) {
-    if arguments.is_empty() {
-        upgrade::command(None);
-    } else if arguments.len() == 1 {
-        upgrade::command(Some(arguments.first().unwrap()));
-    } else {
-        for argument in arguments {
-            upgrade::command(Some(argument));
+pub fn upgrade(packages_option: Option<Vec<&str>>) {
+    if let Some(packages) = packages_option {
+        for package in packages {
+            upgrade::command(Some(package));
         }
+    } else {
+        upgrade::command(None);
     }
 }
 

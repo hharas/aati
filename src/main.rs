@@ -245,9 +245,16 @@ Issue tracker: https://github.com/hharas/aati/issues";
         }
         Some(("install", install_matches)) => {
             let package = install_matches.get_one::<String>("package").unwrap();
-            commands::install(&package);
+            commands::install(package);
         }
-        Some(("upgrade", upgrade_matches)) => {}
+        Some(("upgrade", upgrade_matches)) => {
+            if let Some(packages) = upgrade_matches.get_many::<String>("packages") {
+                let packages_vec: Vec<&str> = packages.map(|s| s.as_str()).collect::<Vec<_>>();
+                commands::upgrade(Some(packages_vec));
+            } else {
+                commands::upgrade(None);
+            }
+        }
         Some(("remove", remove_matches)) => {}
         Some(("list", list_matches)) => {}
         Some(("sync", sync_matches)) => {}
