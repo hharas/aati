@@ -238,7 +238,7 @@ Issue tracker: https://github.com/hharas/aati/issues";
                     Arg::new("host")
                         .long("host")
                         .short('s')
-                        .required(true)
+                        .default_value("localhost")
                         .action(ArgAction::Set)
                         .help("server host"),
                     Arg::new("port")
@@ -250,7 +250,7 @@ Issue tracker: https://github.com/hharas/aati/issues";
                     Arg::new("url")
                         .long("url")
                         .short('u')
-                        .required(true)
+                        .default_value("http://localhost:8887")
                         .action(ArgAction::Set)
                         .help("server url (e.g. http://example.com)"),
                     Arg::new("repo")
