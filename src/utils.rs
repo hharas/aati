@@ -798,21 +798,21 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
 
 #[test]
 fn test_extract_package() {
-    let repo_toml = r#"[repo]
-name = "testing"
-maintainer = "Husayn Haras"
-description = "APR made for testing the extract_package() function"
+    let repo_toml = format!("[repo]
+name = \"testing\"
+maintainer = \"Husayn Haras\"
+description = \"APR made for testing the extract_package() function\"
 
 [index]
 packages = [
-    { name = "testing-package", current = "0.1.0", target = "x86_64-linux", versions = [
-        { tag = "0.1.0", checksum = "checksum-placeholder" }
-    ], author = "Husayn Haras", description = "Package made to test the extract_package() function", url = "https://github.com/hharas/aati" },
-    { name = "calculator", current = "0.1.1", target = "x86_64-linux", versions = [
-        { tag = "0.1.0", checksum = "checksum-placeholder" },
-        { tag = "0.1.1", checksum = "checksum-placeholder" },
-    ], author = "Husayn Haras", description = "Package made to test the extract_package() function", url = "https://github.com/hharas/aati" },
-]"#;
+    {{ name = \"testing-package\", current = \"0.1.0\", target = \"{}\", versions = [
+        {{ tag = \"0.1.0\", checksum = \"checksum-placeholder\" }}
+    ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"https://github.com/hharas/aati\" }},
+    {{ name = \"calculator\", current = \"0.1.1\", target = \"{}\", versions = [
+        {{ tag = \"0.1.0\", checksum = \"checksum-placeholder\" }},
+        {{ tag = \"0.1.1\", checksum = \"checksum-placeholder\" }},
+    ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"https://github.com/hharas/aati\" }},
+]", get_target(), get_target());
 
     let repo_config: Value = repo_toml.parse().unwrap();
     let added_repos = vec![repo_config];
