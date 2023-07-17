@@ -17,7 +17,9 @@
 */
 
 use clap::{Arg, ArgAction, Command};
-use commands::{changelog, generate, get, install, list, package, query, repo, sync, upgrade};
+use commands::{
+    changelog, generate, get, install, list, package, query, repo, serve, sync, upgrade,
+};
 use version::get_version;
 
 mod commands;
@@ -27,10 +29,6 @@ mod utils;
 mod version;
 
 fn main() {
-    let name: &str = "aati";
-    let version = get_version();
-    let author: &str = "Husayn Haras <husayn@dnmx.org>";
-    let about: &str = "Cross-platform package manger written in Rust";
     let after_help: &str = "Copyright (C) 2023  Husayn Haras <husayn@dnmx.org>
 
 This program is free software: you can redistribute it and/or modify
@@ -45,10 +43,9 @@ GNU General Public License for more details.
 User Guide: https://github.com/hharas/aati/wiki/2.-User-Guide
 Issue tracker: https://github.com/hharas/aati/issues";
 
-    let matches = Command::new(name)
-        .author(author)
-        .version(version)
-        .about(about)
+    let matches = Command::new("aati")
+        .version(get_version())
+        .about("Cross-platform package manger written in Rust")
         .after_help(after_help)
         .subcommand_required(true)
         .arg_required_else_help(true)
@@ -236,18 +233,18 @@ Issue tracker: https://github.com/hharas/aati/issues";
                         .default_value("8887")
                         .action(ArgAction::Set)
                         .help("server port"),
-                    Arg::new("repository")
-                        .long("repo")
-                        .short('r')
-                        .required(true)
-                        .action(ArgAction::Set)
-                        .help("repository url"),
                     Arg::new("url")
                         .long("url")
                         .short('u')
                         .required(true)
                         .action(ArgAction::Set)
                         .help("server url (e.g. http://example.com)"),
+                    Arg::new("repo")
+                        .long("repository")
+                        .short('r')
+                        .required(true)
+                        .action(ArgAction::Set)
+                        .help("repository url"),
                 ]),
         ])
         .get_matches();
@@ -350,7 +347,14 @@ Issue tracker: https://github.com/hharas/aati/issues";
         Some(("generate", _)) => {
             generate::command();
         }
-        Some(("serve", serve_matches)) => {}
+        Some(("serve", serve_matches)) => {
+            let host = serve_matches.get_one::<String>("host").unwrap();
+            let port = serve_matches.get_one::<String>("port").unwrap();
+            let website_url = serve_matches.get_one::<String>("url").unwrap();
+            let repo_url = serve_matches.get_one::<String>("repo").unwrap();
+
+            serve::command(host, port, website_url, repo_url);
+        }
 
         _ => unreachable!(),
     }

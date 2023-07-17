@@ -23,24 +23,10 @@ use toml::Value;
 
 use tiny_http::{Header, Response, Server};
 
-use crate::{
-    globals::POSSIBLE_TARGETS,
-    utils::{generate_apr_html, prompt},
-};
+use crate::{globals::POSSIBLE_TARGETS, utils::generate_apr_html};
 
-pub fn command(address_option: Option<&str>) {
-    let address;
-    let website_url;
-
-    if let Some(given_address) = address_option {
-        address = given_address;
-        website_url = prompt("On what URL will this index be hosted (e.g. http://example.com)?");
-    } else {
-        address = "localhost:8887";
-        website_url = "http://localhost:8887".to_string();
-    };
-
-    let repo_url = prompt("On what URL is the package repository hosted?");
+pub fn command(host: &str, port: &str, website_url: &str, repo_url: &str) {
+    let address = format!("{host}:{port}");
 
     match Server::http(address) {
         Ok(server) => match read_to_string("repo.toml") {
@@ -60,7 +46,7 @@ pub fn command(address_option: Option<&str>) {
 
                     for request in server.incoming_requests() {
                         let mut html =
-                            generate_apr_html(&repo_config, "index", None, &website_url, &repo_url);
+                            generate_apr_html(&repo_config, "index", None, website_url, repo_url);
                         let mut url = request.url().to_string();
 
                         print!(
@@ -75,24 +61,24 @@ pub fn command(address_option: Option<&str>) {
                                 &repo_config,
                                 "index",
                                 None,
-                                &website_url,
-                                &repo_url,
+                                website_url,
+                                repo_url,
                             );
                         } else if url == "about.html" {
                             html = generate_apr_html(
                                 &repo_config,
                                 "about",
                                 None,
-                                &website_url,
-                                &repo_url,
+                                website_url,
+                                repo_url,
                             );
                         } else if url == "packages.html" {
                             html = generate_apr_html(
                                 &repo_config,
                                 "packages",
                                 None,
-                                &website_url,
-                                &repo_url,
+                                website_url,
+                                repo_url,
                             );
                         } else {
                             let mut html_assigned = false;
@@ -107,8 +93,8 @@ pub fn command(address_option: Option<&str>) {
                                         &repo_config,
                                         target,
                                         None,
-                                        &website_url,
-                                        &repo_url,
+                                        website_url,
+                                        repo_url,
                                     );
                                 }
                             }
@@ -130,8 +116,8 @@ pub fn command(address_option: Option<&str>) {
                                                 &repo_config,
                                                 "package",
                                                 Some(package),
-                                                &website_url,
-                                                &repo_url,
+                                                website_url,
+                                                repo_url,
                                             );
                                         }
                                     }
