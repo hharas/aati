@@ -267,7 +267,9 @@ Issue tracker: https://github.com/hharas/aati/issues";
                 commands::remove(Some(packages_vec), is_forced)
             }
         }
-        Some(("list", list_matches)) => {}
+        Some(("list", list_matches)) => {
+            commands::list(list_matches.get_flag("available"));
+        }
         Some(("sync", sync_matches)) => {}
         Some(("repo", repo_matches)) => {}
         Some(("query", query_matches)) => {}

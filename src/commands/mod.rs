@@ -183,8 +183,12 @@ pub fn remove(packages_option: Option<Vec<String>>, force: bool) {
     }
 }
 
-pub fn list(choice_option: Option<&str>) {
-    list::command(choice_option);
+pub fn list(available: bool) {
+    if available {
+        list::available();
+    } else {
+        list::installed();
+    }
 }
 
 pub fn sync() {
