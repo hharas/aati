@@ -19,7 +19,7 @@
 #![allow(unused)]
 
 use clap::{Arg, ArgAction, Command};
-use commands::{get, install, list, query, repo, sync, upgrade};
+use commands::{changelog, get, install, list, query, repo, sync, upgrade};
 use version::get_version;
 
 mod commands;
@@ -336,7 +336,15 @@ Issue tracker: https://github.com/hharas/aati/issues";
             let package_name = query_matches.get_one::<String>("package").unwrap();
             query::command(package_name, None);
         }
-        Some(("changelog", changelog_matches)) => {}
+        Some(("changelog", changelog_matches)) => {
+            let latest_only = changelog_matches.get_flag("latest");
+
+            if let Some(package_name) = changelog_matches.get_one::<String>("package") {
+                changelog(Some(package_name), latest_only);
+            } else {
+                changelog(None, latest_only);
+            }
+        }
         Some(("package", package_matches)) => {}
         Some(("generate", generate_matches)) => {}
         Some(("serve", serve_matches)) => {}
