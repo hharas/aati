@@ -216,7 +216,21 @@ Issue tracker: https://github.com/hharas/aati/issues";
                 ),
             Command::new("generate")
                 .short_flag('N')
-                .about("Generate HTML files for a repository"),
+                .about("Generate HTML files for a repository")
+                .args([
+                    Arg::new("url")
+                        .long("url")
+                        .short('u')
+                        .required(true)
+                        .action(ArgAction::Set)
+                        .help("server url (e.g. http://example.com)"),
+                    Arg::new("repo")
+                        .long("repository")
+                        .short('r')
+                        .required(true)
+                        .action(ArgAction::Set)
+                        .help("repository url"),
+                ]),
             Command::new("serve")
                 .short_flag('E')
                 .about("Serve a package web index using a repo.toml")
@@ -344,8 +358,11 @@ Issue tracker: https://github.com/hharas/aati/issues";
             let directory_name = package_matches.get_one::<String>("directory").unwrap();
             package::command(directory_name.into());
         }
-        Some(("generate", _)) => {
-            generate::command();
+        Some(("generate", generate_matches)) => {
+            let website_url = generate_matches.get_one::<String>("url").unwrap();
+            let repo_url = generate_matches.get_one::<String>("repo").unwrap();
+
+            generate::command(website_url, repo_url);
         }
         Some(("serve", serve_matches)) => {
             let host = serve_matches.get_one::<String>("host").unwrap();

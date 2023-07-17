@@ -26,19 +26,12 @@ use std::{
 };
 use toml::Value;
 
-use crate::{
-    globals::POSSIBLE_TARGETS,
-    utils::{generate_apr_html, prompt},
-};
+use crate::{globals::POSSIBLE_TARGETS, utils::generate_apr_html};
 
-pub fn command() {
+pub fn command(website_url: &str, repo_url: &str) {
     match read_to_string("repo.toml") {
         Ok(repo_toml) => match repo_toml.parse::<Value>() {
             Ok(repo_config) => {
-                let website_url =
-                    prompt("On what URL will this index be hosted (e.g. http://example.com)?");
-                let repo_url = prompt("On what URL is the package repository hosted?");
-
                 let available_packages = repo_config["index"]["packages"].as_array().unwrap();
                 let targets = POSSIBLE_TARGETS;
 
@@ -46,17 +39,17 @@ pub fn command() {
 
                 html_files.insert(
                     PathBuf::from("index.html"),
-                    generate_apr_html(&repo_config, "index", None, &website_url, &repo_url),
+                    generate_apr_html(&repo_config, "index", None, website_url, repo_url),
                 );
 
                 html_files.insert(
                     PathBuf::from("packages.html"),
-                    generate_apr_html(&repo_config, "packages", None, &website_url, &repo_url),
+                    generate_apr_html(&repo_config, "packages", None, website_url, repo_url),
                 );
 
                 html_files.insert(
                     PathBuf::from("about.html"),
-                    generate_apr_html(&repo_config, "about", None, &website_url, &repo_url),
+                    generate_apr_html(&repo_config, "about", None, website_url, repo_url),
                 );
 
                 if !available_packages.is_empty() {
@@ -83,8 +76,8 @@ pub fn command() {
                                         &repo_config,
                                         target,
                                         None,
-                                        &website_url,
-                                        &repo_url,
+                                        website_url,
+                                        repo_url,
                                     ),
                                 );
                             }
@@ -101,8 +94,8 @@ pub fn command() {
                                 &repo_config,
                                 "package",
                                 Some(package),
-                                &website_url,
-                                &repo_url,
+                                website_url,
+                                repo_url,
                             ),
                         );
                     }
