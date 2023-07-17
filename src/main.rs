@@ -211,7 +211,7 @@ Issue tracker: https://github.com/hharas/aati/issues";
                 .args([
                     Arg::new("host")
                         .long("host")
-                        .short('h')
+                        .short('s')
                         .required(true)
                         .action(ArgAction::Set)
                         .help("server host"),
@@ -236,6 +236,27 @@ Issue tracker: https://github.com/hharas/aati/issues";
                 ]),
         ])
         .get_matches();
+
+    match matches.subcommand() {
+        Some(("get", get_matches)) => {
+            let packages = get_matches.get_many::<String>("packages").unwrap();
+            let packages_vec: Vec<String> = packages.map(|s| s.to_owned()).collect::<Vec<_>>();
+            commands::get(&packages_vec);
+        }
+        Some(("install", install_matches)) => {}
+        Some(("upgrade", upgrade_matches)) => {}
+        Some(("remove", remove_matches)) => {}
+        Some(("list", list_matches)) => {}
+        Some(("sync", sync_matches)) => {}
+        Some(("repo", repo_matches)) => {}
+        Some(("query", query_matches)) => {}
+        Some(("changelog", changelog_matches)) => {}
+        Some(("package", package_matches)) => {}
+        Some(("generate", generate_matches)) => {}
+        Some(("serve", serve_matches)) => {}
+
+        _ => unreachable!(),
+    }
 }
 
 // تم بحمد الله
