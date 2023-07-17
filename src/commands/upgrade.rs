@@ -76,7 +76,7 @@ pub fn command(choice: Option<&str>) {
 
                 if is_installed {
                     if !is_up_to_date {
-                        remove(&[package_name.into()]);
+                        remove(Some(vec![package_name.into()]), false);
                         get::command(package_name);
                     } else {
                         println!("{}", "+ That Package is already up to date!".bright_green());
@@ -131,7 +131,7 @@ pub fn command(choice: Option<&str>) {
             if !to_be_upgraded.is_empty() {
                 if prompt_yn("/ Are you sure you want to continue this Transaction?") {
                     for package in to_be_upgraded {
-                        remove(&[package.into()]);
+                        remove(Some(vec![package.into()]), false);
                         get::command(package);
                     }
 

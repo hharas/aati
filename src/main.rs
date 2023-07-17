@@ -255,7 +255,18 @@ Issue tracker: https://github.com/hharas/aati/issues";
                 commands::upgrade(None);
             }
         }
-        Some(("remove", remove_matches)) => {}
+        Some(("remove", remove_matches)) => {
+            let is_forced = remove_matches.get_flag("force");
+
+            if remove_matches.get_flag("all") {
+                commands::remove(None, is_forced);
+            } else {
+                let packages = remove_matches.get_many::<String>("packages").unwrap();
+                let packages_vec: Vec<String> = packages.map(|s| s.to_owned()).collect::<Vec<_>>();
+
+                commands::remove(Some(packages_vec), is_forced)
+            }
+        }
         Some(("list", list_matches)) => {}
         Some(("sync", sync_matches)) => {}
         Some(("repo", repo_matches)) => {}

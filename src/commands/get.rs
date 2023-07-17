@@ -77,10 +77,10 @@ pub fn command(package_name: &str) {
         if is_installed {
             println!(
                 "{}",
-                "- This Package is already installed! Did you mean: $ aati upgrade <package>"
-                    .bright_red()
+                "+ This Package is already installed! Did you mean: $ aati upgrade <package>"
+                    .bright_blue()
             );
-            exit(0);
+            return;
         } else {
             for available_package in available_packages {
                 if available_package["name"].as_str().unwrap() == extracted_package[1] {
