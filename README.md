@@ -16,14 +16,14 @@ The Aati Package Manager focuses on providing a Simple, Efficient and Performant
 
 Read the [Wiki](https://github.com/hharas/aati/wiki) for more Information how to install Aati, use it, package applications for it, etc.
 
-# But why?
+## But why?
 
 Simply: It was so fun to develop. I always thought of building my own package manager, so here it goes!
 
-# Contribution
+## Contribution
 
 Any contributions to Aati are welcomed. This Project is definitely incomplete and immature, so any development is appreciated.
 
-# License
+## License
 
 The Aati Package Manager is licensed under the GNU General Public License V3.0.
