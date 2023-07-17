@@ -270,7 +270,9 @@ Issue tracker: https://github.com/hharas/aati/issues";
         Some(("list", list_matches)) => {
             commands::list(list_matches.get_flag("available"));
         }
-        Some(("sync", sync_matches)) => {}
+        Some(("sync", sync_matches)) => {
+            commands::sync();
+        }
         Some(("repo", repo_matches)) => {}
         Some(("query", query_matches)) => {}
         Some(("changelog", changelog_matches)) => {}
