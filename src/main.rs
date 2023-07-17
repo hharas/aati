@@ -243,7 +243,10 @@ Issue tracker: https://github.com/hharas/aati/issues";
             let packages_vec: Vec<String> = packages.map(|s| s.to_owned()).collect::<Vec<_>>();
             commands::get(&packages_vec);
         }
-        Some(("install", install_matches)) => {}
+        Some(("install", install_matches)) => {
+            let package = install_matches.get_one::<String>("package").unwrap();
+            commands::install(&package);
+        }
         Some(("upgrade", upgrade_matches)) => {}
         Some(("remove", remove_matches)) => {}
         Some(("list", list_matches)) => {}
