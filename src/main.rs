@@ -19,7 +19,7 @@
 #![allow(unused)]
 
 use clap::{Arg, ArgAction, Command};
-use commands::{changelog, get, install, list, query, repo, sync, upgrade};
+use commands::{changelog, get, install, list, package, query, repo, sync, upgrade};
 use version::get_version;
 
 mod commands;
@@ -345,7 +345,10 @@ Issue tracker: https://github.com/hharas/aati/issues";
                 changelog(None, latest_only);
             }
         }
-        Some(("package", package_matches)) => {}
+        Some(("package", package_matches)) => {
+            let directory_name = package_matches.get_one::<String>("directory").unwrap();
+            package::command(directory_name.into());
+        }
         Some(("generate", generate_matches)) => {}
         Some(("serve", serve_matches)) => {}
 
