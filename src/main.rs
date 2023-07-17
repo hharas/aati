@@ -95,12 +95,12 @@ Issue tracker: https://github.com/hharas/aati/issues";
                         .short('a')
                         .action(ArgAction::SetTrue)
                         .conflicts_with("packages")
-                        .help("Remove all packages"),
+                        .help("remove all packages"),
                     Arg::new("force")
                         .long("force")
                         .short('f')
                         .action(ArgAction::SetTrue)
-                        .help("Apply forceful removal"),
+                        .help("apply forceful removal"),
                 ]),
             Command::new("list")
                 .short_flag('L')
@@ -125,7 +125,7 @@ Issue tracker: https://github.com/hharas/aati/issues";
                         .about("Add a repository")
                         .arg(
                             Arg::new("url")
-                                .help("Repository URL")
+                                .help("repository URL")
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1),
@@ -135,7 +135,7 @@ Issue tracker: https://github.com/hharas/aati/issues";
                         .about("Remove a repository")
                         .arg(
                             Arg::new("name")
-                                .help("Repository name")
+                                .help("repository name")
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1),
@@ -145,7 +145,7 @@ Issue tracker: https://github.com/hharas/aati/issues";
                         .about("Show a repository's metadata")
                         .arg(
                             Arg::new("name")
-                                .help("Repository name")
+                                .help("repository name")
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1),
@@ -160,21 +160,21 @@ Issue tracker: https://github.com/hharas/aati/issues";
                             Arg::new("name")
                                 .long("name")
                                 .short('n')
-                                .help("Repository name")
+                                .help("repository name")
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1),
                             Arg::new("maintainer")
                                 .long("maintainer")
                                 .short('m')
-                                .help("Repository maintainer's name")
+                                .help("repository maintainer's name")
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1),
                             Arg::new("description")
                                 .long("description")
                                 .short('d')
-                                .help("Repository description")
+                                .help("repository description")
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1),
