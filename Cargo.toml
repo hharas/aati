@@ -11,6 +11,7 @@ edition = "2021"
 
 [dependencies]
 ascii = "1.1.0"
+clap = { version = "4.3.12", features = ["string"] }
 colored = "2.0.0"
 dirs = "5.0.0"
 hex = "0.4.3"
