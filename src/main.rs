@@ -96,11 +96,11 @@ Issue tracker: https://github.com/hharas/aati/issues";
                         .action(ArgAction::SetTrue)
                         .conflicts_with("packages")
                         .help("remove all packages"),
-                    Arg::new("force")
-                        .long("force")
+                    Arg::new("lock")
+                        .long("lock")
                         .short('f')
                         .action(ArgAction::SetTrue)
-                        .help("apply forceful removal"),
+                        .help("remove from lockfile"),
                 ]),
             Command::new("list")
                 .short_flag('L')
@@ -286,15 +286,15 @@ Issue tracker: https://github.com/hharas/aati/issues";
             }
         }
         Some(("remove", remove_matches)) => {
-            let is_forced = remove_matches.get_flag("force");
+            let lock_flag = remove_matches.get_flag("lock");
 
             if remove_matches.get_flag("all") {
-                commands::remove(None, is_forced);
+                commands::remove(None, lock_flag);
             } else {
                 let packages = remove_matches.get_many::<String>("packages").unwrap();
                 let packages_vec: Vec<String> = packages.map(|s| s.to_owned()).collect::<Vec<_>>();
 
-                commands::remove(Some(packages_vec), is_forced)
+                commands::remove(Some(packages_vec), lock_flag)
             }
         }
         Some(("list", list_matches)) => {

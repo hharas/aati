@@ -40,13 +40,13 @@ pub mod sync;
 pub mod upgrade;
 
 // Either a Some() of a Vec of Strings or a None which will be treated as --all
-pub fn remove(packages_option: Option<Vec<String>>, force: bool) {
+pub fn remove(packages_option: Option<Vec<String>>, lock: bool) {
     let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     if let Some(packages) = packages_option {
-        if force {
-            // $ aati remove --force package1 package2 package3...
+        if lock {
+            // $ aati remove --lock package1 package2 package3...
             let packages = &packages[1..];
             let mut did_removal = false;
 
@@ -60,7 +60,7 @@ pub fn remove(packages_option: Option<Vec<String>>, force: bool) {
                         println!(
                             "{}",
                             format!(
-                                "+ Forcefully removing package ({}/{}-{})...",
+                                "+ Removing package ({}/{}-{}) from Lockfile...",
                                 installed_package["source"].as_str().unwrap(),
                                 installed_package["name"].as_str().unwrap(),
                                 installed_package["version"].as_str().unwrap()
@@ -85,7 +85,7 @@ pub fn remove(packages_option: Option<Vec<String>>, force: bool) {
             if did_removal {
                 println!(
                     "{}",
-                    "+ Forceful removal finished successfully!".bright_green()
+                    "+ Removal from Lockfile finished successfully!".bright_green()
                 );
             }
         } else {
@@ -122,9 +122,9 @@ pub fn remove(packages_option: Option<Vec<String>>, force: bool) {
                 println!("{}", "- This Package is not installed!".bright_red());
             }
         }
-    } else if force {
-        // $ aati remove --force --all
-        if prompt_yn("/ Are you sure you want to forcefully remove all of your packages?") {
+    } else if lock {
+        // $ aati remove --lock --all
+        if prompt_yn("/ Are you sure you want to remove all of your packages from the Lockfile?") {
             for installed_package in installed_packages {
                 let package_name = installed_package["name"].as_str().unwrap();
 
@@ -136,7 +136,7 @@ pub fn remove(packages_option: Option<Vec<String>>, force: bool) {
             }
             println!(
                 "{}",
-                "+ Forceful removal finished successfully!".bright_green()
+                "+ Removal from Lockfile finished successfully!".bright_green()
             );
         } else {
             println!("{}", "+ Transaction aborted".bright_green());
