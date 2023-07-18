@@ -98,7 +98,7 @@ Issue tracker: https://github.com/hharas/aati/issues";
                         .help("remove all packages"),
                     Arg::new("lock")
                         .long("lock")
-                        .short('f')
+                        .short('l')
                         .action(ArgAction::SetTrue)
                         .help("remove from lockfile"),
                 ]),
