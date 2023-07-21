@@ -67,7 +67,9 @@ pub fn get_package_versions(package_name: &str) -> Option<Vec<Value>> {
 }
 
 pub fn display(changelog: &Vec<Value>, latest_only: bool) {
-    let parsed_changelog = format_changelog(changelog, latest_only);
+    let is_colored = !is_windows() || latest_only;
+
+    let parsed_changelog = format_changelog(changelog, latest_only, is_colored);
 
     if !latest_only {
         let mut temp_changelog_path = temp_dir();
@@ -155,7 +157,7 @@ pub fn display(changelog: &Vec<Value>, latest_only: bool) {
     }
 }
 
-pub fn format_changelog(versions: &Vec<Value>, latest_only: bool) -> String {
+pub fn format_changelog(versions: &Vec<Value>, latest_only: bool, is_colored: bool) -> String {
     let mut returned_string = String::new();
     let mut selected_versions: Vec<&Value> = Vec::new();
 
@@ -170,44 +172,82 @@ pub fn format_changelog(versions: &Vec<Value>, latest_only: bool) -> String {
 
         let tag = version_table.get("tag").unwrap().as_str().unwrap();
 
-        match version_table.get("date") {
-            Some(date) => match version_table.get("changes") {
-                Some(changes) => {
-                    returned_string.push_str(&format!(
-                        "{} @ {}\n{}\n\n",
-                        tag.bold().blue(),
-                        date.as_str().unwrap().yellow(),
-                        changes.as_str().unwrap()
-                    ));
-                }
+        if is_colored {
+            match version_table.get("date") {
+                Some(date) => match version_table.get("changes") {
+                    Some(changes) => {
+                        returned_string.push_str(&format!(
+                            "{} @ {}\n{}\n\n",
+                            tag.bold().blue(),
+                            date.as_str().unwrap().yellow(),
+                            changes.as_str().unwrap()
+                        ));
+                    }
 
-                None => {
-                    returned_string.push_str(&format!(
-                        "{} @ {}\n{}\n\n",
-                        tag.bold().blue(),
-                        date.as_str().unwrap().yellow(),
-                        "Empty".bright_red()
-                    ));
-                }
-            },
+                    None => {
+                        returned_string.push_str(&format!(
+                            "{} @ {}\n{}\n\n",
+                            tag.bold().blue(),
+                            date.as_str().unwrap().yellow(),
+                            "Empty".bright_red()
+                        ));
+                    }
+                },
 
-            None => match version_table.get("changes") {
-                Some(changes) => {
-                    returned_string.push_str(&format!(
-                        "{}\n{}\n\n",
-                        tag.bold().blue(),
-                        changes.as_str().unwrap()
-                    ));
-                }
+                None => match version_table.get("changes") {
+                    Some(changes) => {
+                        returned_string.push_str(&format!(
+                            "{}\n{}\n\n",
+                            tag.bold().blue(),
+                            changes.as_str().unwrap()
+                        ));
+                    }
 
-                None => {
-                    returned_string.push_str(&format!(
-                        "{}\n{}\n\n",
-                        tag.bold().blue(),
-                        "Empty".bright_red()
-                    ));
-                }
-            },
+                    None => {
+                        returned_string.push_str(&format!(
+                            "{}\n{}\n\n",
+                            tag.bold().blue(),
+                            "Empty".bright_red()
+                        ));
+                    }
+                },
+            }
+        } else {
+            match version_table.get("date") {
+                Some(date) => match version_table.get("changes") {
+                    Some(changes) => {
+                        returned_string.push_str(&format!(
+                            "{} @ {}\n{}\n\n",
+                            tag,
+                            date.as_str().unwrap(),
+                            changes.as_str().unwrap()
+                        ));
+                    }
+
+                    None => {
+                        returned_string.push_str(&format!(
+                            "{} @ {}\n{}\n\n",
+                            tag,
+                            date.as_str().unwrap(),
+                            "Empty"
+                        ));
+                    }
+                },
+
+                None => match version_table.get("changes") {
+                    Some(changes) => {
+                        returned_string.push_str(&format!(
+                            "{}\n{}\n\n",
+                            tag,
+                            changes.as_str().unwrap()
+                        ));
+                    }
+
+                    None => {
+                        returned_string.push_str(&format!("{}\n{}\n\n", tag, "Empty"));
+                    }
+                },
+            }
         }
     }
 
