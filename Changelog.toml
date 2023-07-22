@@ -1,9 +1,17 @@
 [[version]]
+tag = "0.11.5"
+date = "Sat Jul 22 17:56:57 2023 +0300"
+changes = '''- Replaced 'generate' command's prompts with proper command line arguments
+- Added default values for '--host' and '--url' options in 'serve' command
+- Renamed 'remove' command's '--force' flag to '--lock' and '-l'
+- Removed a bug concerning the 'changelog' command on windows showing color-encoded text in notepad.exe instead of plain text''''
+
+[[version]]
 tag = "0.11.4"
 date = "Mon Jul 17 20:53:22 2023 +0300"
 changes = '''- Migrated to clap-rs instead of vanilla argument parsing
-- Better `get` command
-- Renamed `info` command to `query`
+- Better 'get' command
+- Renamed 'info' command to 'query'
 - New logo
 - Added author email to copyright notice'''
 
