@@ -18,7 +18,6 @@
 
 use colored::Colorize;
 use dirs::home_dir;
-use ring::digest;
 use std::{
     fs::{copy, create_dir_all, read_to_string, remove_dir_all, remove_file, File},
     io::{stdin, stdout, Write},
@@ -432,27 +431,9 @@ pub fn get_aati_config() -> Option<String> {
     Some(aati_config.trim().to_string())
 }
 
-fn flush_output() {
-    match stdout().flush() {
-        Ok(_) => {}
-        Err(error) => {
-            println!(
-                "{}",
-                format!(
-                    "- FAILED TO FLUSH THE STANDARD OUTPUT! ERROR[34]: {}",
-                    error
-                )
-                .bright_red()
-            );
-
-            exit(1);
-        }
-    }
-}
-
 pub fn prompt(prompt_text: &str) -> String {
     print!("{}", format!("{} ", prompt_text).as_str().bright_blue());
-    flush_output();
+    stdout().flush().unwrap();
 
     let mut input = String::new();
     match stdin().read_line(&mut input) {
@@ -472,7 +453,7 @@ pub fn prompt(prompt_text: &str) -> String {
 
 pub fn prompt_yn(prompt_text: &str) -> bool {
     print!("{}", format!("{} [Y/n] ", prompt_text).as_str().yellow());
-    flush_output();
+    stdout().flush().unwrap();
 
     let mut input = String::new();
     match stdin().read_line(&mut input) {
@@ -912,140 +893,6 @@ packages = [
     );
 
     assert_eq!(extract_package("unknown-package", &added_repos), None);
-}
-
-pub fn verify_checksum(body: &[u8], checksum: String) -> bool {
-    let hash = digest::digest(&digest::SHA256, body);
-    let hex = hex::encode(hash.as_ref());
-
-    hex == checksum
-}
-
-pub fn display_package(
-    package: Value,
-    repo_name: &str,
-    repo_url: &str,
-    is_installed: bool,
-    is_up_to_date: bool,
-    installed_package_version: &str,
-) {
-    let name = package["name"].as_str().unwrap();
-    let version = package["current"].as_str().unwrap();
-
-    let versions = package["versions"].as_array().unwrap();
-    let mut tags: Vec<&str> = vec![];
-    for version in versions {
-        tags.push(version["tag"].as_str().unwrap())
-    }
-    let author = package["author"].as_str().unwrap();
-    let arch = package["target"].as_str().unwrap();
-    let url = package["url"].as_str().unwrap();
-    let description = package["description"].as_str().unwrap();
-
-    println!(
-        "{}\n    Name: {}\n    Author: {}\n    Architecture: {}\n    Repository: {} ({})",
-        "+ Package Information:".bright_green(),
-        name,
-        author,
-        arch,
-        repo_name,
-        repo_url
-    );
-
-    match is_installed {
-        true => match is_up_to_date {
-            true => {
-                println!("    Version: {} {}", version, "[installed]".bright_green())
-            }
-            false => println!(
-                "    Version: {} {}",
-                version,
-                format!("[{} is installed]", installed_package_version).yellow()
-            ),
-        },
-        false => println!("    Version: {}", version),
-    };
-
-    println!(
-        "    Available Versions:\n      - {}\n    URL: {}\n    Description:\n      {}",
-        tags.join("\n      - "),
-        url,
-        description
-    );
-}
-
-pub fn parse_filename(mut filename: &str) -> Package {
-    // Example Usage: parse_filename("dummy-package-0.1.0.tar.lz4");
-
-    filename = filename.trim();
-
-    if filename.ends_with(".tar.lz4") {
-        let package = if let Some((package, _)) = filename.rsplit_once(".tar.lz4") {
-            package
-        } else {
-            println!(
-                "{}",
-                format!("- FILE '{}' HAS AN INVALID FILENAME!", filename).bright_red()
-            );
-
-            exit(1);
-        };
-
-        // package's value is now: dummy-package-0.1.0
-
-        let (name, version) = if let Some((name, version)) = package.rsplit_once('-') {
-            (name, version)
-        } else {
-            println!(
-                "{}",
-                format!(
-                    "- FILE '{}' DOESN'T CONTAIN A HYPHEN AS A SEPARATOR!",
-                    filename
-                )
-                .bright_red()
-            );
-
-            exit(1);
-        };
-
-        // Now: name = "dummy-package", version = "0.1.0"
-
-        Package {
-            name: name.to_string(),
-            version: version.to_string(),
-            source: "local".to_string(),
-            removal: vec!["$uninitialised$".to_string()],
-        } //         ^^^^^ That's the name of the repo containing locally installed packages.
-    } else {
-        println!(
-            "{}\n{}",
-            "- Unidentified file extension!".bright_red(),
-            "+ Note: Only .tar.lz4 files are installable.".bright_blue()
-        );
-        exit(1);
-    }
-}
-
-#[test]
-fn test_parse_filename() {
-    let filename1 = "silm-0.3.3.tar.lz4";
-    let expected_result1 = Package {
-        name: "silm".to_string(),
-        source: "local".to_string(),
-        version: "0.3.3".to_string(),
-        removal: vec!["$uninitialised$".to_string()],
-    };
-
-    let filename2 = "arsil-server-0.2.1.tar.lz4";
-    let expected_result2 = Package {
-        name: "arsil-server".to_string(),
-        source: "local".to_string(),
-        version: "0.2.1".to_string(),
-        removal: vec!["$uninitialised$".to_string()],
-    };
-
-    assert_eq!(parse_filename(filename1), expected_result1);
-    assert_eq!(parse_filename(filename2), expected_result2);
 }
 
 pub fn generate_apr_html(
@@ -1554,35 +1401,4 @@ pub fn execute_lines(
 
         exit(0);
     }
-}
-
-pub fn is_installed(package_name: &str) -> (bool, Option<Value>) {
-    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
-    let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
-    let repo_list = aati_config["sources"]["repos"].as_array().unwrap();
-    let mut installed = false;
-    let mut package_option = None;
-    let mut added_repos: Vec<Value> = Vec::new();
-
-    for repo_info in repo_list {
-        added_repos.push(
-            get_repo_config(repo_info["name"].as_str().unwrap())
-                .unwrap()
-                .parse::<Value>()
-                .unwrap(),
-        );
-    }
-
-    let installed_packages = aati_lock["package"].as_array().unwrap();
-
-    if let Some(extracted_package) = extract_package(package_name, &added_repos) {
-        for installed_package in installed_packages {
-            if installed_package["name"].as_str().unwrap() == extracted_package[1] {
-                package_option = Some(installed_package.clone());
-                installed = true;
-            }
-        }
-    }
-
-    (installed, package_option)
 }

@@ -21,9 +21,7 @@ use std::{process::exit, str::FromStr};
 use colored::Colorize;
 use toml::Value;
 
-use crate::utils::{
-    display_package, get_aati_config, get_aati_lock, get_repo_config, get_target, prompt,
-};
+use crate::utils::{get_aati_config, get_aati_lock, get_repo_config, get_target, prompt};
 
 pub fn command(text: &str, repo_name: Option<&str>) {
     // Initialising main variables
@@ -223,4 +221,57 @@ pub fn command(text: &str, repo_name: Option<&str>) {
 
         command(text_to_be_extracted, Some(repo_name));
     }
+}
+
+pub fn display_package(
+    package: Value,
+    repo_name: &str,
+    repo_url: &str,
+    is_installed: bool,
+    is_up_to_date: bool,
+    installed_package_version: &str,
+) {
+    let name = package["name"].as_str().unwrap();
+    let version = package["current"].as_str().unwrap();
+
+    let versions = package["versions"].as_array().unwrap();
+    let mut tags: Vec<&str> = vec![];
+    for version in versions {
+        tags.push(version["tag"].as_str().unwrap())
+    }
+    let author = package["author"].as_str().unwrap();
+    let arch = package["target"].as_str().unwrap();
+    let url = package["url"].as_str().unwrap();
+    let description = package["description"].as_str().unwrap();
+
+    println!(
+        "{}\n    Name: {}\n    Author: {}\n    Architecture: {}\n    Repository: {} ({})",
+        "+ Package Information:".bright_green(),
+        name,
+        author,
+        arch,
+        repo_name,
+        repo_url
+    );
+
+    match is_installed {
+        true => match is_up_to_date {
+            true => {
+                println!("    Version: {} {}", version, "[installed]".bright_green())
+            }
+            false => println!(
+                "    Version: {} {}",
+                version,
+                format!("[{} is installed]", installed_package_version).yellow()
+            ),
+        },
+        false => println!("    Version: {}", version),
+    };
+
+    println!(
+        "    Available Versions:\n      - {}\n    URL: {}\n    Description:\n      {}",
+        tags.join("\n      - "),
+        url,
+        description
+    );
 }

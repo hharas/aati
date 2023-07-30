@@ -20,7 +20,7 @@ use colored::Colorize;
 use toml::Value;
 
 use crate::{
-    utils::{get_aati_lock, is_installed, prompt_yn},
+    utils::{extract_package, get_aati_config, get_aati_lock, get_repo_config, prompt_yn},
     version::get_versions,
 };
 
@@ -194,4 +194,35 @@ pub fn changelog(package_name_option: Option<&str>, latest_only: bool) {
     } else {
         changelog::display(&get_versions(), latest_only);
     }
+}
+
+fn is_installed(package_name: &str) -> (bool, Option<Value>) {
+    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
+    let repo_list = aati_config["sources"]["repos"].as_array().unwrap();
+    let mut installed = false;
+    let mut package_option = None;
+    let mut added_repos: Vec<Value> = Vec::new();
+
+    for repo_info in repo_list {
+        added_repos.push(
+            get_repo_config(repo_info["name"].as_str().unwrap())
+                .unwrap()
+                .parse::<Value>()
+                .unwrap(),
+        );
+    }
+
+    let installed_packages = aati_lock["package"].as_array().unwrap();
+
+    if let Some(extracted_package) = extract_package(package_name, &added_repos) {
+        for installed_package in installed_packages {
+            if installed_package["name"].as_str().unwrap() == extracted_package[1] {
+                package_option = Some(installed_package.clone());
+                installed = true;
+            }
+        }
+    }
+
+    (installed, package_option)
 }

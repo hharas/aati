@@ -30,10 +30,7 @@ use toml::Value;
 
 use crate::{
     types::{LockFile, Package},
-    utils::{
-        execute_lines, get_aati_lock, get_aati_lock_path_buf, parse_filename, parse_pkgfile,
-        prompt_yn,
-    },
+    utils::{execute_lines, get_aati_lock, get_aati_lock_path_buf, parse_pkgfile, prompt_yn},
 };
 
 pub fn command(filename: &str, force: bool) {
@@ -284,4 +281,78 @@ pub fn command(filename: &str, force: bool) {
         );
         exit(1);
     }
+}
+
+pub fn parse_filename(mut filename: &str) -> Package {
+    // Example Usage: parse_filename("dummy-package-0.1.0.tar.lz4");
+
+    filename = filename.trim();
+
+    if filename.ends_with(".tar.lz4") {
+        let package = if let Some((package, _)) = filename.rsplit_once(".tar.lz4") {
+            package
+        } else {
+            println!(
+                "{}",
+                format!("- FILE '{}' HAS AN INVALID FILENAME!", filename).bright_red()
+            );
+
+            exit(1);
+        };
+
+        // package's value is now: dummy-package-0.1.0
+
+        let (name, version) = if let Some((name, version)) = package.rsplit_once('-') {
+            (name, version)
+        } else {
+            println!(
+                "{}",
+                format!(
+                    "- FILE '{}' DOESN'T CONTAIN A HYPHEN AS A SEPARATOR!",
+                    filename
+                )
+                .bright_red()
+            );
+
+            exit(1);
+        };
+
+        // Now: name = "dummy-package", version = "0.1.0"
+
+        Package {
+            name: name.to_string(),
+            version: version.to_string(),
+            source: "local".to_string(),
+            removal: vec!["$uninitialised$".to_string()],
+        } //         ^^^^^ That's the name of the repo containing locally installed packages.
+    } else {
+        println!(
+            "{}\n{}",
+            "- Unidentified file extension!".bright_red(),
+            "+ Note: Only .tar.lz4 files are installable.".bright_blue()
+        );
+        exit(1);
+    }
+}
+
+#[test]
+fn test_parse_filename() {
+    let filename1 = "silm-0.3.3.tar.lz4";
+    let expected_result1 = Package {
+        name: "silm".to_string(),
+        source: "local".to_string(),
+        version: "0.3.3".to_string(),
+        removal: vec!["$uninitialised$".to_string()],
+    };
+
+    let filename2 = "arsil-server-0.2.1.tar.lz4";
+    let expected_result2 = Package {
+        name: "arsil-server".to_string(),
+        source: "local".to_string(),
+        version: "0.2.1".to_string(),
+        removal: vec!["$uninitialised$".to_string()],
+    };
+
+    assert_eq!(parse_filename(filename1), expected_result1);
+    assert_eq!(parse_filename(filename2), expected_result2);
 }

@@ -27,12 +27,13 @@ use crate::{
     types::{LockFile, Package},
     utils::{
         execute_lines, extract_package, get_aati_config, get_aati_lock, get_aati_lock_path_buf,
-        get_repo_config, get_target, parse_pkgfile, prompt_yn, verify_checksum,
+        get_repo_config, get_target, parse_pkgfile, prompt_yn,
     },
 };
 use colored::Colorize;
 use humansize::{format_size, BINARY};
 use lz4::Decoder;
+use ring::digest;
 use tar::Archive;
 use toml::Value;
 
@@ -561,4 +562,11 @@ pub fn command(package_name: &str, force: bool) {
         println!("{}", "- PACKAGE NOT FOUND!".bright_red());
         exit(1);
     }
+}
+
+pub fn verify_checksum(body: &[u8], checksum: String) -> bool {
+    let hash = digest::digest(&digest::SHA256, body);
+    let hex = hex::encode(hash.as_ref());
+
+    hex == checksum
 }
