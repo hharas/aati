@@ -246,9 +246,9 @@ Issue tracker: https://github.com/hharas/aati/issues";
                     Arg::new("url")
                         .long("url")
                         .short('u')
-                        .required(true)
+                        .default_value("/")
                         .action(ArgAction::Set)
-                        .help("server url (e.g. http://example.com)"),
+                        .help("base url"),
                     Arg::new("repo")
                         .long("repository")
                         .short('r')

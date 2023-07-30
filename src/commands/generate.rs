@@ -28,7 +28,15 @@ use toml::Value;
 
 use crate::{globals::POSSIBLE_TARGETS, utils::generate_apr_html};
 
-pub fn command(website_url: &str, repo_url: &str) {
+pub fn command(base_url: &str, repo_url: &str) {
+    let base_url = if base_url == "/" {
+        ""
+    } else if base_url.ends_with('/') {
+        base_url.get(..1).unwrap()
+    } else {
+        base_url
+    };
+
     match read_to_string("repo.toml") {
         Ok(repo_toml) => match repo_toml.parse::<Value>() {
             Ok(repo_config) => {
@@ -39,17 +47,17 @@ pub fn command(website_url: &str, repo_url: &str) {
 
                 html_files.insert(
                     PathBuf::from("index.html"),
-                    generate_apr_html(&repo_config, "index", None, website_url, repo_url),
+                    generate_apr_html(&repo_config, "index", None, base_url, repo_url),
                 );
 
                 html_files.insert(
                     PathBuf::from("packages.html"),
-                    generate_apr_html(&repo_config, "packages", None, website_url, repo_url),
+                    generate_apr_html(&repo_config, "packages", None, base_url, repo_url),
                 );
 
                 html_files.insert(
                     PathBuf::from("about.html"),
-                    generate_apr_html(&repo_config, "about", None, website_url, repo_url),
+                    generate_apr_html(&repo_config, "about", None, base_url, repo_url),
                 );
 
                 if !available_packages.is_empty() {
@@ -76,7 +84,7 @@ pub fn command(website_url: &str, repo_url: &str) {
                                         &repo_config,
                                         target,
                                         None,
-                                        website_url,
+                                        base_url,
                                         repo_url,
                                     ),
                                 );
@@ -94,7 +102,7 @@ pub fn command(website_url: &str, repo_url: &str) {
                                 &repo_config,
                                 "package",
                                 Some(package),
-                                website_url,
+                                base_url,
                                 repo_url,
                             ),
                         );
