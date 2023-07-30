@@ -25,7 +25,7 @@ use tiny_http::{Header, Response, Server};
 
 use crate::{globals::POSSIBLE_TARGETS, utils::generate_apr_html};
 
-pub fn command(host: &str, port: &str, website_url: &str, repo_url: &str) {
+pub fn command(host: &str, port: &str, base_url: &str, repo_url: &str) {
     let address = format!("{host}:{port}");
 
     match Server::http(address) {
@@ -38,7 +38,8 @@ pub fn command(host: &str, port: &str, website_url: &str, repo_url: &str) {
                     println!(
                         "{}",
                         format!(
-                            "+ Listening on port: {}",
+                            "+ Listening on: http://{}:{}",
+                            server.server_addr().to_ip().unwrap().ip(),
                             server.server_addr().to_ip().unwrap().port()
                         )
                         .bright_green()
@@ -46,7 +47,7 @@ pub fn command(host: &str, port: &str, website_url: &str, repo_url: &str) {
 
                     for request in server.incoming_requests() {
                         let mut html =
-                            generate_apr_html(&repo_config, "index", None, website_url, repo_url);
+                            generate_apr_html(&repo_config, "index", None, base_url, repo_url);
                         let mut url = request.url().to_string();
 
                         print!(
@@ -57,27 +58,17 @@ pub fn command(host: &str, port: &str, website_url: &str, repo_url: &str) {
                         url.remove(0);
 
                         if url.is_empty() || url == "index.html" {
-                            html = generate_apr_html(
-                                &repo_config,
-                                "index",
-                                None,
-                                website_url,
-                                repo_url,
-                            );
+                            html =
+                                generate_apr_html(&repo_config, "index", None, base_url, repo_url);
                         } else if url == "about.html" {
-                            html = generate_apr_html(
-                                &repo_config,
-                                "about",
-                                None,
-                                website_url,
-                                repo_url,
-                            );
+                            html =
+                                generate_apr_html(&repo_config, "about", None, base_url, repo_url);
                         } else if url == "packages.html" {
                             html = generate_apr_html(
                                 &repo_config,
                                 "packages",
                                 None,
-                                website_url,
+                                base_url,
                                 repo_url,
                             );
                         } else {
@@ -93,7 +84,7 @@ pub fn command(host: &str, port: &str, website_url: &str, repo_url: &str) {
                                         &repo_config,
                                         target,
                                         None,
-                                        website_url,
+                                        base_url,
                                         repo_url,
                                     );
                                 }
@@ -116,7 +107,7 @@ pub fn command(host: &str, port: &str, website_url: &str, repo_url: &str) {
                                                 &repo_config,
                                                 "package",
                                                 Some(package),
-                                                website_url,
+                                                base_url,
                                                 repo_url,
                                             );
                                         }

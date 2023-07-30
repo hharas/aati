@@ -1052,9 +1052,17 @@ pub fn generate_apr_html(
     repo_config: &Value,
     template: &str,
     current_package: Option<&Value>,
-    website_url: &str,
+    base_url: &str,
     repo_url: &str,
 ) -> String {
+    let base_url = if base_url == "/" {
+        ""
+    } else if base_url.ends_with('/') {
+        base_url.get(..1).unwrap()
+    } else {
+        base_url
+    };
+
     let repo_name = repo_config["repo"]["name"].as_str().unwrap();
     let repo_description = repo_config["repo"]["description"].as_str().unwrap();
     let repo_maintainer = repo_config["repo"]["maintainer"].as_str().unwrap();
@@ -1068,17 +1076,17 @@ pub fn generate_apr_html(
     if template == "index" {
         header = format!(
             "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
-            repo_name, website_url, website_url, website_url
+            repo_name, base_url, base_url, base_url
         );
 
-        head.push_str(&format!("<meta property=\"og:title\" content=\"index\" /><meta property=\"og:url\" content=\"{}\" /><meta property=\"og:description\" content=\"{}\" />", website_url, repo_description));
+        head.push_str(&format!("<meta property=\"og:title\" content=\"index\" /><meta property=\"og:url\" content=\"{}\" /><meta property=\"og:description\" content=\"{}\" />", base_url, repo_description));
         head.push_str(&format!("<title>{}</title></head>", repo_name));
         header.push_str(&format!("<p>{}</p>", repo_description));
         header.push_str(&format!("<p>Add this Package Repository in Aati by running:</p><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati repo add {}</code>", repo_url));
     } else if template == "packages" {
         header = format!(
             "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
-            repo_name, website_url, website_url, website_url
+            repo_name, base_url, base_url, base_url
         );
 
         header.push_str(&format!(
@@ -1096,7 +1104,7 @@ pub fn generate_apr_html(
             {
                 header.push_str(&format!(
                     "<li><code style=\"font-size: 0.9rem;\"><a href=\"{}/{}\">{}</a></code><ul>",
-                    website_url, target, target
+                    base_url, target, target
                 ));
                 for package in available_packages {
                     let package_name = package["name"].as_str().unwrap();
@@ -1105,7 +1113,7 @@ pub fn generate_apr_html(
                     if target == package_target {
                         header.push_str(&format!(
                             "<li><a href=\"{}/{}/{}/{}.html\"><b>{}</b>-{}</a></li>",
-                            website_url,
+                            base_url,
                             package_target,
                             package_name,
                             package_name,
@@ -1119,12 +1127,12 @@ pub fn generate_apr_html(
         }
         header.push_str("</ul>");
 
-        head.push_str(&format!("<meta property=\"og:title\" content=\"packages\" /><meta property=\"og:url\" content=\"{}/packages.html\" /><meta property=\"og:description\" content=\"{} packages available to install\" />", website_url, available_packages.len()));
+        head.push_str(&format!("<meta property=\"og:title\" content=\"packages\" /><meta property=\"og:url\" content=\"{}/packages.html\" /><meta property=\"og:description\" content=\"{} packages available to install\" />", base_url, available_packages.len()));
         head.push_str(&format!("<title>packages - {}</title></head>", repo_name));
     } else if template == "about" {
         header = format!(
             "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
-            repo_name, website_url, website_url, website_url
+            repo_name, base_url, base_url, base_url
         );
 
         header.push_str(&format!(
@@ -1134,12 +1142,12 @@ pub fn generate_apr_html(
             repo_maintainer
         ));
 
-        head.push_str(&format!("<meta property=\"og:title\" content=\"about\" /><meta property=\"og:url\" content=\"{}/about.html\" /><meta property=\"og:description\" content=\"about {}\" />", website_url, repo_name));
+        head.push_str(&format!("<meta property=\"og:title\" content=\"about\" /><meta property=\"og:url\" content=\"{}/about.html\" /><meta property=\"og:description\" content=\"about {}\" />", base_url, repo_name));
         head.push_str(&format!("<title>about - {}</title></head>", repo_name));
     } else if template == "package" {
         header = format!(
             "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
-            repo_name, website_url, website_url, website_url
+            repo_name, base_url, base_url, base_url
         );
 
         if let Some(package) = current_package {
@@ -1228,7 +1236,7 @@ pub fn generate_apr_html(
             }
             header.push_str("</table>");
 
-            head.push_str(&format!("<meta property=\"og:title\" content=\"{}/{}\" /><meta property=\"og:url\" content=\"{}/{}/{}.html\" /><meta property=\"og:description\" content=\"{}\" />", repo_name, package_name, website_url, package_target, package_name, package_description));
+            head.push_str(&format!("<meta property=\"og:title\" content=\"{}/{}\" /><meta property=\"og:url\" content=\"{}/{}/{}.html\" /><meta property=\"og:description\" content=\"{}\" />", repo_name, package_name, base_url, package_target, package_name, package_description));
             head.push_str(&format!(
                 "<title>{}/{}</title></head>",
                 repo_name, package_name
@@ -1237,7 +1245,7 @@ pub fn generate_apr_html(
     } else {
         header = format!(
             "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
-            repo_name, website_url, website_url, website_url
+            repo_name, base_url, base_url, base_url
         );
 
         let target = template;
@@ -1265,7 +1273,7 @@ pub fn generate_apr_html(
                 if target == package_target {
                     header.push_str(&format!(
                         "<li><a href=\"{}/{}/{}/{}.html\"><b>{}</b>-{}</a></li>",
-                        website_url,
+                        base_url,
                         package_target,
                         package_name,
                         package_name,
@@ -1277,7 +1285,7 @@ pub fn generate_apr_html(
             header.push_str("</ul>");
         }
 
-        head.push_str(&format!("<meta property=\"og:title\" content=\"{} packages\" /><meta property=\"og:url\" content=\"{}/{}\" /><meta property=\"og:description\" content=\"{} {} packages available to install\" />", target, website_url, target, retained_available_packages.len(), target));
+        head.push_str(&format!("<meta property=\"og:title\" content=\"{} packages\" /><meta property=\"og:url\" content=\"{}/{}\" /><meta property=\"og:description\" content=\"{} {} packages available to install\" />", target, base_url, target, retained_available_packages.len(), target));
         head.push_str(&format!(
             "<title>{} packages - {}</title></head>",
             target, repo_name

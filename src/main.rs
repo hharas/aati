@@ -275,9 +275,9 @@ Issue tracker: https://github.com/hharas/aati/issues";
                     Arg::new("url")
                         .long("url")
                         .short('u')
-                        .default_value("http://localhost:8887")
+                        .default_value("/")
                         .action(ArgAction::Set)
-                        .help("server url (e.g. http://example.com)"),
+                        .help("base url"),
                     Arg::new("repo")
                         .long("repository")
                         .short('r')
@@ -401,10 +401,10 @@ Issue tracker: https://github.com/hharas/aati/issues";
         Some(("serve", serve_matches)) => {
             let host = serve_matches.get_one::<String>("host").unwrap();
             let port = serve_matches.get_one::<String>("port").unwrap();
-            let website_url = serve_matches.get_one::<String>("url").unwrap();
+            let base_url = serve_matches.get_one::<String>("url").unwrap();
             let repo_url = serve_matches.get_one::<String>("repo").unwrap();
 
-            serve::command(host, port, website_url, repo_url);
+            serve::command(host, port, base_url, repo_url);
         }
 
         _ => unreachable!(),

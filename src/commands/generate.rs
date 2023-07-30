@@ -29,14 +29,6 @@ use toml::Value;
 use crate::{globals::POSSIBLE_TARGETS, utils::generate_apr_html};
 
 pub fn command(base_url: &str, repo_url: &str) {
-    let base_url = if base_url == "/" {
-        ""
-    } else if base_url.ends_with('/') {
-        base_url.get(..1).unwrap()
-    } else {
-        base_url
-    };
-
     match read_to_string("repo.toml") {
         Ok(repo_toml) => match repo_toml.parse::<Value>() {
             Ok(repo_config) => {
