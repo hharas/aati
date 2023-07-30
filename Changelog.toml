@@ -4,7 +4,7 @@ date = "Sat Jul 22 17:56:57 2023 +0300"
 changes = '''- Replaced 'generate' command's prompts with proper command line arguments
 - Added default values for '--host' and '--url' options in 'serve' command
 - Renamed 'remove' command's '--force' flag to '--lock' and '-l'
-- Removed a bug concerning the 'changelog' command on windows showing color-encoded text in notepad.exe instead of plain text''''
+- Removed a bug concerning the 'changelog' command on windows showing color-encoded text in notepad.exe instead of plain text'''
 
 [[version]]
 tag = "0.11.4"
