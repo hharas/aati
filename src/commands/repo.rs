@@ -26,10 +26,11 @@ use std::{
 use toml::Value;
 
 use crate::{
+    commands,
     types::{ConfigFile, Repo},
     utils::{
-        check_config_dirs, get_aati_config, get_aati_config_path_buf, get_repo_config,
-        get_repo_config_path_buf, prompt_yn,
+        check_config_dirs, get_aati_config, get_aati_config_path_buf, get_aati_lock,
+        get_repo_config, get_repo_config_path_buf, prompt_yn,
     },
 };
 
@@ -202,6 +203,9 @@ pub fn add(repository_url: String) {
 }
 
 pub fn remove(repo_name: String, force: bool) {
+    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+    let installed_packages = aati_lock["package"].as_array().unwrap();
+
     let aati_config_path_buf = get_aati_config_path_buf();
     let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let added_repos = aati_config["sources"]["repos"].as_array().unwrap();
@@ -226,6 +230,33 @@ pub fn remove(repo_name: String, force: bool) {
                 .as_str(),
             )
         {
+            if installed_packages
+                .iter()
+                .any(|pkg| pkg["source"].as_str().unwrap() == repo_name)
+            {
+                println!(
+                    "{}",
+                    format!(
+                        "+ Removing all packages installed from repository '{}'...",
+                        repo_name
+                    )
+                    .bright_green()
+                );
+
+                for installed_package in installed_packages {
+                    if installed_package["source"].as_str().unwrap() == repo_name {
+                        commands::remove(
+                            Some(vec![installed_package["name"]
+                                .as_str()
+                                .unwrap()
+                                .to_string()]),
+                            false,
+                            force,
+                        );
+                    }
+                }
+            }
+
             println!(
                 "{}",
                 format!("+ Removing '{}' from the Config File...", repo_name).bright_green()
