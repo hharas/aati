@@ -36,7 +36,7 @@ use crate::{
     },
 };
 
-pub fn command(filename: &str) {
+pub fn command(filename: &str, force: bool) {
     let filename_path_buf = PathBuf::from(filename);
 
     let parsed_package = parse_filename(filename_path_buf.file_name().unwrap().to_str().unwrap());
@@ -53,13 +53,15 @@ pub fn command(filename: &str) {
     {
         match File::open(&filename_path_buf) {
             Ok(input_file) => {
-                if prompt_yn(
-                    format!(
-                        "/ Are you sure you want to locally install {}-{}?",
-                        name, version
+                if force
+                    || prompt_yn(
+                        format!(
+                            "/ Are you sure you want to locally install {}-{}?",
+                            name, version
+                        )
+                        .as_str(),
                     )
-                    .as_str(),
-                ) {
+                {
                     let mut tar_path_buf = temp_dir();
                     tar_path_buf.push(&format!("{}-{}.tar", name, version));
 
@@ -176,7 +178,7 @@ pub fn command(filename: &str) {
 
                     let (installation_lines, removal_lines) = parse_pkgfile(&pkgfile);
 
-                    execute_lines(installation_lines, Some(&package_directory));
+                    execute_lines(installation_lines, Some(&package_directory), force);
 
                     match remove_dir_all(package_directory) {
                         Ok(_) => {}

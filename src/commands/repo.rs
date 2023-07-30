@@ -201,7 +201,7 @@ pub fn add(repository_url: String) {
     }
 }
 
-pub fn remove(repo_name: String) {
+pub fn remove(repo_name: String, force: bool) {
     let aati_config_path_buf = get_aati_config_path_buf();
     let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let added_repos = aati_config["sources"]["repos"].as_array().unwrap();
@@ -217,13 +217,15 @@ pub fn remove(repo_name: String) {
     }
 
     if is_added {
-        if prompt_yn(
-            format!(
-                "Are you sure you want to remove '{}' from your added package repositories?",
-                repo_name
+        if force
+            || prompt_yn(
+                format!(
+                    "Are you sure you want to remove '{}' from your added package repositories?",
+                    repo_name
+                )
+                .as_str(),
             )
-            .as_str(),
-        ) {
+        {
             println!(
                 "{}",
                 format!("+ Removing '{}' from the Config File...", repo_name).bright_green()

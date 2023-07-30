@@ -36,7 +36,7 @@ use lz4::Decoder;
 use tar::Archive;
 use toml::Value;
 
-pub fn command(package_name: &str) {
+pub fn command(package_name: &str, force: bool) {
     // Initialise some variables
 
     let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
@@ -77,8 +77,7 @@ pub fn command(package_name: &str) {
         if is_installed {
             println!(
                 "{}",
-                "+ This Package is already installed! Did you mean: $ aati upgrade <package>"
-                    .bright_blue()
+                format!("+ Package '{}' is already installed!", extracted_package[1]).bright_blue()
             );
             return;
         } else {
@@ -101,7 +100,11 @@ pub fn command(package_name: &str) {
         if !is_found {
             println!(
                 "{}",
-                "- This Package is not found on the Repository! Try: $ aati sync".bright_red()
+                format!(
+                    "- Package '{}' is not found on the Repository! Try: $ aati sync",
+                    extracted_package[1]
+                )
+                .bright_red()
             );
             exit(1);
         }
@@ -139,13 +142,15 @@ pub fn command(package_name: &str) {
 
                     // 3. Ask the user if he's sure that he wants to install it
 
-                    if prompt_yn(
-                        format!(
-                            "/ Are you sure you want to install {}/{}-{} ({})?",
-                            extracted_package[0], name, version, human_readable_size
+                    if force
+                        || prompt_yn(
+                            format!(
+                                "/ Are you sure you want to install {}/{}-{} ({})?",
+                                extracted_package[0], name, version, human_readable_size
+                            )
+                            .as_str(),
                         )
-                        .as_str(),
-                    ) {
+                    {
                         println!(
                             "{}",
                             format!("+ Downloading ({})...", url)
@@ -408,7 +413,11 @@ pub fn command(package_name: &str) {
                                     let (installation_lines, removal_lines) =
                                         parse_pkgfile(&pkgfile);
 
-                                    execute_lines(installation_lines, Some(&package_directory));
+                                    execute_lines(
+                                        installation_lines,
+                                        Some(&package_directory),
+                                        force,
+                                    );
 
                                     match remove_dir_all(package_directory) {
                                         Ok(_) => {}

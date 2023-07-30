@@ -40,7 +40,7 @@ pub mod sync;
 pub mod upgrade;
 
 // Either a Some() of a Vec of Strings or a None which will be treated as --all
-pub fn remove(packages_option: Option<Vec<String>>, lock: bool) {
+pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool) {
     let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
@@ -98,33 +98,45 @@ pub fn remove(packages_option: Option<Vec<String>>, lock: bool) {
 
             if installed {
                 if let Some(package) = package_option {
-                    if prompt_yn(
-                        format!(
-                            "/ Are you sure you want to completely remove {}/{}-{}?",
-                            package["source"].as_str().unwrap(),
-                            package_name,
-                            package["version"].as_str().unwrap()
+                    if force
+                        || prompt_yn(
+                            format!(
+                                "/ Are you sure you want to completely remove {}/{}-{}?",
+                                package["source"].as_str().unwrap(),
+                                package_name,
+                                package["version"].as_str().unwrap()
+                            )
+                            .as_str(),
                         )
-                        .as_str(),
-                    ) {
+                    {
                         println!(
                             "{}",
                             format!("+ Removing '{}'...", package_name).bright_green()
                         );
-                        remove::command(&package);
+                        remove::command(&package, force);
                     } else {
                         println!("{}", "+ Transaction aborted".bright_green());
                     }
                 } else {
-                    println!("{}", "- This Package is not installed!".bright_red());
+                    println!(
+                        "{}",
+                        format!("- Package '{}' is not installed!", package_name).bright_red()
+                    );
                 }
             } else {
-                println!("{}", "- This Package is not installed!".bright_red());
+                println!(
+                    "{}",
+                    format!("- Package '{}' is not installed!", package_name).bright_red()
+                );
             }
         }
     } else if lock {
         // $ aati remove --lock --all
-        if prompt_yn("/ Are you sure you want to remove all of your packages from the Lockfile?") {
+        if force
+            || prompt_yn(
+                "/ Are you sure you want to remove all of your packages from the Lockfile?",
+            )
+        {
             for installed_package in installed_packages {
                 let package_name = installed_package["name"].as_str().unwrap();
 
@@ -144,7 +156,7 @@ pub fn remove(packages_option: Option<Vec<String>>, lock: bool) {
     } else {
         // $ aati remove --all
         if !installed_packages.is_empty() {
-            if prompt_yn("/ Are you sure you want to remove all of your packages?") {
+            if force || prompt_yn("/ Are you sure you want to remove all of your packages?") {
                 for installed_package in installed_packages {
                     println!(
                         "{}",
@@ -154,7 +166,7 @@ pub fn remove(packages_option: Option<Vec<String>>, lock: bool) {
                         )
                         .bright_green()
                     );
-                    remove::command(installed_package);
+                    remove::command(installed_package, force);
                 }
             } else {
                 println!("{}", "+ Transaction aborted".bright_green());

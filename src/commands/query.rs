@@ -142,7 +142,11 @@ pub fn command(text: &str, repo_name: Option<&str>) {
 
                 println!(
                     "{}",
-                    "+ This Package exists with the same name in multiple repositories:".yellow()
+                    format!(
+                        "+ Package '{}' exists with the same name in multiple repositories:",
+                        conflicts[0][0]
+                    )
+                    .yellow()
                 );
 
                 for conflict in conflicts.clone() {

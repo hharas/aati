@@ -29,7 +29,7 @@ use crate::{
     utils::{execute_lines, get_aati_lock_path_buf},
 };
 
-pub fn command(package: &Value) {
+pub fn command(package: &Value, force: bool) {
     let aati_lock_path_buf = get_aati_lock_path_buf();
 
     let lock_file_str = match read_to_string(&aati_lock_path_buf) {
@@ -64,7 +64,7 @@ pub fn command(package: &Value) {
         }
     };
 
-    execute_lines(found_package.removal.clone(), None);
+    execute_lines(found_package.removal.clone(), None, force);
 
     println!(
         "{}",

@@ -733,7 +733,11 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                     .collect();
                 println!(
                     "{}",
-                    "+ This Package exists with the same name in multiple repositories:".yellow()
+                    format!(
+                        "+ Package '{}' exists with the same name in multiple repositories:",
+                        name
+                    )
+                    .yellow()
                 );
                 for conflict in conflicts.clone() {
                     println!(
@@ -1364,11 +1368,17 @@ pub fn parse_pkgfile(pkgfile: &str) -> (Vec<String>, Vec<String>) {
     (installation_lines, removal_lines)
 }
 
-pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&PathBuf>) {
-    if prompt_yn(&format!(
-        "+ Commands to be ran:\n  {}\n/ Do these commands seem safe to execute?",
-        lines.join("\n  ")
-    )) {
+pub fn execute_lines(
+    lines: Vec<String>,
+    package_directory_path_buf: Option<&PathBuf>,
+    force: bool,
+) {
+    if force
+        || prompt_yn(&format!(
+            "+ Commands to be ran:\n  {}\n/ Do these commands seem safe to execute?",
+            lines.join("\n  ")
+        ))
+    {
         for line in lines {
             let mut line = line
                 .replace("$bin_dir", get_bin_path_buf().to_str().unwrap())

@@ -53,33 +53,48 @@ Issue tracker: https://github.com/hharas/aati/issues";
             Command::new("get")
                 .short_flag('G')
                 .about("Download and install packages from an available repository")
-                .arg(
+                .args([
                     Arg::new("packages")
                         .help("package/s to get")
                         .action(ArgAction::Set)
                         .required(true)
                         .num_args(1..),
-                ),
+                    Arg::new("force")
+                        .long("force")
+                        .short('f')
+                        .action(ArgAction::SetTrue)
+                        .help("agree to all prompts"),
+                ]),
             Command::new("install")
                 .short_flag('I')
                 .about("Install a package from a local .tar.lz4 archive")
-                .arg(
+                .args([
                     Arg::new("package")
                         .help("package .tar.lz4 file")
                         .action(ArgAction::Set)
                         .required(true)
                         .num_args(1),
-                ),
+                    Arg::new("force")
+                        .long("force")
+                        .short('f')
+                        .action(ArgAction::SetTrue)
+                        .help("agree to all prompts"),
+                ]),
             Command::new("upgrade")
                 .visible_alias("update")
                 .short_flag('U')
                 .about("Upgrade local packages to their latest versions")
-                .arg(
+                .args([
                     Arg::new("packages")
                         .help("package/s to upgrade")
                         .action(ArgAction::Set)
                         .num_args(1..),
-                ),
+                    Arg::new("force")
+                        .long("force")
+                        .short('f')
+                        .action(ArgAction::SetTrue)
+                        .help("agree to all prompts"),
+                ]),
             Command::new("remove")
                 .visible_alias("uninstall")
                 .short_flag('R')
@@ -101,6 +116,11 @@ Issue tracker: https://github.com/hharas/aati/issues";
                         .short('l')
                         .action(ArgAction::SetTrue)
                         .help("remove from lockfile"),
+                    Arg::new("force")
+                        .long("force")
+                        .short('f')
+                        .action(ArgAction::SetTrue)
+                        .help("agree to all prompts"),
                 ]),
             Command::new("list")
                 .short_flag('L')
@@ -133,13 +153,18 @@ Issue tracker: https://github.com/hharas/aati/issues";
                     Command::new("remove")
                         .short_flag('r')
                         .about("Remove a repository")
-                        .arg(
+                        .args([
                             Arg::new("name")
                                 .help("repository name")
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1),
-                        ),
+                            Arg::new("force")
+                                .long("force")
+                                .short('f')
+                                .action(ArgAction::SetTrue)
+                                .help("agree to all prompts"),
+                        ]),
                     Command::new("info")
                         .short_flag('i')
                         .about("Show a repository's metadata")
@@ -265,36 +290,43 @@ Issue tracker: https://github.com/hharas/aati/issues";
 
     match matches.subcommand() {
         Some(("get", get_matches)) => {
+            let force = get_matches.get_flag("force");
+
             let packages = get_matches.get_many::<String>("packages").unwrap();
             let packages_vec: Vec<String> = packages.map(|s| s.into()).collect::<Vec<_>>();
             for package in packages_vec {
-                get::command(&package);
+                get::command(&package, force);
             }
         }
         Some(("install", install_matches)) => {
+            let force = install_matches.get_flag("force");
             let package = install_matches.get_one::<String>("package").unwrap();
-            install::command(package);
+
+            install::command(package, force);
         }
         Some(("upgrade", upgrade_matches)) => {
+            let force = upgrade_matches.get_flag("force");
+
             if let Some(packages) = upgrade_matches.get_many::<String>("packages") {
                 let packages_vec: Vec<&str> = packages.map(|s| s.as_str()).collect::<Vec<_>>();
                 for package in packages_vec {
-                    upgrade::command(Some(package));
+                    upgrade::command(Some(package), force);
                 }
             } else {
-                upgrade::command(None);
+                upgrade::command(None, force);
             }
         }
         Some(("remove", remove_matches)) => {
             let lock_flag = remove_matches.get_flag("lock");
+            let force_flag = remove_matches.get_flag("force");
 
             if remove_matches.get_flag("all") {
-                commands::remove(None, lock_flag);
+                commands::remove(None, lock_flag, force_flag);
             } else {
                 let packages = remove_matches.get_many::<String>("packages").unwrap();
                 let packages_vec: Vec<String> = packages.map(|s| s.to_owned()).collect::<Vec<_>>();
 
-                commands::remove(Some(packages_vec), lock_flag)
+                commands::remove(Some(packages_vec), lock_flag, force_flag)
             }
         }
         Some(("list", list_matches)) => {
@@ -314,8 +346,10 @@ Issue tracker: https://github.com/hharas/aati/issues";
             }
 
             Some(("remove", remove_matches)) => {
+                let force = remove_matches.get_flag("force");
                 let repo_name = remove_matches.get_one::<String>("name").unwrap();
-                repo::remove(repo_name.into());
+
+                repo::remove(repo_name.into(), force);
             }
 
             Some(("info", info_matches)) => {

@@ -27,7 +27,7 @@ use crate::utils::{
 
 use super::{get, remove};
 
-pub fn command(choice: Option<&str>) {
+pub fn command(choice: Option<&str>, force: bool) {
     let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let repo_list = aati_config["sources"]["repos"].as_array().unwrap();
     let mut added_repos: Vec<Value> = Vec::new();
@@ -76,8 +76,8 @@ pub fn command(choice: Option<&str>) {
 
                 if is_installed {
                     if !is_up_to_date {
-                        remove(Some(vec![package_name.into()]), false);
-                        get::command(package_name);
+                        remove(Some(vec![package_name.into()]), false, true);
+                        get::command(package_name, true);
                     } else {
                         println!("{}", "+ That Package is already up to date!".bright_green());
                         exit(1);
@@ -129,10 +129,10 @@ pub fn command(choice: Option<&str>) {
             }
 
             if !to_be_upgraded.is_empty() {
-                if prompt_yn("/ Are you sure you want to continue this Transaction?") {
+                if force || prompt_yn("/ Are you sure you want to continue this Transaction?") {
                     for package in to_be_upgraded {
-                        remove(Some(vec![package.into()]), false);
-                        get::command(package);
+                        remove(Some(vec![package.into()]), false, true);
+                        get::command(package, true);
                     }
 
                     println!("{}", "+ Finished upgrading!".bright_green());
