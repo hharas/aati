@@ -338,7 +338,7 @@ pub fn get_repo_config(repo_name: &str) -> Option<String> {
         println!(
             "{}",
             format!(
-                "- NO REPO CONFIG FOUND IN '{}'! PLEASE RUN: $ aati repo <repo url>",
+                "- Could not find repository manifest at '{}'! Try: $ aati repo add <repo url>",
                 repo_config_path_buf.display()
             )
             .bright_red()

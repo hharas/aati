@@ -20,6 +20,7 @@ use clap::{Arg, ArgAction, Command};
 use commands::{
     changelog, generate, get, install, list, package, query, repo, serve, sync, upgrade,
 };
+use utils::get_target;
 use version::get_version;
 
 mod commands;
@@ -29,23 +30,23 @@ mod utils;
 mod version;
 
 fn main() {
-    let after_help: &str = "Copyright (C) 2023  Husayn Haras <husayn@dnmx.org>
+    let after_help = "User Guide: https://github.com/hharas/aati/wiki/2.-User-Guide
+Issue tracker: https://github.com/hharas/aati/issues";
+
+    let long_version = format!(
+        "{} ({})
+Copyright (C) 2023  Husayn Haras <husayn@dnmx.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of version 3 of the GNU General Public License
-as published by the Free Software Foundation.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-User Guide: https://github.com/hharas/aati/wiki/2.-User-Guide
-Issue tracker: https://github.com/hharas/aati/issues";
+as published by the Free Software Foundation.",
+        get_version(),
+        get_target()
+    );
 
     let matches = Command::new("aati")
-        .version(get_version())
         .about("Cross-platform package manger written in Rust")
+        .long_version(long_version)
         .after_help(after_help)
         .subcommand_required(true)
         .arg_required_else_help(true)
