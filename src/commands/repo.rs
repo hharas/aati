@@ -38,15 +38,15 @@ pub fn add(repository_url: String) {
     let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let added_repos = aati_config["sources"]["repos"].as_array().unwrap();
 
-    let mut is_added = false;
+    let mut already_added_repo: Option<&Value> = None;
 
     for added_repo in added_repos {
         if added_repo["url"].as_str().unwrap() == repository_url {
-            is_added = true;
+            already_added_repo = Some(added_repo);
         }
     }
 
-    if !is_added {
+    if already_added_repo.is_none() {
         println!(
             "{}",
             format!("+ Adding ({}) as a package repository", repository_url).bright_green()
@@ -68,11 +68,11 @@ pub fn add(repository_url: String) {
 
                 for added_repo in added_repos {
                     if added_repo["name"].as_str().unwrap() == repo_name {
-                        is_added = true;
+                        already_added_repo = Some(added_repo);
                     }
                 }
 
-                if !is_added {
+                if already_added_repo.is_none() {
                     check_config_dirs();
 
                     let repo_config_path_buf = get_repo_config_path_buf(repo_name);
@@ -178,10 +178,18 @@ pub fn add(repository_url: String) {
 
                     println!(
                         "{}",
-                        "+ The Repository is added successfully!".bright_green()
+                        format!("+ Repository '{}' added successfully!", repo_name).bright_green()
                     );
                 } else {
-                    println!("{}", "- This Repository is already added!".bright_red());
+                    println!(
+                        "{}",
+                        format!(
+                            "- Repository '{} ({})' is already added!",
+                            already_added_repo.unwrap()["name"].as_str().unwrap(),
+                            already_added_repo.unwrap()["url"].as_str().unwrap()
+                        )
+                        .bright_red()
+                    );
                 }
             }
 
@@ -198,7 +206,15 @@ pub fn add(repository_url: String) {
             }
         }
     } else {
-        println!("{}", "- This Repository is already added!".bright_red());
+        println!(
+            "{}",
+            format!(
+                "- Repository '{} ({})' is already added!",
+                already_added_repo.unwrap()["name"].as_str().unwrap(),
+                already_added_repo.unwrap()["url"].as_str().unwrap()
+            )
+            .bright_red()
+        );
     }
 }
 
@@ -361,9 +377,12 @@ pub fn remove(repo_name: String, force: bool) {
     } else {
         println!(
             "{}",
-            "- This Repo is not added to the Config file!".bright_red()
+            format!(
+                "- Repository '{}' is not added to the Config file!",
+                repo_name
+            )
+            .bright_red()
         );
-        exit(1);
     }
 }
 

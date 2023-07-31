@@ -55,7 +55,7 @@ Issue tracker: https://github.com/hharas/aati/issues";
                 .about("Download and install packages from an available repository")
                 .args([
                     Arg::new("packages")
-                        .help("package/s to get")
+                        .help("package(s) to get")
                         .action(ArgAction::Set)
                         .required(true)
                         .num_args(1..),
@@ -86,7 +86,7 @@ Issue tracker: https://github.com/hharas/aati/issues";
                 .about("Upgrade local packages to their latest versions")
                 .args([
                     Arg::new("packages")
-                        .help("package/s to upgrade")
+                        .help("package(s) to upgrade")
                         .action(ArgAction::Set)
                         .num_args(1..),
                     Arg::new("force")
@@ -103,7 +103,7 @@ Issue tracker: https://github.com/hharas/aati/issues";
                     Arg::new("packages")
                         .required(true)
                         .action(ArgAction::Set)
-                        .help("package/s to remove")
+                        .help("package(s) to remove")
                         .num_args(1..),
                     Arg::new("all")
                         .long("all")
@@ -144,21 +144,21 @@ Issue tracker: https://github.com/hharas/aati/issues";
                         .short_flag('a')
                         .about("Add a repository")
                         .arg(
-                            Arg::new("url")
-                                .help("repository URL")
+                            Arg::new("urls")
+                                .help("repository URL(s)")
                                 .action(ArgAction::Set)
                                 .required(true)
-                                .num_args(1),
+                                .num_args(1..),
                         ),
                     Command::new("remove")
                         .short_flag('r')
                         .about("Remove a repository")
                         .args([
-                            Arg::new("name")
-                                .help("repository name")
+                            Arg::new("names")
+                                .help("repository name(s)")
                                 .action(ArgAction::Set)
                                 .required(true)
-                                .num_args(1),
+                                .num_args(1..),
                             Arg::new("force")
                                 .long("force")
                                 .short('f')
@@ -341,15 +341,24 @@ Issue tracker: https://github.com/hharas/aati/issues";
         }
         Some(("repo", repo_matches)) => match repo_matches.subcommand() {
             Some(("add", add_matches)) => {
-                let repository_url = add_matches.get_one::<String>("url").unwrap();
-                repo::add(repository_url.into());
+                let repository_urls = add_matches.get_many::<String>("urls").unwrap();
+                let repository_urls_vec: Vec<String> =
+                    repository_urls.map(|s| s.into()).collect::<Vec<_>>();
+
+                for repository_url in repository_urls_vec {
+                    repo::add(repository_url);
+                }
             }
 
             Some(("remove", remove_matches)) => {
                 let force = remove_matches.get_flag("force");
-                let repo_name = remove_matches.get_one::<String>("name").unwrap();
+                let repository_names = remove_matches.get_many::<String>("names").unwrap();
+                let repository_names_vec: Vec<String> =
+                    repository_names.map(|s| s.into()).collect::<Vec<_>>();
 
-                repo::remove(repo_name.into(), force);
+                for repository_name in repository_names_vec {
+                    repo::remove(repository_name, force);
+                }
             }
 
             Some(("info", info_matches)) => {
