@@ -16,7 +16,10 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-use clap::{Arg, ArgAction, Command};
+use std::io::stdout;
+
+use clap::{Arg, ArgAction, Command, ValueHint};
+use clap_complete::Shell;
 use commands::{
     changelog, generate, get, install, list, package, query, repo, serve, sync, upgrade,
 };
@@ -44,7 +47,7 @@ as published by the Free Software Foundation.",
         get_target()
     );
 
-    let matches = Command::new("aati")
+    let mut cli = Command::new("aati")
         .about("Cross-platform package manger written in Rust")
         .long_version(long_version)
         .after_help(after_help)
@@ -59,7 +62,8 @@ as published by the Free Software Foundation.",
                         .help("package(s) to get")
                         .action(ArgAction::Set)
                         .required(true)
-                        .num_args(1..),
+                        .num_args(1..)
+                        .value_hint(ValueHint::Other),
                     Arg::new("force")
                         .long("force")
                         .short('f')
@@ -74,7 +78,8 @@ as published by the Free Software Foundation.",
                         .help("package .tar.lz4 file")
                         .action(ArgAction::Set)
                         .required(true)
-                        .num_args(1),
+                        .num_args(1)
+                        .value_hint(ValueHint::FilePath),
                     Arg::new("force")
                         .long("force")
                         .short('f')
@@ -89,7 +94,8 @@ as published by the Free Software Foundation.",
                     Arg::new("packages")
                         .help("package(s) to upgrade")
                         .action(ArgAction::Set)
-                        .num_args(1..),
+                        .num_args(1..)
+                        .value_hint(ValueHint::Other),
                     Arg::new("force")
                         .long("force")
                         .short('f')
@@ -105,7 +111,8 @@ as published by the Free Software Foundation.",
                         .required(true)
                         .action(ArgAction::Set)
                         .help("package(s) to remove")
-                        .num_args(1..),
+                        .num_args(1..)
+                        .value_hint(ValueHint::Other),
                     Arg::new("all")
                         .long("all")
                         .short('a')
@@ -149,7 +156,8 @@ as published by the Free Software Foundation.",
                                 .help("repository URL(s)")
                                 .action(ArgAction::Set)
                                 .required(true)
-                                .num_args(1..),
+                                .num_args(1..)
+                                .value_hint(ValueHint::Url),
                         ),
                     Command::new("remove")
                         .short_flag('r')
@@ -159,7 +167,8 @@ as published by the Free Software Foundation.",
                                 .help("repository name(s)")
                                 .action(ArgAction::Set)
                                 .required(true)
-                                .num_args(1..),
+                                .num_args(1..)
+                                .value_hint(ValueHint::Other),
                             Arg::new("force")
                                 .long("force")
                                 .short('f')
@@ -174,7 +183,8 @@ as published by the Free Software Foundation.",
                                 .help("repository name")
                                 .action(ArgAction::Set)
                                 .required(true)
-                                .num_args(1),
+                                .num_args(1)
+                                .value_hint(ValueHint::Other),
                         ),
                     Command::new("list")
                         .short_flag('l')
@@ -189,21 +199,24 @@ as published by the Free Software Foundation.",
                                 .help("repository name")
                                 .action(ArgAction::Set)
                                 .required(true)
-                                .num_args(1),
+                                .num_args(1)
+                                .value_hint(ValueHint::Other),
                             Arg::new("maintainer")
                                 .long("maintainer")
                                 .short('m')
                                 .help("repository maintainer's name")
                                 .action(ArgAction::Set)
                                 .required(true)
-                                .num_args(1),
+                                .num_args(1)
+                                .value_hint(ValueHint::Other),
                             Arg::new("description")
                                 .long("description")
                                 .short('d')
                                 .help("repository description")
                                 .action(ArgAction::Set)
                                 .required(true)
-                                .num_args(1),
+                                .num_args(1)
+                                .value_hint(ValueHint::Other),
                         ]),
                 ]),
             Command::new("query")
@@ -214,7 +227,8 @@ as published by the Free Software Foundation.",
                         .help("selected package to query")
                         .required(true)
                         .action(ArgAction::Set)
-                        .num_args(1),
+                        .num_args(1)
+                        .value_hint(ValueHint::Other),
                 ),
             Command::new("changelog")
                 .short_flag('C')
@@ -223,7 +237,8 @@ as published by the Free Software Foundation.",
                     Arg::new("package")
                         .help("selected package")
                         .action(ArgAction::Set)
-                        .num_args(1),
+                        .num_args(1)
+                        .value_hint(ValueHint::Other),
                     Arg::new("latest")
                         .short('l')
                         .long("latest")
@@ -238,7 +253,8 @@ as published by the Free Software Foundation.",
                         .help("path to package directory")
                         .action(ArgAction::Set)
                         .required(true)
-                        .num_args(1),
+                        .num_args(1)
+                        .value_hint(ValueHint::DirPath),
                 ),
             Command::new("generate")
                 .short_flag('N')
@@ -249,13 +265,15 @@ as published by the Free Software Foundation.",
                         .short('u')
                         .default_value("/")
                         .action(ArgAction::Set)
-                        .help("base url"),
+                        .help("base url")
+                        .value_hint(ValueHint::Url),
                     Arg::new("repo")
                         .long("repository")
                         .short('r')
                         .required(true)
                         .action(ArgAction::Set)
-                        .help("repository url"),
+                        .help("repository url")
+                        .value_hint(ValueHint::Url),
                 ]),
             Command::new("serve")
                 .short_flag('E')
@@ -266,30 +284,43 @@ as published by the Free Software Foundation.",
                         .short('s')
                         .default_value("localhost")
                         .action(ArgAction::Set)
-                        .help("server host"),
+                        .help("server host")
+                        .value_hint(ValueHint::Hostname),
                     Arg::new("port")
                         .long("port")
                         .short('p')
                         .default_value("8887")
                         .action(ArgAction::Set)
-                        .help("server port"),
+                        .help("server port")
+                        .value_hint(ValueHint::Other),
                     Arg::new("url")
                         .long("url")
                         .short('u')
                         .default_value("/")
                         .action(ArgAction::Set)
-                        .help("base url"),
+                        .help("base url")
+                        .value_hint(ValueHint::Url),
                     Arg::new("repo")
                         .long("repository")
                         .short('r')
                         .required(true)
                         .action(ArgAction::Set)
-                        .help("repository url"),
+                        .help("repository url")
+                        .value_hint(ValueHint::Url),
                 ]),
-        ])
-        .get_matches();
+            Command::new("completions")
+                .short_flag('O')
+                .about("Generate tab-completion scripts for your shell")
+                .arg(
+                    Arg::new("shell")
+                        .action(ArgAction::Set)
+                        .value_parser(["bash", "zsh", "fish", "elvish", "powershell"])
+                        .required(true)
+                        .num_args(1),
+                ),
+        ]);
 
-    match matches.subcommand() {
+    match cli.clone().get_matches().subcommand() {
         Some(("get", get_matches)) => {
             let force = get_matches.get_flag("force");
 
@@ -415,6 +446,20 @@ as published by the Free Software Foundation.",
             let repo_url = serve_matches.get_one::<String>("repo").unwrap();
 
             serve::command(host, port, base_url, repo_url);
+        }
+        Some(("completions", completions_matches)) => {
+            let shell = completions_matches.get_one::<String>("shell").unwrap();
+
+            match shell.as_str() {
+                "bash" => clap_complete::generate(Shell::Bash, &mut cli, "aati", &mut stdout()),
+                "zsh" => clap_complete::generate(Shell::Zsh, &mut cli, "aati", &mut stdout()),
+                "fish" => clap_complete::generate(Shell::Fish, &mut cli, "aati", &mut stdout()),
+                "elvish" => clap_complete::generate(Shell::Elvish, &mut cli, "aati", &mut stdout()),
+                "powershell" => {
+                    clap_complete::generate(Shell::PowerShell, &mut cli, "aati", &mut stdout())
+                }
+                _ => unreachable!(),
+            }
         }
 
         _ => unreachable!(),
