@@ -1,7 +1,19 @@
 [[version]]
+tag = "0.11.7"
+date = "Mon Jul 31 21:02:57 2023 +0300"
+changes = '''
+- Added 'completions' command
+  The 'completions' command can generate tab-completion scripts for bash, zsh, fish and more shells
+- Updated 'serve' command's '--url' similar to 'generate'
+- Added support for multiple arguments for 'repo' command's 'add' and 'remove' subcommands
+- Updated '--help' and '--version' options
+'''
+
+[[version]]
 tag = "0.11.6"
 date = "Sun Jul 30 19:59:42 2023 +0300"
-changes = '''- Removed trailing single quote from Changelog.toml
+changes = '''
+- Removed trailing single quote from Changelog.toml
 - Added --force to all (sub)commands that have a y/n prompt
 - Updated 'repo remove'
   Now it not only removes the selected repository from the config file, but also deletes every pack age installed from it to avoid getting a "Repository not found" error after listing out packages previo usly installed from removed repositories
@@ -10,7 +22,8 @@ changes = '''- Removed trailing single quote from Changelog.toml
 [[version]]
 tag = "0.11.5"
 date = "Sat Jul 22 17:56:57 2023 +0300"
-changes = '''- Replaced 'generate' command's prompts with proper command line arguments
+changes = '''
+- Replaced 'generate' command's prompts with proper command line arguments
 - Added default values for '--host' and '--url' options in 'serve' command
 - Renamed 'remove' command's '--force' flag to '--lock' and '-l'
 - Removed a bug concerning the 'changelog' command on windows showing color-encoded text in notepad.exe instead of plain text'''
@@ -18,7 +31,8 @@ changes = '''- Replaced 'generate' command's prompts with proper command line ar
 [[version]]
 tag = "0.11.4"
 date = "Mon Jul 17 20:53:22 2023 +0300"
-changes = '''- Migrated to clap-rs instead of vanilla argument parsing
+changes = '''
+- Migrated to clap-rs instead of vanilla argument parsing
 - Better 'get' command
 - Renamed 'info' command to 'query'
 - New logo
@@ -27,7 +41,8 @@ changes = '''- Migrated to clap-rs instead of vanilla argument parsing
 [[version]]
 tag = '0.11.3'
 date = 'Sat Jul 15 21:43:54 2023 +0300'
-changes = '''- Added usage of 'date' and 'changes' fields to the web index generator'''
+changes = '''
+- Added usage of 'date' and 'changes' fields to the web index generator'''
 
 [[version]]
 tag = '0.11.2'
@@ -131,7 +146,8 @@ changes = '''
 [[version]]
 tag = '0.9.1'
 date = 'Sun Jun 25 01:51:51 2023 +0300'
-changes = '''- Removed all unnecessary .unwrap()'s (+1kloc increase)'''
+changes = '''
+- Removed all unnecessary .unwrap()'s (+1kloc increase)'''
 
 [[version]]
 tag = '0.9.0'
@@ -199,7 +215,8 @@ changes = '''
 [[version]]
 tag = '0.6.2'
 date = 'Wed Jun 14 08:25:01 2023 +0300'
-changes = '''- Fixed a bug in extract_package() involving not making sure of the packages' target field'''
+changes = '''
+- Fixed a bug in extract_package() involving not making sure of the packages' target field'''
 
 [[version]]
 tag = '0.6.1'
@@ -228,7 +245,8 @@ changes = "- Fixed a major bug in 'aati --version'"
 [[version]]
 tag = '0.4.0'
 date = 'Thu May 4 12:23:54 2023 +0300'
-changes = '''- Added 'aati install' command for local installation (e.g. 'aati install path/to/package-x.x.x.lz4')'''
+changes = '''
+- Added 'aati install' command for local installation (e.g. 'aati install path/to/package-x.x.x.lz4')'''
 
 [[version]]
 tag = '0.3.0'
