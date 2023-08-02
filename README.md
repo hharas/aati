@@ -1,6 +1,6 @@
 **IMPORTANT NOTE: THE AATI PACKAGE MANAGER IS AN INCOMPLETE PROJECT! IT CAN EXPERIENCE BREAKING CHANGES AT ANY MOMENT WITHOUT NOTICES! USE AATI AT YOUR OWN RISK!**
 
-<img align="left" style="width: 277px" width="277" src="./aati.jpg" />
+<img align="left" style="width: 277px" width="277" src="aati.jpg" />
 
 **Aati is a Cross-platform Package Manager written in Rust.**
 
