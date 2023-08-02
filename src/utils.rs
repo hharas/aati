@@ -19,7 +19,7 @@
 use colored::Colorize;
 use dirs::home_dir;
 use std::{
-    fs::{copy, create_dir_all, read_to_string, remove_dir_all, remove_file, File},
+    fs::{copy, create_dir_all, read_to_string, remove_file, File},
     io::{stdin, stdout, Write},
     path::PathBuf,
     process::{exit, Command, Stdio},
@@ -1223,182 +1223,148 @@ pub fn parse_pkgfile(pkgfile: &str) -> (Vec<String>, Vec<String>) {
     (installation_lines, removal_lines)
 }
 
-pub fn execute_lines(
-    lines: Vec<String>,
-    package_directory_path_buf: Option<&PathBuf>,
-    force: bool,
-) {
-    if force
-        || prompt_yn(&format!(
-            "+ Commands to be ran:\n  {}\n/ Do these commands seem safe to execute?",
-            lines.join("\n  ")
-        ))
-    {
-        for line in lines {
-            let mut line = line
-                .replace("$bin_dir", get_bin_path_buf().to_str().unwrap())
-                .replace("$lib_dir", get_lib_path_buf().to_str().unwrap())
-                .replace("$home_dir", home_dir().unwrap().to_str().unwrap());
+pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&PathBuf>) {
+    for line in lines {
+        let mut line = line
+            .replace("$bin_dir", get_bin_path_buf().to_str().unwrap())
+            .replace("$lib_dir", get_lib_path_buf().to_str().unwrap())
+            .replace("$home_dir", home_dir().unwrap().to_str().unwrap());
 
-            let tokens: Vec<&str> = line.split_whitespace().collect();
+        let tokens: Vec<&str> = line.split_whitespace().collect();
 
-            match tokens[0] {
-                "install" => {
-                    if let Some(ref package_directory_path_buf) = package_directory_path_buf {
-                        let mut source_path_buf = PathBuf::from(package_directory_path_buf);
-                        source_path_buf.push(tokens[1]);
+        match tokens[0] {
+            "install" => {
+                if let Some(ref package_directory_path_buf) = package_directory_path_buf {
+                    let mut source_path_buf = PathBuf::from(package_directory_path_buf);
+                    source_path_buf.push(tokens[1]);
 
-                        let destination = tokens[2..].join(" ");
-                        let destination_path_buf = PathBuf::from(destination);
+                    let destination = tokens[2..].join(" ");
+                    let destination_path_buf = PathBuf::from(destination);
 
-                        match copy(source_path_buf, &destination_path_buf) {
-                            Ok(_) => {}
-                            Err(error) => {
-                                println!(
-                                    "{}",
-                                    format!(
-                                        "- FAILED TO WRITE INTO FILE '{}'! ERROR[91]: {}",
-                                        &destination_path_buf.display(),
-                                        error
-                                    )
-                                    .bright_red()
-                                );
-
-                                exit(1);
-                            }
-                        }
-
-                        make_executable(&destination_path_buf);
-                    } else {
-                        println!(
-                            "{}",
-                            format!("+ Command '{}' was ignored due to ", line).yellow()
-                        );
-                    }
-                }
-
-                "copy" => {
-                    if let Some(ref package_directory_path_buf) = package_directory_path_buf {
-                        let mut source_path_buf = PathBuf::from(package_directory_path_buf);
-                        source_path_buf.push(tokens[1]);
-
-                        let destination = tokens[2..].join(" ");
-                        let destination_path_buf = PathBuf::from(destination);
-
-                        match copy(source_path_buf, &destination_path_buf) {
-                            Ok(_) => {}
-                            Err(error) => {
-                                println!(
-                                    "{}",
-                                    format!(
-                                        "- FAILED TO WRITE INTO FILE '{}'! ERROR[100]: {}",
-                                        &destination_path_buf.display(),
-                                        error
-                                    )
-                                    .bright_red()
-                                );
-
-                                exit(1);
-                            }
-                        }
-                    } else {
-                        println!(
-                            "{}",
-                            format!("+ Command '{}' was ignored due to ", line).yellow()
-                        );
-                    }
-                }
-
-                "delete" => {
-                    let path = &tokens[1..].join(" ");
-
-                    match remove_file(path) {
+                    match copy(source_path_buf, &destination_path_buf) {
                         Ok(_) => {}
                         Err(error) => {
                             println!(
                                 "{}",
-                                format!("- FAILED TO DELETE FILE {}! ERROR[92]: {}", path, error)
-                                    .as_str()
-                                    .bright_red()
+                                format!(
+                                    "- FAILED TO WRITE INTO FILE '{}'! ERROR[91]: {}",
+                                    &destination_path_buf.display(),
+                                    error
+                                )
+                                .bright_red()
                             );
+
                             exit(1);
                         }
                     }
+
+                    make_executable(&destination_path_buf);
+                } else {
+                    println!(
+                        "{}",
+                        format!("+ Command '{}' was ignored due to ", line).yellow()
+                    );
                 }
+            }
 
-                "system" => {
-                    // let mut command = Command::new(tokens[1]);
-                    // command.args(tokens[2..].to_vec());
+            "copy" => {
+                if let Some(ref package_directory_path_buf) = package_directory_path_buf {
+                    let mut source_path_buf = PathBuf::from(package_directory_path_buf);
+                    source_path_buf.push(tokens[1]);
 
-                    let mut command = if !is_windows() {
-                        Command::new("sh")
-                    } else {
-                        Command::new("cmd")
-                    };
+                    let destination = tokens[2..].join(" ");
+                    let destination_path_buf = PathBuf::from(destination);
 
-                    if !is_windows() {
-                        command.arg("-c")
-                    } else {
-                        command.arg("/C")
-                    };
-
-                    command
-                        .arg(line.split_off(7))
-                        .stdout(Stdio::inherit())
-                        .stderr(Stdio::inherit());
-
-                    if let Some(package_directory_path_buf) = package_directory_path_buf {
-                        command.current_dir(package_directory_path_buf);
-                    }
-
-                    match command.output() {
-                        Ok(output) => output,
+                    match copy(source_path_buf, &destination_path_buf) {
+                        Ok(_) => {}
                         Err(error) => {
                             println!(
                                 "{}",
                                 format!(
-                                    "- FAILED RUNNING COMMAND: '{}'! GIVEN ERROR: {}",
-                                    line, error
+                                    "- FAILED TO WRITE INTO FILE '{}'! ERROR[100]: {}",
+                                    &destination_path_buf.display(),
+                                    error
                                 )
                                 .bright_red()
                             );
+
                             exit(1);
                         }
-                    };
-                }
-
-                _ => {
+                    }
+                } else {
                     println!(
                         "{}",
-                        format!("- INVALID PKGFILE COMMAND '{}'!", line).bright_red()
+                        format!("+ Command '{}' was ignored due to ", line).yellow()
                     );
-
-                    exit(1);
                 }
             }
-        }
-    } else {
-        println!("{}", "+ Transaction aborted".bright_green());
 
-        if let Some(package_directory_path_buf) = package_directory_path_buf {
-            match remove_dir_all(package_directory_path_buf) {
-                Ok(_) => println!("{}", "+ Deleted temporary package directory".bright_green()),
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO DELETE DIRECTORY '{}'! ERROR[86]: {}",
-                            package_directory_path_buf.display(),
-                            error
-                        )
-                        .as_str()
-                        .bright_red()
-                    );
-                    exit(1);
+            "delete" => {
+                let path = &tokens[1..].join(" ");
+
+                match remove_file(path) {
+                    Ok(_) => {}
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!("- FAILED TO DELETE FILE {}! ERROR[92]: {}", path, error)
+                                .as_str()
+                                .bright_red()
+                        );
+                        exit(1);
+                    }
                 }
             }
-        }
 
-        exit(0);
+            "system" => {
+                // let mut command = Command::new(tokens[1]);
+                // command.args(tokens[2..].to_vec());
+
+                let mut command = if !is_windows() {
+                    Command::new("sh")
+                } else {
+                    Command::new("cmd")
+                };
+
+                if !is_windows() {
+                    command.arg("-c")
+                } else {
+                    command.arg("/C")
+                };
+
+                command
+                    .arg(line.split_off(7))
+                    .stdout(Stdio::inherit())
+                    .stderr(Stdio::inherit());
+
+                if let Some(package_directory_path_buf) = package_directory_path_buf {
+                    command.current_dir(package_directory_path_buf);
+                }
+
+                match command.output() {
+                    Ok(output) => output,
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- FAILED RUNNING COMMAND: '{}'! GIVEN ERROR: {}",
+                                line, error
+                            )
+                            .bright_red()
+                        );
+                        exit(1);
+                    }
+                };
+            }
+
+            _ => {
+                println!(
+                    "{}",
+                    format!("- INVALID PKGFILE COMMAND '{}'!", line).bright_red()
+                );
+
+                exit(1);
+            }
+        }
     }
 }

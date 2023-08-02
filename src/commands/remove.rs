@@ -26,7 +26,7 @@ use toml::Value;
 
 use crate::{
     types::LockFile,
-    utils::{execute_lines, get_aati_lock_path_buf},
+    utils::{execute_lines, get_aati_lock_path_buf, prompt_yn},
 };
 
 pub fn command(package: &Value, force: bool) {
@@ -59,21 +59,38 @@ pub fn command(package: &Value, force: bool) {
     {
         Some(found_package) => found_package,
         None => {
-            println!("{}", "- PACKAGE NOT FOUND IN THE LOCKFILE!".bright_red());
+            println!(
+                "{}",
+                format!(
+                    "- Package '{}' not found in the Lockfile!",
+                    package["name"].as_str().unwrap()
+                )
+                .bright_red()
+            );
+
             exit(1);
         }
     };
 
-    execute_lines(found_package.removal.clone(), None, force);
+    if force
+        || prompt_yn(&format!(
+            "+ Commands to be ran:\n  {}\n/ Do these commands seem safe to execute?",
+            found_package.removal.join("\n  ")
+        ))
+    {
+        execute_lines(found_package.removal.clone(), None);
 
-    println!(
-        "{}",
-        "+ Removing package from the Lockfile...".bright_green()
-    );
+        println!(
+            "{}",
+            "+ Removing package from the Lockfile...".bright_green()
+        );
 
-    remove_from_lockfile(package["name"].as_str().unwrap());
+        remove_from_lockfile(package["name"].as_str().unwrap());
 
-    println!("{}", "+ Removal finished successfully!".bright_green());
+        println!("{}", "+ Removal finished successfully!".bright_green());
+    } else {
+        println!("{}", "+ Transaction aborted".bright_green());
+    }
 }
 
 pub fn remove_from_lockfile(package_name: &str) {

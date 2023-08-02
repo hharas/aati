@@ -414,10 +414,17 @@ pub fn command(package_name: &str, force: bool) {
                                     let (installation_lines, removal_lines) =
                                         parse_pkgfile(&pkgfile);
 
+                                    if force
+                                        || prompt_yn(&format!(
+                                            "+ Commands to be ran:\n  {}\n/ Do these commands seem safe to execute?",
+                                            installation_lines.join("\n  ")
+                                        ))
+                                    {
+
+
                                     execute_lines(
                                         installation_lines,
                                         Some(&package_directory),
-                                        force,
                                     );
 
                                     match remove_dir_all(package_directory) {
@@ -513,6 +520,26 @@ pub fn command(package_name: &str, force: bool) {
                                     }
 
                                     println!("{}", "+ Installation is complete!".bright_green());
+                                } else {
+                                    println!("{}", "+ Transaction aborted".bright_green());
+
+                                    match remove_dir_all(&package_directory) {
+                                        Ok(_) => println!("{}", "+ Deleted temporary package directory".bright_green()),
+                                        Err(error) => {
+                                            println!(
+                                                "{}",
+                                                format!(
+                                                    "- FAILED TO DELETE DIRECTORY '{}'! ERROR[86]: {}",
+                                                    package_directory.display(),
+                                                    error
+                                                )
+                                                .as_str()
+                                                .bright_red()
+                                            );
+                                            exit(1);
+                                        }
+                                    }
+                                }
                                 } else {
                                     println!(
                                         "{}",
