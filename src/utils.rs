@@ -124,7 +124,7 @@ pub fn get_bin_path_buf() -> PathBuf {
         let local_dir = home_dir.join(".local");
         let bin_dir = home_dir.join(".local/bin");
 
-        if local_dir.exists() {
+        if !local_dir.exists() {
             match create_dir_all(&local_dir) {
                 Ok(_) => {}
                 Err(error) => {
@@ -142,7 +142,7 @@ pub fn get_bin_path_buf() -> PathBuf {
             }
         }
 
-        if bin_dir.exists() {
+        if !bin_dir.exists() {
             match create_dir_all(&bin_dir) {
                 Ok(_) => {}
                 Err(error) => {
@@ -173,7 +173,7 @@ pub fn get_lib_path_buf() -> PathBuf {
         let local_dir = home_dir.join(".local");
         let lib_dir = home_dir.join(".local/lib");
 
-        if local_dir.exists() {
+        if !local_dir.exists() {
             match create_dir_all(&local_dir) {
                 Ok(_) => {}
                 Err(error) => {
@@ -191,7 +191,7 @@ pub fn get_lib_path_buf() -> PathBuf {
             }
         }
 
-        if lib_dir.exists() {
+        if !lib_dir.exists() {
             match create_dir_all(&lib_dir) {
                 Ok(_) => {}
                 Err(error) => {
