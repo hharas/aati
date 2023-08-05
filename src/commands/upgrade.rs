@@ -22,7 +22,7 @@ use colored::Colorize;
 use toml::Value;
 
 use crate::utils::{
-    extract_package, get_aati_config, get_aati_lock, get_repo_config, get_target, prompt_yn,
+    extract_package, get_aati_config, get_aati_lock, get_repo_config, is_supported, prompt_yn,
 };
 
 use super::{get, remove};
@@ -110,7 +110,7 @@ pub fn command(choice: Option<&str>, force: bool) {
 
                     for available_package in available_packages {
                         if installed_package["name"] == available_package["name"]
-                            && available_package["target"].as_str().unwrap() == get_target()
+                            && is_supported(available_package["target"].as_str().unwrap())
                             && installed_package["version"] != available_package["current"]
                         {
                             to_be_upgraded.push(available_package["name"].as_str().unwrap());

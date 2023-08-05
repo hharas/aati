@@ -21,7 +21,7 @@ use std::{process::exit, str::FromStr};
 use colored::Colorize;
 use toml::Value;
 
-use crate::utils::{get_aati_config, get_aati_lock, get_repo_config, get_target, prompt};
+use crate::utils::{get_aati_config, get_aati_lock, get_repo_config, is_supported, prompt};
 
 pub fn command(text: &str, repo_name: Option<&str>) {
     // Initialising main variables
@@ -45,7 +45,7 @@ pub fn command(text: &str, repo_name: Option<&str>) {
 
             for available_package in available_packages {
                 if available_package["name"].as_str().unwrap() == text
-                    && available_package["target"].as_str().unwrap() == get_target()
+                    && is_supported(available_package["target"].as_str().unwrap())
                 {
                     results.push(vec![
                         available_package.clone(),
@@ -75,7 +75,7 @@ pub fn command(text: &str, repo_name: Option<&str>) {
 
                 for available_package in available_packages {
                     if available_package["name"].as_str().unwrap() == text
-                        && available_package["target"].as_str().unwrap() == get_target()
+                        && is_supported(available_package["target"].as_str().unwrap())
                     {
                         results.push(vec![
                             available_package.clone(),
@@ -142,7 +142,7 @@ pub fn command(text: &str, repo_name: Option<&str>) {
                     "{}",
                     format!(
                         "+ Package '{}' exists with the same name in multiple repositories:",
-                        conflicts[0][0]
+                        conflicts[0][1]
                     )
                     .yellow()
                 );

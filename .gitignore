@@ -1,3 +1,8 @@
+# VSCode files
 .vscode/
 
-/target
+# Cargo target directory
+target/
+
+# Testing purposes
+testing_repo/

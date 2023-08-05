@@ -46,7 +46,8 @@ pub struct LockFile {
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Package {
     pub name: String,
-    pub source: String,
     pub version: String,
+    pub target: String,
+    pub source: String,
     pub removal: Vec<String>,
 }

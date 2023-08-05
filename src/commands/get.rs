@@ -27,7 +27,7 @@ use crate::{
     types::{LockFile, Package},
     utils::{
         execute_lines, extract_package, get_aati_config, get_aati_lock, get_aati_lock_path_buf,
-        get_repo_config, get_target, parse_pkgfile, prompt_yn,
+        get_repo_config, is_supported, parse_pkgfile, prompt_yn,
     },
 };
 use colored::Colorize;
@@ -86,7 +86,7 @@ pub fn command(package_name: &str, force: bool) {
                 if available_package["name"].as_str().unwrap() == extracted_package[1] {
                     for package_version in available_package["versions"].as_array().unwrap() {
                         if package_version["tag"].as_str().unwrap() == extracted_package[2].clone()
-                            && available_package["target"].as_str().unwrap() == get_target()
+                            && is_supported(available_package["target"].as_str().unwrap())
                         {
                             is_found = true;
                             checksum = package_version["checksum"].as_str().unwrap();
@@ -126,7 +126,7 @@ pub fn command(package_name: &str, force: bool) {
                     .unwrap()["url"]
                     .as_str()
                     .unwrap(),
-                get_target(),
+                extracted_package[3],
                 name,
                 name,
                 version
@@ -473,8 +473,9 @@ pub fn command(package_name: &str, force: bool) {
 
                                     let package = Package {
                                         name,
-                                        source: extracted_package[0].to_string(),
                                         version,
+                                        source: extracted_package[0].to_string(),
+                                        target: extracted_package[3].to_string(),
                                         removal: removal_lines,
                                     };
 

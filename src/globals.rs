@@ -16,7 +16,8 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-pub const POSSIBLE_TARGETS: [&str; 130] = [
+pub const POSSIBLE_TARGETS: [&str; 131] = [
+    "any",
     "x86-linux",
     "x86-macos",
     "x86-ios",

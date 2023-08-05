@@ -36,6 +36,10 @@ pub fn get_target() -> String {
     format!("{}-{}", std::env::consts::ARCH, std::env::consts::OS)
 }
 
+pub fn is_supported(target: &str) -> bool {
+    target == get_target() || target == "any"
+}
+
 pub fn check_config_dirs() {
     let home_dir = home_dir().unwrap();
 
@@ -510,7 +514,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
 
                         for available_package in available_packages {
                             if available_package["name"].as_str().unwrap() == text
-                                && available_package["target"].as_str().unwrap() == get_target()
+                                && is_supported(available_package["target"].as_str().unwrap())
                             {
                                 results.push(Package {
                                     name: available_package["name"].as_str().unwrap().to_string(),
@@ -519,6 +523,10 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                         .unwrap()
                                         .to_string(),
                                     source: added_repo["repo"]["name"]
+                                        .as_str()
+                                        .unwrap()
+                                        .to_string(),
+                                    target: available_package["target"]
                                         .as_str()
                                         .unwrap()
                                         .to_string(),
@@ -536,7 +544,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
 
                         for available_package in available_packages {
                             if available_package["name"].as_str().unwrap() == text
-                                && available_package["target"].as_str().unwrap() == get_target()
+                                && is_supported(available_package["target"].as_str().unwrap())
                             {
                                 results.push(Package {
                                     name: available_package["name"].as_str().unwrap().to_string(),
@@ -545,6 +553,10 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                         .unwrap()
                                         .to_string(),
                                     source: added_repo["repo"]["name"]
+                                        .as_str()
+                                        .unwrap()
+                                        .to_string(),
+                                    target: available_package["target"]
                                         .as_str()
                                         .unwrap()
                                         .to_string(),
@@ -564,8 +576,9 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                     available_package["versions"].as_array().unwrap()
                                 {
                                     if package_version["tag"].as_str().unwrap() == version
-                                        && available_package["target"].as_str().unwrap()
-                                            == get_target()
+                                        && is_supported(
+                                            available_package["target"].as_str().unwrap(),
+                                        )
                                     {
                                         results.push(Package {
                                             name: available_package["name"]
@@ -574,6 +587,10 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                                 .to_string(),
                                             version: version.to_string(),
                                             source: added_repo["repo"]["name"]
+                                                .as_str()
+                                                .unwrap()
+                                                .to_string(),
+                                            target: available_package["target"]
                                                 .as_str()
                                                 .unwrap()
                                                 .to_string(),
@@ -591,12 +608,13 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
 
                     for available_package in available_packages {
                         if available_package["name"].as_str().unwrap() == text_to_be_extracted
-                            && available_package["target"].as_str().unwrap() == get_target()
+                            && is_supported(available_package["target"].as_str().unwrap())
                         {
                             results.push(Package {
                                 name: available_package["name"].as_str().unwrap().to_string(),
                                 version: available_package["current"].as_str().unwrap().to_string(),
                                 source: added_repo["repo"]["name"].as_str().unwrap().to_string(),
+                                target: available_package["target"].as_str().unwrap().to_string(),
                                 removal: vec!["$uninitialised$".to_string()],
                             })
                         }
@@ -610,12 +628,13 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
 
                     for available_package in available_packages {
                         if available_package["name"].as_str().unwrap() == text_to_be_extracted
-                            && available_package["target"].as_str().unwrap() == get_target()
+                            && is_supported(available_package["target"].as_str().unwrap())
                         {
                             results.push(Package {
                                 name: available_package["name"].as_str().unwrap().to_string(),
                                 version: available_package["current"].as_str().unwrap().to_string(),
                                 source: added_repo["repo"]["name"].as_str().unwrap().to_string(),
+                                target: available_package["target"].as_str().unwrap().to_string(),
                                 removal: vec!["$uninitialised$".to_string()],
                             })
                         }
@@ -630,7 +649,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                             for package_version in available_package["versions"].as_array().unwrap()
                             {
                                 if package_version["tag"].as_str().unwrap() == version
-                                    && available_package["target"].as_str().unwrap() == get_target()
+                                    && is_supported(available_package["target"].as_str().unwrap())
                                 {
                                     results.push(Package {
                                         name: available_package["name"]
@@ -639,6 +658,10 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                             .to_string(),
                                         version: version.to_string(),
                                         source: added_repo["repo"]["name"]
+                                            .as_str()
+                                            .unwrap()
+                                            .to_string(),
+                                        target: available_package["target"]
                                             .as_str()
                                             .unwrap()
                                             .to_string(),
@@ -676,7 +699,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                 if name == version {
                     for available_package in available_packages {
                         if available_package["name"].as_str().unwrap() == name
-                            && available_package["target"].as_str().unwrap() == get_target()
+                            && is_supported(available_package["target"].as_str().unwrap())
                         {
                             version = available_package["current"].as_str().unwrap();
                         }
@@ -686,17 +709,19 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
 
                     for available_package in available_packages {
                         if available_package["name"].as_str().unwrap() == text
-                            && available_package["target"].as_str().unwrap() == get_target()
+                            && is_supported(available_package["target"].as_str().unwrap())
                         {
                             version = available_package["current"].as_str().unwrap();
                         }
                     }
                 }
 
-                let name_string = name.to_string();
-                let version_string = version.to_string();
-
-                Some(vec![repo_name.to_string(), name_string, version_string])
+                Some(vec![
+                    repo_name.to_string(),
+                    name.to_string(),
+                    version.to_string(),
+                    found_package.target.clone(),
+                ])
             } else if repo_name == "$unprovided$" {
                 let conflicts: Vec<_> = results
                     .iter()
@@ -707,6 +732,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                             pkg.name.clone(),
                             pkg.version.clone(),
                             pkg.source.clone(),
+                            pkg.target.clone(),
                         ]
                     })
                     .collect();
@@ -720,12 +746,13 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                 );
                 for conflict in conflicts.clone() {
                     println!(
-                        "{}    ({}) {}/{}-{}",
+                        "{}    ({}) {}/{}-{}-{}",
                         "+".yellow(),
                         conflict[0],
                         conflict[3],
                         conflict[1],
-                        conflict[2]
+                        conflict[2],
+                        conflict[4]
                     );
                 }
                 let input = prompt("* Enter the number of the package you choose:");
@@ -743,6 +770,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                 result_package[3].clone(),
                                 result_package[1].clone(),
                                 result_package[2].clone(),
+                                result_package[4].clone(),
                             ])
                         } else {
                             println!("{}", "- INVALID CHOICE!".bright_red());
@@ -763,6 +791,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                         result_package.source.clone(),
                         result_package.name.clone(),
                         result_package.version.clone(),
+                        result_package.target.clone(),
                     ]),
                     None => {
                         println!("{}", "- PACKAGE REPOSITORY NOT FOUND!".bright_red());
@@ -788,14 +817,14 @@ description = \"APR made for testing the extract_package() function\"
 
 [index]
 packages = [
-    {{ name = \"testing-package\", current = \"0.1.0\", target = \"{}\", versions = [
+    {{ name = \"testing-package\", current = \"0.1.0\", target = \"any\", versions = [
         {{ tag = \"0.1.0\", checksum = \"checksum-placeholder\" }}
     ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"https://github.com/hharas/aati\" }},
     {{ name = \"calculator\", current = \"0.1.1\", target = \"{}\", versions = [
         {{ tag = \"0.1.0\", checksum = \"checksum-placeholder\" }},
         {{ tag = \"0.1.1\", checksum = \"checksum-placeholder\" }},
     ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"https://github.com/hharas/aati\" }},
-]", get_target(), get_target());
+]", get_target());
 
     let repo_config: Value = repo_toml.parse().unwrap();
     let added_repos = vec![repo_config];
@@ -805,7 +834,8 @@ packages = [
         Some(vec![
             "testing".to_string(),
             "calculator".to_string(),
-            "0.1.1".to_string()
+            "0.1.1".to_string(),
+            get_target().to_string()
         ])
     );
 
@@ -814,7 +844,8 @@ packages = [
         Some(vec![
             "testing".to_string(),
             "calculator".to_string(),
-            "0.1.0".to_string()
+            "0.1.0".to_string(),
+            get_target().to_string()
         ])
     );
 
@@ -823,7 +854,8 @@ packages = [
         Some(vec![
             "testing".to_string(),
             "calculator".to_string(),
-            "0.1.1".to_string()
+            "0.1.1".to_string(),
+            get_target().to_string()
         ])
     );
 
@@ -832,7 +864,8 @@ packages = [
         Some(vec![
             "testing".to_string(),
             "calculator".to_string(),
-            "0.1.1".to_string()
+            "0.1.1".to_string(),
+            get_target().to_string()
         ])
     );
 
@@ -841,7 +874,8 @@ packages = [
         Some(vec![
             "testing".to_string(),
             "calculator".to_string(),
-            "0.1.0".to_string()
+            "0.1.0".to_string(),
+            get_target().to_string()
         ])
     );
 
@@ -850,7 +884,8 @@ packages = [
         Some(vec![
             "testing".to_string(),
             "calculator".to_string(),
-            "0.1.1".to_string()
+            "0.1.1".to_string(),
+            get_target().to_string()
         ])
     );
 
@@ -859,7 +894,8 @@ packages = [
         Some(vec![
             "testing".to_string(),
             "testing-package".to_string(),
-            "0.1.0".to_string()
+            "0.1.0".to_string(),
+            "any".to_string()
         ])
     );
 
@@ -868,7 +904,8 @@ packages = [
         Some(vec![
             "testing".to_string(),
             "testing-package".to_string(),
-            "0.1.0".to_string()
+            "0.1.0".to_string(),
+            "any".to_string()
         ])
     );
 
@@ -877,7 +914,8 @@ packages = [
         Some(vec![
             "testing".to_string(),
             "testing-package".to_string(),
-            "0.1.0".to_string()
+            "0.1.0".to_string(),
+            "any".to_string()
         ])
     );
 
@@ -886,7 +924,8 @@ packages = [
         Some(vec![
             "testing".to_string(),
             "testing-package".to_string(),
-            "0.1.0".to_string()
+            "0.1.0".to_string(),
+            "any".to_string()
         ])
     );
 

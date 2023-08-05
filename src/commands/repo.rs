@@ -407,10 +407,10 @@ pub fn info(repo_name: String) {
     let packages_number = repo_toml["index"]["packages"].as_array().unwrap().len();
 
     println!(
-                    "{}\n    Name: {}\n    URL: {}\n    Maintainer: {}\n    Number of Packages: {}\n    Description:\n      {}",
-                    "+ Repository Information:".bright_green(),
-                    repo_name, url, maintainer, packages_number, description
-                );
+        "{}\n    Name: {}\n    URL: {}\n    Maintainer: {}\n    Number of Packages: {}\n    Description:\n      {}",
+        "+ Repository Information:".bright_green(),
+        repo_name, url, maintainer, packages_number, description
+    );
 }
 
 pub fn list() {

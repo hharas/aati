@@ -19,7 +19,7 @@
 use colored::Colorize;
 use toml::Value;
 
-use crate::utils::{get_aati_config, get_aati_lock, get_repo_config, get_target};
+use crate::utils::{get_aati_config, get_aati_lock, get_repo_config, is_supported};
 
 pub fn installed() {
     let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
@@ -39,27 +39,29 @@ pub fn installed() {
                     .iter()
                     .find(|pkg| {
                         pkg["name"] == installed_package["name"]
-                            && pkg["target"].as_str().unwrap() == get_target()
+                            && is_supported(pkg["target"].as_str().unwrap())
                             && pkg["current"] != installed_package["version"]
                     }) {
                     Some(_) => {
                         println!(
-                            "{}   {}/{}-{} {}",
+                            "{}   {}/{}-{}-{} {}",
                             "+".bright_green(),
                             installed_package["source"].as_str().unwrap(),
                             installed_package["name"].as_str().unwrap(),
                             installed_package["version"].as_str().unwrap(),
+                            installed_package["target"].as_str().unwrap(),
                             "[outdated]".yellow()
                         );
                     }
 
                     None => {
                         println!(
-                            "{}   {}/{}-{}",
+                            "{}   {}/{}-{}-{}",
                             "+".bright_green(),
                             installed_package["source"].as_str().unwrap(),
                             installed_package["name"].as_str().unwrap(),
-                            installed_package["version"].as_str().unwrap()
+                            installed_package["version"].as_str().unwrap(),
+                            installed_package["target"].as_str().unwrap()
                         );
                     }
                 }
@@ -111,8 +113,12 @@ pub fn available() {
             println!("{}   {}/", "+".bright_green(), repo_name);
 
             for package in available_packages {
-                if package["target"].as_str().unwrap() == get_target() {
-                    println!("      {}:", package["name"].as_str().unwrap());
+                if is_supported(package["target"].as_str().unwrap()) {
+                    println!(
+                        "      {} ({}):",
+                        package["name"].as_str().unwrap(),
+                        package["target"].as_str().unwrap()
+                    );
                     let versions = package["versions"].as_array().unwrap();
 
                     let mut reversed_versions = versions.clone();
@@ -153,7 +159,7 @@ pub fn available() {
             println!("{}   {}/", "+".yellow(), repo_name);
 
             for package in available_packages {
-                if package["target"].as_str().unwrap() != get_target() {
+                if !is_supported(package["target"].as_str().unwrap()) {
                     println!(
                         "      {} ({}):",
                         package["name"].as_str().unwrap(),

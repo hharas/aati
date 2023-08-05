@@ -30,7 +30,9 @@ use toml::Value;
 
 use crate::{
     types::{LockFile, Package},
-    utils::{execute_lines, get_aati_lock, get_aati_lock_path_buf, parse_pkgfile, prompt_yn},
+    utils::{
+        execute_lines, get_aati_lock, get_aati_lock_path_buf, get_target, parse_pkgfile, prompt_yn,
+    },
 };
 
 pub fn command(filename: &str, force: bool) {
@@ -223,8 +225,9 @@ pub fn command(filename: &str, force: bool) {
 
                     let package = Package {
                         name: name.to_string(),
-                        source: source.to_string(),
                         version: version.to_string(),
+                        source: source.to_string(),
+                        target: get_target(),
                         removal: removal_lines,
                     };
 
@@ -349,6 +352,7 @@ pub fn parse_filename(mut filename: &str) -> Package {
             name: name.to_string(),
             version: version.to_string(),
             source: "local".to_string(),
+            target: get_target(),
             removal: vec!["$uninitialised$".to_string()],
         } //         ^^^^^ That's the name of the repo containing locally installed packages.
     } else {
@@ -366,16 +370,18 @@ fn test_parse_filename() {
     let filename1 = "silm-0.3.3.tar.lz4";
     let expected_result1 = Package {
         name: "silm".to_string(),
-        source: "local".to_string(),
         version: "0.3.3".to_string(),
+        source: "local".to_string(),
+        target: get_target(),
         removal: vec!["$uninitialised$".to_string()],
     };
 
     let filename2 = "arsil-server-0.2.1.tar.lz4";
     let expected_result2 = Package {
         name: "arsil-server".to_string(),
-        source: "local".to_string(),
         version: "0.2.1".to_string(),
+        source: "local".to_string(),
+        target: get_target(),
         removal: vec!["$uninitialised$".to_string()],
     };
 
