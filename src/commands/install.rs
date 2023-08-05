@@ -183,30 +183,24 @@ pub fn command(filename: &str, force: bool) {
                         win_removal_lines,
                     ) = parse_pkgfile(&pkgfile);
 
+                    let selected_installation_lines = if is_windows() {
+                        if !win_installation_lines.is_empty() {
+                            win_installation_lines.clone()
+                        } else {
+                            installation_lines
+                        }
+                    } else {
+                        installation_lines
+                    };
+
                     if force
                         || prompt_yn(&format!(
                             "+ Commands to be ran:\n  {}\n/ Do these commands seem safe to execute?",
-                            installation_lines.join("\n  ")
+                            selected_installation_lines.join("\n  ")
                         ))
                     {
-                        if is_windows() {
-                            if !win_installation_lines.is_empty() {
-                                execute_lines(
-                                    win_installation_lines.clone(),
-                                    Some(&package_directory),
-                                );
-                            } else {
-                                execute_lines(
-                                    installation_lines,
-                                    Some(&package_directory),
-                                );
-                            }
-                        } else {
-                            execute_lines(
-                                installation_lines,
-                                Some(&package_directory),
-                            );
-                        }
+
+                        execute_lines(selected_installation_lines, Some(&package_directory));
 
                     match remove_dir_all(package_directory) {
                         Ok(_) => {}
@@ -342,6 +336,138 @@ pub fn command(filename: &str, force: bool) {
             "- A Package with the same name is already installed!".bright_red()
         );
         exit(1);
+    }
+}
+
+pub fn use_pkgfile(path_str: &str, name: &str, version: &str, force: bool) {
+    let pkgfile_path_buf = PathBuf::from(path_str);
+
+    if pkgfile_path_buf.exists() {
+        match read_to_string(&pkgfile_path_buf) {
+            Ok(pkgfile) => {
+                let package_directory = pkgfile_path_buf.parent().unwrap().to_path_buf();
+
+                let (installation_lines, win_installation_lines, removal_lines, win_removal_lines) =
+                    parse_pkgfile(&pkgfile);
+
+                let selected_installation_lines = if is_windows() {
+                    if !win_installation_lines.is_empty() {
+                        win_installation_lines.clone()
+                    } else {
+                        installation_lines
+                    }
+                } else {
+                    installation_lines
+                };
+
+                if force
+                    || prompt_yn(&format!(
+                        "+ Commands to be ran:\n  {}\n/ Do these commands seem safe to execute?",
+                        selected_installation_lines.join("\n  ")
+                    ))
+                {
+                    execute_lines(selected_installation_lines, Some(&package_directory));
+                }
+
+                println!("{}", "+ Adding Package to the Lockfile...".bright_green());
+
+                let aati_lock_path_buf = get_aati_lock_path_buf();
+
+                let lock_file_str = match read_to_string(&aati_lock_path_buf) {
+                    Ok(contents) => contents,
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- FAILED TO READ LOCKFILE AT '{}'! ERROR[98]: {}",
+                                &aati_lock_path_buf.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
+
+                        exit(1);
+                    }
+                };
+                let mut lock_file: LockFile = toml::from_str(&lock_file_str).unwrap();
+
+                let selected_removal_lines = if is_windows() {
+                    if !win_installation_lines.is_empty() {
+                        win_removal_lines
+                    } else {
+                        removal_lines
+                    }
+                } else {
+                    removal_lines
+                };
+
+                let package = Package {
+                    name: name.to_string(),
+                    version: version.to_string(),
+                    source: "local".to_string(),
+                    target: get_target(),
+                    removal: selected_removal_lines,
+                };
+
+                lock_file.package.push(package);
+
+                let mut file = match OpenOptions::new()
+                    .write(true)
+                    .truncate(true)
+                    .open(&aati_lock_path_buf)
+                {
+                    Ok(file) => file,
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- FAILED TO OPEN LOCKFILE AT '{}' FOR WRITING! ERROR[80]: {}",
+                                &aati_lock_path_buf.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
+
+                        exit(1);
+                    }
+                };
+
+                let toml_str = toml::to_string(&lock_file).unwrap();
+                match file.write_all(toml_str.as_bytes()) {
+                    Ok(_) => {}
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- FAILED TO WRITE INTO LOCKFILE AT '{}'! ERROR[2]: {}",
+                                &aati_lock_path_buf.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
+
+                        exit(1);
+                    }
+                }
+            }
+
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "Failed to read PKGFILE contents at '{}'! ERROR: {}",
+                        pkgfile_path_buf.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+            }
+        }
+    } else {
+        println!(
+            "{}",
+            format!("No PKGFILE found at '{}'", pkgfile_path_buf.display()).bright_red()
+        );
     }
 }
 

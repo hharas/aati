@@ -77,9 +77,37 @@ as published by the Free Software Foundation.",
                     Arg::new("package")
                         .help("package .tar.lz4 file")
                         .action(ArgAction::Set)
-                        .required(true)
+                        .required_unless_present("pkgfile")
+                        .conflicts_with("pkgfile")
                         .num_args(1)
                         .value_hint(ValueHint::FilePath),
+                    Arg::new("pkgfile")
+                        .long("use-pkgfile")
+                        .short('p')
+                        .help("path to a pkgfile")
+                        .action(ArgAction::Set)
+                        .required_unless_present("package")
+                        .conflicts_with("package")
+                        .num_args(1)
+                        .value_hint(ValueHint::FilePath),
+                    Arg::new("name")
+                        .long("name")
+                        .short('n')
+                        .help("name of pkgfile-installed package")
+                        .action(ArgAction::Set)
+                        .required_unless_present("package")
+                        .conflicts_with("package")
+                        .num_args(1)
+                        .value_hint(ValueHint::Other),
+                    Arg::new("version")
+                        .long("version")
+                        .short('v')
+                        .help("version of pkgfile-installed package")
+                        .action(ArgAction::Set)
+                        .required_unless_present("package")
+                        .conflicts_with("package")
+                        .num_args(1)
+                        .value_hint(ValueHint::Other),
                     Arg::new("force")
                         .long("force")
                         .short('f')
@@ -332,9 +360,15 @@ as published by the Free Software Foundation.",
         }
         Some(("install", install_matches)) => {
             let force = install_matches.get_flag("force");
-            let package = install_matches.get_one::<String>("package").unwrap();
+            if let Some(package) = install_matches.get_one::<String>("package") {
+                install::command(package, force);
+            } else {
+                let pkgfile = install_matches.get_one::<String>("pkgfile").unwrap();
+                let name = install_matches.get_one::<String>("name").unwrap();
+                let version = install_matches.get_one::<String>("version").unwrap();
 
-            install::command(package, force);
+                install::use_pkgfile(pkgfile, name, version, force);
+            }
         }
         Some(("upgrade", upgrade_matches)) => {
             let force = upgrade_matches.get_flag("force");

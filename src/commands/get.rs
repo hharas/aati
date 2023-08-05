@@ -418,32 +418,24 @@ pub fn command(package_name: &str, force: bool) {
                                         win_removal_lines,
                                     ) = parse_pkgfile(&pkgfile);
 
+                                    let selected_installation_lines = if is_windows() {
+                                        if !win_installation_lines.is_empty() {
+                                            win_installation_lines.clone()
+                                        } else {
+                                            installation_lines
+                                        }
+                                    } else {
+                                        installation_lines
+                                    };
+
                                     if force
                                         || prompt_yn(&format!(
                                             "+ Commands to be ran:\n  {}\n/ Do these commands seem safe to execute?",
-                                            installation_lines.join("\n  ")
+                                            selected_installation_lines.join("\n  ")
                                         ))
                                     {
 
-
-                                    if is_windows() {
-                                        if !win_installation_lines.is_empty() {
-                                            execute_lines(
-                                                win_installation_lines.clone(),
-                                                Some(&package_directory),
-                                            );
-                                        } else {
-                                            execute_lines(
-                                                installation_lines,
-                                                Some(&package_directory),
-                                            );
-                                        }
-                                    } else {
-                                        execute_lines(
-                                            installation_lines,
-                                            Some(&package_directory),
-                                        );
-                                    }
+                                        execute_lines(selected_installation_lines, Some(&package_directory));
 
                                     match remove_dir_all(package_directory) {
                                         Ok(_) => {}
@@ -488,7 +480,7 @@ pub fn command(package_name: &str, force: bool) {
                                     };
                                     let mut lock_file: LockFile =
                                         toml::from_str(&lock_file_str).unwrap();
-                                    
+
                                         let selected_removal_lines = if is_windows() {
                                             if !win_installation_lines.is_empty() {
                                                     win_removal_lines
