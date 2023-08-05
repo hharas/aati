@@ -72,7 +72,7 @@ as published by the Free Software Foundation.",
                 ]),
             Command::new("install")
                 .short_flag('I')
-                .about("Install a package from a local .tar.lz4 archive")
+                .about("Install a package from the local filesystem")
                 .args([
                     Arg::new("package")
                         .help("package .tar.lz4 file")
