@@ -1,4 +1,14 @@
 [[version]]
+tag = "0.11.8"
+date = "Sat Aug 05 15:49:11 2023 +0300"
+changes = '''
+- Fixed $bin_dir, $lib_dir and $home_dir not being created
+- Added 'any' target that supports all platforms
+- Added optional sections '[win-installation]' and '[win-removal]' in PKGFILE
+- Added ability to install packages directly from PKGFILEs using new options for the 'install' command
+  Namely '--use-pkgfile', '--name' and '--version' options'''
+
+[[version]]
 tag = "0.11.7"
 date = "Mon Jul 31 21:02:57 2023 +0300"
 changes = '''
@@ -6,8 +16,7 @@ changes = '''
   The 'completions' command can generate tab-completion scripts for bash, zsh, fish and more shells
 - Updated 'serve' command's '--url' similar to 'generate'
 - Added support for multiple arguments for 'repo' command's 'add' and 'remove' subcommands
-- Updated '--help' and '--version' options
-'''
+- Updated '--help' and '--version' options'''
 
 [[version]]
 tag = "0.11.6"
