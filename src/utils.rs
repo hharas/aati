@@ -982,9 +982,11 @@ pub fn make_executable(_installation_path_buf: &PathBuf) {
     }
 }
 
-pub fn parse_pkgfile(pkgfile: &str) -> (Vec<String>, Vec<String>) {
+pub fn parse_pkgfile(pkgfile: &str) -> (Vec<String>, Vec<String>, Vec<String>, Vec<String>) {
     let mut installation_lines = Vec::new();
+    let mut win_installation_lines = Vec::new();
     let mut removal_lines = Vec::new();
+    let mut win_removal_lines = Vec::new();
     let mut current_section = "";
 
     for line in pkgfile.lines() {
@@ -1001,12 +1003,21 @@ pub fn parse_pkgfile(pkgfile: &str) -> (Vec<String>, Vec<String>) {
 
         if current_section == "[installation]" {
             installation_lines.push(trimmed_line.to_string());
+        } else if current_section == "[win-installation]" {
+            win_installation_lines.push(trimmed_line.to_string());
         } else if current_section == "[removal]" {
             removal_lines.push(trimmed_line.to_string());
+        } else if current_section == "[win-removal]" {
+            win_removal_lines.push(trimmed_line.to_string());
         }
     }
 
-    (installation_lines, removal_lines)
+    (
+        installation_lines,
+        win_installation_lines,
+        removal_lines,
+        win_removal_lines,
+    )
 }
 
 pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&PathBuf>) {

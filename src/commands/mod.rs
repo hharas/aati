@@ -52,24 +52,20 @@ pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool) {
 
             for package_name in packages {
                 let result = is_installed(package_name);
-                let installed = result.0;
-                let package_option = result.1;
 
-                if installed {
-                    if let Some(installed_package) = package_option {
-                        println!(
-                            "{}",
-                            format!(
-                                "+ Removing package ({}/{}-{}) from Lockfile...",
-                                installed_package["source"].as_str().unwrap(),
-                                installed_package["name"].as_str().unwrap(),
-                                installed_package["version"].as_str().unwrap()
-                            )
-                            .bright_green()
-                        );
-                        remove::remove_from_lockfile(package_name);
-                        did_removal = true;
-                    }
+                if let Some(installed_package) = result {
+                    println!(
+                        "{}",
+                        format!(
+                            "+ Removing package ({}/{}-{}) from Lockfile...",
+                            installed_package["source"].as_str().unwrap(),
+                            installed_package["name"].as_str().unwrap(),
+                            installed_package["version"].as_str().unwrap()
+                        )
+                        .bright_green()
+                    );
+                    remove::remove_from_lockfile(package_name);
+                    did_removal = true;
                 } else {
                     println!(
                         "{}",
@@ -93,35 +89,26 @@ pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool) {
             let package_name = packages.first().unwrap();
 
             let result = is_installed(package_name);
-            let installed = result.0;
-            let package_option = result.1;
 
-            if installed {
-                if let Some(package) = package_option {
-                    if force
-                        || prompt_yn(
-                            format!(
-                                "/ Are you sure you want to completely remove {}/{}-{}?",
-                                package["source"].as_str().unwrap(),
-                                package_name,
-                                package["version"].as_str().unwrap()
-                            )
-                            .as_str(),
+            if let Some(package) = result {
+                if force
+                    || prompt_yn(
+                        format!(
+                            "/ Are you sure you want to completely remove {}/{}-{}?",
+                            package["source"].as_str().unwrap(),
+                            package_name,
+                            package["version"].as_str().unwrap()
                         )
-                    {
-                        println!(
-                            "{}",
-                            format!("+ Removing '{}'...", package_name).bright_green()
-                        );
-                        remove::command(&package, force);
-                    } else {
-                        println!("{}", "+ Transaction aborted".bright_green());
-                    }
-                } else {
+                        .as_str(),
+                    )
+                {
                     println!(
                         "{}",
-                        format!("- Package '{}' is not installed!", package_name).bright_red()
+                        format!("+ Removing '{}'...", package_name).bright_green()
                     );
+                    remove::command(&package, force);
+                } else {
+                    println!("{}", "+ Transaction aborted".bright_green());
                 }
             } else {
                 println!(
@@ -196,11 +183,10 @@ pub fn changelog(package_name_option: Option<&str>, latest_only: bool) {
     }
 }
 
-fn is_installed(package_name: &str) -> (bool, Option<Value>) {
+fn is_installed(package_name: &str) -> Option<Value> {
     let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
     let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let repo_list = aati_config["sources"]["repos"].as_array().unwrap();
-    let mut installed = false;
     let mut package_option = None;
     let mut added_repos: Vec<Value> = Vec::new();
 
@@ -219,10 +205,9 @@ fn is_installed(package_name: &str) -> (bool, Option<Value>) {
         for installed_package in installed_packages {
             if installed_package["name"].as_str().unwrap() == extracted_package[1] {
                 package_option = Some(installed_package.clone());
-                installed = true;
             }
         }
     }
 
-    (installed, package_option)
+    package_option
 }

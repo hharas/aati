@@ -27,7 +27,7 @@ use crate::{
     types::{LockFile, Package},
     utils::{
         execute_lines, extract_package, get_aati_config, get_aati_lock, get_aati_lock_path_buf,
-        get_repo_config, is_supported, parse_pkgfile, prompt_yn,
+        get_repo_config, is_supported, is_windows, parse_pkgfile, prompt_yn,
     },
 };
 use colored::Colorize;
@@ -411,8 +411,12 @@ pub fn command(package_name: &str, force: bool) {
                                         }
                                     };
 
-                                    let (installation_lines, removal_lines) =
-                                        parse_pkgfile(&pkgfile);
+                                    let (
+                                        installation_lines,
+                                        win_installation_lines,
+                                        removal_lines,
+                                        win_removal_lines,
+                                    ) = parse_pkgfile(&pkgfile);
 
                                     if force
                                         || prompt_yn(&format!(
@@ -422,10 +426,24 @@ pub fn command(package_name: &str, force: bool) {
                                     {
 
 
-                                    execute_lines(
-                                        installation_lines,
-                                        Some(&package_directory),
-                                    );
+                                    if is_windows() {
+                                        if !win_installation_lines.is_empty() {
+                                            execute_lines(
+                                                win_installation_lines.clone(),
+                                                Some(&package_directory),
+                                            );
+                                        } else {
+                                            execute_lines(
+                                                installation_lines,
+                                                Some(&package_directory),
+                                            );
+                                        }
+                                    } else {
+                                        execute_lines(
+                                            installation_lines,
+                                            Some(&package_directory),
+                                        );
+                                    }
 
                                     match remove_dir_all(package_directory) {
                                         Ok(_) => {}
@@ -470,13 +488,23 @@ pub fn command(package_name: &str, force: bool) {
                                     };
                                     let mut lock_file: LockFile =
                                         toml::from_str(&lock_file_str).unwrap();
+                                    
+                                        let selected_removal_lines = if is_windows() {
+                                            if !win_installation_lines.is_empty() {
+                                                    win_removal_lines
+                                            } else {
+                                                    removal_lines
+                                            }
+                                        } else {
+                                            removal_lines
+                                        };
 
                                     let package = Package {
                                         name,
                                         version,
                                         source: extracted_package[0].to_string(),
                                         target: extracted_package[3].to_string(),
-                                        removal: removal_lines,
+                                        removal: selected_removal_lines,
                                     };
 
                                     lock_file.package.push(package);
