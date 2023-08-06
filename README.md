@@ -14,7 +14,7 @@
 
 The Aati Package Manager focuses on providing a Simple, Efficient and Performant Interface for installing, managing and removing packages that uses a [PKGFILE](https://github.com/hharas/aati/wiki/4.-PKGFILE-Manual)-based packaging system that's easy to use and adopt. Aati can run on both Unix and Windows operating systems.
 
-Read the [Wiki](https://github.com/hharas/aati/wiki) for more Information how to install Aati, use it, package applications for it, etc.
+Read the Wiki (on [GitHub](https://github.com/hharas/aati/wiki) or on [SourceHut](https://man.sr.ht/~haras/aati/)) for more Information how to install Aati, use it, package applications for it, etc.
 
 ## But why?
 
