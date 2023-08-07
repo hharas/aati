@@ -51,11 +51,12 @@ pub struct Package {
     pub version: String,
     pub target: String,
     pub source: String,
-    pub removal: Vec<String>,
+    pub pkgfile: Pkgfile,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct Pkgfile {
-    pub metadata: HashMap<String, String>,
+    pub data: HashMap<String, String>,
     pub installation_lines: Vec<String>,
     pub win_installation_lines: Vec<String>,
     pub removal_lines: Vec<String>,

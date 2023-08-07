@@ -532,7 +532,13 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                         .as_str()
                                         .unwrap()
                                         .to_string(),
-                                    removal: vec!["$uninitialised$".to_string()],
+                                    pkgfile: Pkgfile {
+                                        data: HashMap::new(),
+                                        installation_lines: vec![],
+                                        win_installation_lines: vec![],
+                                        removal_lines: vec![],
+                                        win_removal_lines: vec![],
+                                    },
                                 })
                             }
                         }
@@ -562,7 +568,13 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                         .as_str()
                                         .unwrap()
                                         .to_string(),
-                                    removal: vec!["$uninitialised$".to_string()],
+                                    pkgfile: Pkgfile {
+                                        data: HashMap::new(),
+                                        installation_lines: vec![],
+                                        win_installation_lines: vec![],
+                                        removal_lines: vec![],
+                                        win_removal_lines: vec![],
+                                    },
                                 })
                             }
                         }
@@ -596,7 +608,13 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                                 .as_str()
                                                 .unwrap()
                                                 .to_string(),
-                                            removal: vec!["$uninitialised$".to_string()],
+                                            pkgfile: Pkgfile {
+                                                data: HashMap::new(),
+                                                installation_lines: vec![],
+                                                win_installation_lines: vec![],
+                                                removal_lines: vec![],
+                                                win_removal_lines: vec![],
+                                            },
                                         })
                                     }
                                 }
@@ -617,7 +635,13 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                 version: available_package["current"].as_str().unwrap().to_string(),
                                 source: added_repo["repo"]["name"].as_str().unwrap().to_string(),
                                 target: available_package["target"].as_str().unwrap().to_string(),
-                                removal: vec!["$uninitialised$".to_string()],
+                                pkgfile: Pkgfile {
+                                    data: HashMap::new(),
+                                    installation_lines: vec![],
+                                    win_installation_lines: vec![],
+                                    removal_lines: vec![],
+                                    win_removal_lines: vec![],
+                                },
                             })
                         }
                     }
@@ -637,7 +661,13 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                 version: available_package["current"].as_str().unwrap().to_string(),
                                 source: added_repo["repo"]["name"].as_str().unwrap().to_string(),
                                 target: available_package["target"].as_str().unwrap().to_string(),
-                                removal: vec!["$uninitialised$".to_string()],
+                                pkgfile: Pkgfile {
+                                    data: HashMap::new(),
+                                    installation_lines: vec![],
+                                    win_installation_lines: vec![],
+                                    removal_lines: vec![],
+                                    win_removal_lines: vec![],
+                                },
                             })
                         }
                     }
@@ -667,7 +697,13 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                             .as_str()
                                             .unwrap()
                                             .to_string(),
-                                        removal: vec!["$uninitialised$".to_string()],
+                                        pkgfile: Pkgfile {
+                                            data: HashMap::new(),
+                                            installation_lines: vec![],
+                                            win_installation_lines: vec![],
+                                            removal_lines: vec![],
+                                            win_removal_lines: vec![],
+                                        },
                                     })
                                 }
                             }
@@ -991,7 +1027,7 @@ pub fn parse_pkgfile(pkgfile: &str) -> Pkgfile {
     let mut removal_lines = Vec::new();
     let mut win_removal_lines = Vec::new();
 
-    let mut metadata: HashMap<String, String> = HashMap::new();
+    let mut data: HashMap<String, String> = HashMap::new();
 
     let mut current_section = "";
 
@@ -1007,7 +1043,7 @@ pub fn parse_pkgfile(pkgfile: &str) -> Pkgfile {
             continue;
         }
 
-        if current_section == "[metadata]" {
+        if current_section == "[data]" {
             meta_lines.push(trimmed_line.to_string());
         } else if current_section == "[installation]" {
             installation_lines.push(trimmed_line.to_string());
@@ -1023,11 +1059,11 @@ pub fn parse_pkgfile(pkgfile: &str) -> Pkgfile {
     for line in meta_lines {
         let tokens: Vec<&str> = line.split_whitespace().collect();
 
-        metadata.insert(tokens[0].into(), line[tokens[0].len() + 1..].into());
+        data.insert(tokens[0].into(), line[tokens[0].len() + 1..].into());
     }
 
     Pkgfile {
-        metadata,
+        data,
         installation_lines,
         win_installation_lines,
         removal_lines,
@@ -1035,12 +1071,20 @@ pub fn parse_pkgfile(pkgfile: &str) -> Pkgfile {
     }
 }
 
-pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&PathBuf>) {
+pub fn execute_lines(
+    lines: Vec<String>,
+    data: HashMap<String, String>,
+    package_directory_path_buf: Option<&PathBuf>,
+) {
     for line in lines {
         let mut line = line
             .replace("$bin_dir", get_bin_path_buf().to_str().unwrap())
             .replace("$lib_dir", get_lib_path_buf().to_str().unwrap())
             .replace("$home_dir", home_dir().unwrap().to_str().unwrap());
+
+        for (key, value) in data.clone() {
+            line = line.replace(&format!("${}", key), &value);
+        }
 
         let tokens: Vec<&str> = line.split_whitespace().collect();
 

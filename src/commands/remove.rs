@@ -70,10 +70,14 @@ pub fn command(package_name: &str, force: bool) {
     if force
         || prompt_yn(&format!(
             "+ Commands to be ran:\n  {}\n/ Do these commands seem safe to execute?",
-            found_package.removal.join("\n  ")
+            found_package.pkgfile.removal_lines.join("\n  ")
         ))
     {
-        execute_lines(found_package.removal.clone(), None);
+        execute_lines(
+            found_package.pkgfile.removal_lines.clone(),
+            found_package.pkgfile.data.clone(),
+            None,
+        );
 
         println!(
             "{}",

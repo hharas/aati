@@ -417,10 +417,10 @@ pub fn command(package_name: &str, force: bool) {
                                         if !parsed_pkgfile.win_installation_lines.is_empty() {
                                             parsed_pkgfile.win_installation_lines.clone()
                                         } else {
-                                            parsed_pkgfile.installation_lines
+                                            parsed_pkgfile.installation_lines.clone()
                                         }
                                     } else {
-                                        parsed_pkgfile.installation_lines
+                                        parsed_pkgfile.installation_lines.clone()
                                     };
 
                                     if force
@@ -430,7 +430,7 @@ pub fn command(package_name: &str, force: bool) {
                                         ))
                                     {
 
-                                        execute_lines(selected_installation_lines, Some(&package_directory));
+                                        execute_lines(selected_installation_lines, parsed_pkgfile.data.clone(), Some(&package_directory));
 
                                     match remove_dir_all(package_directory) {
                                         Ok(_) => {}
@@ -476,22 +476,12 @@ pub fn command(package_name: &str, force: bool) {
                                     let mut lock_file: LockFile =
                                         toml::from_str(&lock_file_str).unwrap();
 
-                                        let selected_removal_lines = if is_windows() {
-                                            if !parsed_pkgfile.win_installation_lines.is_empty() {
-                                                    parsed_pkgfile.win_removal_lines
-                                            } else {
-                                                    parsed_pkgfile.removal_lines
-                                            }
-                                        } else {
-                                            parsed_pkgfile.removal_lines
-                                        };
-
                                     let package = Package {
                                         name,
                                         version,
                                         source: extracted_package[0].to_string(),
                                         target: extracted_package[3].to_string(),
-                                        removal: selected_removal_lines,
+                                        pkgfile: parsed_pkgfile.clone()
                                     };
 
                                     lock_file.package.push(package);

@@ -19,6 +19,7 @@
 use colored::Colorize;
 use lz4::Decoder;
 use std::{
+    collections::HashMap,
     env::temp_dir,
     fs::{read_to_string, remove_dir_all, remove_file, File, OpenOptions},
     io::{copy, Write},
@@ -30,7 +31,7 @@ use toml::Value;
 
 use crate::{
     commands::remove,
-    types::{LockFile, Package},
+    types::{LockFile, Package, Pkgfile},
     utils::{
         execute_lines, get_aati_lock, get_aati_lock_path_buf, get_target, is_windows,
         parse_pkgfile, prompt_yn,
@@ -190,10 +191,10 @@ pub fn command(filename: &str, force: bool) {
                     if !parsed_pkgfile.win_installation_lines.is_empty() {
                         parsed_pkgfile.win_installation_lines.clone()
                     } else {
-                        parsed_pkgfile.installation_lines
+                        parsed_pkgfile.installation_lines.clone()
                     }
                 } else {
-                    parsed_pkgfile.installation_lines
+                    parsed_pkgfile.installation_lines.clone()
                 };
 
                 if force
@@ -202,7 +203,11 @@ pub fn command(filename: &str, force: bool) {
                         selected_installation_lines.join("\n  ")
                     ))
                 {
-                    execute_lines(selected_installation_lines, Some(&package_directory));
+                    execute_lines(
+                        selected_installation_lines,
+                        parsed_pkgfile.data.clone(),
+                        Some(&package_directory),
+                    );
 
                     match remove_dir_all(package_directory) {
                         Ok(_) => {}
@@ -242,22 +247,12 @@ pub fn command(filename: &str, force: bool) {
                     };
                     let mut lock_file: LockFile = toml::from_str(&lock_file_str).unwrap();
 
-                    let selected_removal_lines = if is_windows() {
-                        if !parsed_pkgfile.win_installation_lines.is_empty() {
-                            parsed_pkgfile.win_removal_lines
-                        } else {
-                            parsed_pkgfile.removal_lines
-                        }
-                    } else {
-                        parsed_pkgfile.removal_lines
-                    };
-
                     let package = Package {
                         name: name.to_string(),
                         version: version.to_string(),
                         source: source.to_string(),
                         target: get_target(),
-                        removal: selected_removal_lines,
+                        pkgfile: parsed_pkgfile.clone(),
                     };
 
                     lock_file.package.push(package);
@@ -354,7 +349,7 @@ pub fn use_pkgfile(
 
                 let parsed_pkgfile = parse_pkgfile(&pkgfile);
 
-                let name = if let Some(name) = parsed_pkgfile.metadata.get("name") {
+                let name = if let Some(name) = parsed_pkgfile.data.get("name") {
                     name
                 } else if let Some(name) = provided_name {
                     name
@@ -365,7 +360,7 @@ pub fn use_pkgfile(
                     );
                 };
 
-                let version = if let Some(version) = parsed_pkgfile.metadata.get("version") {
+                let version = if let Some(version) = parsed_pkgfile.data.get("version") {
                     version
                 } else if let Some(version) = provided_version {
                     version
@@ -388,10 +383,10 @@ pub fn use_pkgfile(
                     if !parsed_pkgfile.win_installation_lines.is_empty() {
                         parsed_pkgfile.win_installation_lines.clone()
                     } else {
-                        parsed_pkgfile.installation_lines
+                        parsed_pkgfile.installation_lines.clone()
                     }
                 } else {
-                    parsed_pkgfile.installation_lines
+                    parsed_pkgfile.installation_lines.clone()
                 };
 
                 if force
@@ -400,7 +395,11 @@ pub fn use_pkgfile(
                         selected_installation_lines.join("\n  ")
                     ))
                 {
-                    execute_lines(selected_installation_lines, Some(&package_directory));
+                    execute_lines(
+                        selected_installation_lines,
+                        parsed_pkgfile.data.clone(),
+                        Some(&package_directory),
+                    );
                 } else {
                     return Ok(());
                 }
@@ -427,22 +426,12 @@ pub fn use_pkgfile(
                 };
                 let mut lock_file: LockFile = toml::from_str(&lock_file_str).unwrap();
 
-                let selected_removal_lines = if is_windows() {
-                    if !parsed_pkgfile.win_installation_lines.is_empty() {
-                        parsed_pkgfile.win_removal_lines
-                    } else {
-                        parsed_pkgfile.removal_lines
-                    }
-                } else {
-                    parsed_pkgfile.removal_lines
-                };
-
                 let package = Package {
                     name: name.to_string(),
                     version: version.to_string(),
                     source: "local".to_string(),
                     target: get_target(),
-                    removal: selected_removal_lines,
+                    pkgfile: parsed_pkgfile,
                 };
 
                 lock_file.package.push(package);
@@ -528,7 +517,13 @@ pub fn parse_filename(mut filename: &str) -> Package {
             version: version.to_string(),
             source: "local".to_string(),
             target: get_target(),
-            removal: vec!["$uninitialised$".to_string()],
+            pkgfile: Pkgfile {
+                data: HashMap::new(),
+                installation_lines: vec![],
+                win_installation_lines: vec![],
+                removal_lines: vec![],
+                win_removal_lines: vec![],
+            },
         } //         ^^^^^ That's the name of the repo containing locally installed packages.
     } else {
         println!(
@@ -548,7 +543,13 @@ fn test_parse_filename() {
         version: "0.3.3".to_string(),
         source: "local".to_string(),
         target: get_target(),
-        removal: vec!["$uninitialised$".to_string()],
+        pkgfile: Pkgfile {
+            data: HashMap::new(),
+            installation_lines: vec![],
+            win_installation_lines: vec![],
+            removal_lines: vec![],
+            win_removal_lines: vec![],
+        },
     };
 
     let filename2 = "arsil-server-0.2.1.tar.lz4";
@@ -557,7 +558,13 @@ fn test_parse_filename() {
         version: "0.2.1".to_string(),
         source: "local".to_string(),
         target: get_target(),
-        removal: vec!["$uninitialised$".to_string()],
+        pkgfile: Pkgfile {
+            data: HashMap::new(),
+            installation_lines: vec![],
+            win_installation_lines: vec![],
+            removal_lines: vec![],
+            win_removal_lines: vec![],
+        },
     };
 
     assert_eq!(parse_filename(filename1), expected_result1);
