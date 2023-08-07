@@ -430,7 +430,7 @@ pub fn command(package_name: &str, force: bool) {
                                         ))
                                     {
 
-                                        execute_lines(selected_installation_lines, parsed_pkgfile.data.clone(), Some(&package_directory));
+                                        execute_lines(&selected_installation_lines, &parsed_pkgfile.data, Some(&package_directory));
 
                                     match remove_dir_all(package_directory) {
                                         Ok(_) => {}

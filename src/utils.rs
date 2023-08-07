@@ -1072,8 +1072,8 @@ pub fn parse_pkgfile(pkgfile: &str) -> Pkgfile {
 }
 
 pub fn execute_lines(
-    lines: Vec<String>,
-    data: HashMap<String, String>,
+    lines: &Vec<String>,
+    data: &HashMap<String, String>,
     package_directory_path_buf: Option<&PathBuf>,
 ) {
     for line in lines {
@@ -1082,8 +1082,8 @@ pub fn execute_lines(
             .replace("$lib_dir", get_lib_path_buf().to_str().unwrap())
             .replace("$home_dir", home_dir().unwrap().to_str().unwrap());
 
-        for (key, value) in data.clone() {
-            line = line.replace(&format!("${}", key), &value);
+        for (key, value) in data {
+            line = line.replace(&format!("${}", key), value);
         }
 
         let tokens: Vec<&str> = line.split_whitespace().collect();

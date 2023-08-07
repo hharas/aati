@@ -74,8 +74,8 @@ pub fn command(package_name: &str, force: bool) {
         ))
     {
         execute_lines(
-            found_package.pkgfile.removal_lines.clone(),
-            found_package.pkgfile.data.clone(),
+            &found_package.pkgfile.removal_lines,
+            &found_package.pkgfile.data,
             None,
         );
 

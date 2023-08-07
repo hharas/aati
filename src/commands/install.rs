@@ -204,8 +204,8 @@ pub fn command(filename: &str, force: bool) {
                     ))
                 {
                     execute_lines(
-                        selected_installation_lines,
-                        parsed_pkgfile.data.clone(),
+                        &selected_installation_lines,
+                        &parsed_pkgfile.data,
                         Some(&package_directory),
                     );
 
@@ -396,8 +396,8 @@ pub fn use_pkgfile(
                     ))
                 {
                     execute_lines(
-                        selected_installation_lines,
-                        parsed_pkgfile.data.clone(),
+                        &selected_installation_lines,
+                        &parsed_pkgfile.data,
                         Some(&package_directory),
                     );
                 } else {
