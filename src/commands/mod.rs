@@ -106,7 +106,7 @@ pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool) {
                         "{}",
                         format!("+ Removing '{}'...", package_name).bright_green()
                     );
-                    remove::command(&package, force);
+                    remove::command(package["name"].as_str().unwrap(), force);
                 } else {
                     println!("{}", "+ Transaction aborted".bright_green());
                 }
@@ -153,7 +153,7 @@ pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool) {
                         )
                         .bright_green()
                     );
-                    remove::command(installed_package, force);
+                    remove::command(installed_package["name"].as_str().unwrap(), force);
                 }
             } else {
                 println!("{}", "+ Transaction aborted".bright_green());

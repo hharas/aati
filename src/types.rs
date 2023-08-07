@@ -16,6 +16,8 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 // rc.toml
@@ -50,4 +52,12 @@ pub struct Package {
     pub target: String,
     pub source: String,
     pub removal: Vec<String>,
+}
+
+pub struct Pkgfile {
+    pub metadata: HashMap<String, String>,
+    pub installation_lines: Vec<String>,
+    pub win_installation_lines: Vec<String>,
+    pub removal_lines: Vec<String>,
+    pub win_removal_lines: Vec<String>,
 }

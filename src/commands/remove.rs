@@ -22,14 +22,13 @@ use std::{
     io::Write,
     process::exit,
 };
-use toml::Value;
 
 use crate::{
     types::LockFile,
     utils::{execute_lines, get_aati_lock_path_buf, prompt_yn},
 };
 
-pub fn command(package: &Value, force: bool) {
+pub fn command(package_name: &str, force: bool) {
     let aati_lock_path_buf = get_aati_lock_path_buf();
 
     let lock_file_str = match read_to_string(&aati_lock_path_buf) {
@@ -55,17 +54,13 @@ pub fn command(package: &Value, force: bool) {
     let found_package = match lock_file
         .package
         .iter()
-        .find(|pkg| pkg.name == package["name"].as_str().unwrap())
+        .find(|pkg| pkg.name == package_name)
     {
         Some(found_package) => found_package,
         None => {
             println!(
                 "{}",
-                format!(
-                    "- Package '{}' not found in the Lockfile!",
-                    package["name"].as_str().unwrap()
-                )
-                .bright_red()
+                format!("- Package '{}' not found in the Lockfile!", package_name).bright_red()
             );
 
             exit(1);
@@ -85,7 +80,7 @@ pub fn command(package: &Value, force: bool) {
             "+ Removing package from the Lockfile...".bright_green()
         );
 
-        remove_from_lockfile(package["name"].as_str().unwrap());
+        remove_from_lockfile(package_name);
 
         println!("{}", "+ Removal finished successfully!".bright_green());
     } else {

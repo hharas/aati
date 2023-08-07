@@ -411,21 +411,16 @@ pub fn command(package_name: &str, force: bool) {
                                         }
                                     };
 
-                                    let (
-                                        installation_lines,
-                                        win_installation_lines,
-                                        removal_lines,
-                                        win_removal_lines,
-                                    ) = parse_pkgfile(&pkgfile);
+                                    let parsed_pkgfile = parse_pkgfile(&pkgfile);
 
                                     let selected_installation_lines = if is_windows() {
-                                        if !win_installation_lines.is_empty() {
-                                            win_installation_lines.clone()
+                                        if !parsed_pkgfile.win_installation_lines.is_empty() {
+                                            parsed_pkgfile.win_installation_lines.clone()
                                         } else {
-                                            installation_lines
+                                            parsed_pkgfile.installation_lines
                                         }
                                     } else {
-                                        installation_lines
+                                        parsed_pkgfile.installation_lines
                                     };
 
                                     if force
@@ -482,13 +477,13 @@ pub fn command(package_name: &str, force: bool) {
                                         toml::from_str(&lock_file_str).unwrap();
 
                                         let selected_removal_lines = if is_windows() {
-                                            if !win_installation_lines.is_empty() {
-                                                    win_removal_lines
+                                            if !parsed_pkgfile.win_installation_lines.is_empty() {
+                                                    parsed_pkgfile.win_removal_lines
                                             } else {
-                                                    removal_lines
+                                                    parsed_pkgfile.removal_lines
                                             }
                                         } else {
-                                            removal_lines
+                                            parsed_pkgfile.removal_lines
                                         };
 
                                     let package = Package {

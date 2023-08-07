@@ -16,6 +16,7 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+use colored::Colorize;
 use std::io::stdout;
 
 use clap::{Arg, ArgAction, Command, ValueHint};
@@ -95,7 +96,6 @@ as published by the Free Software Foundation.",
                         .short('n')
                         .help("name of pkgfile-installed package")
                         .action(ArgAction::Set)
-                        .required_unless_present("package")
                         .conflicts_with("package")
                         .num_args(1)
                         .value_hint(ValueHint::Other),
@@ -104,7 +104,6 @@ as published by the Free Software Foundation.",
                         .short('v')
                         .help("version of pkgfile-installed package")
                         .action(ArgAction::Set)
-                        .required_unless_present("package")
                         .conflicts_with("package")
                         .num_args(1)
                         .value_hint(ValueHint::Other),
@@ -364,10 +363,15 @@ as published by the Free Software Foundation.",
                 install::command(package, force);
             } else {
                 let pkgfile = install_matches.get_one::<String>("pkgfile").unwrap();
-                let name = install_matches.get_one::<String>("name").unwrap();
-                let version = install_matches.get_one::<String>("version").unwrap();
+                let name_option = install_matches.get_one::<String>("name");
+                let version_option = install_matches.get_one::<String>("version");
 
-                install::use_pkgfile(pkgfile, name, version, force);
+                match install::use_pkgfile(pkgfile, name_option, version_option, force) {
+                    Ok(_) => {}
+                    Err(error) => {
+                        eprintln!("{}", format!("- {}", error).bright_red());
+                    }
+                }
             }
         }
         Some(("upgrade", upgrade_matches)) => {

@@ -19,6 +19,7 @@
 use colored::Colorize;
 use dirs::home_dir;
 use std::{
+    collections::HashMap,
     fs::{copy, create_dir_all, read_to_string, remove_file, File},
     io::{stdin, stdout, Write},
     path::PathBuf,
@@ -27,6 +28,7 @@ use std::{
 use toml::Value;
 
 use super::types::Package;
+use crate::types::Pkgfile;
 
 pub fn is_windows() -> bool {
     std::env::consts::OS == "windows"
@@ -982,11 +984,15 @@ pub fn make_executable(_installation_path_buf: &PathBuf) {
     }
 }
 
-pub fn parse_pkgfile(pkgfile: &str) -> (Vec<String>, Vec<String>, Vec<String>, Vec<String>) {
+pub fn parse_pkgfile(pkgfile: &str) -> Pkgfile {
+    let mut meta_lines = Vec::new();
     let mut installation_lines = Vec::new();
     let mut win_installation_lines = Vec::new();
     let mut removal_lines = Vec::new();
     let mut win_removal_lines = Vec::new();
+
+    let mut metadata: HashMap<String, String> = HashMap::new();
+
     let mut current_section = "";
 
     for line in pkgfile.lines() {
@@ -1001,7 +1007,9 @@ pub fn parse_pkgfile(pkgfile: &str) -> (Vec<String>, Vec<String>, Vec<String>, V
             continue;
         }
 
-        if current_section == "[installation]" {
+        if current_section == "[metadata]" {
+            meta_lines.push(trimmed_line.to_string());
+        } else if current_section == "[installation]" {
             installation_lines.push(trimmed_line.to_string());
         } else if current_section == "[win-installation]" {
             win_installation_lines.push(trimmed_line.to_string());
@@ -1012,12 +1020,19 @@ pub fn parse_pkgfile(pkgfile: &str) -> (Vec<String>, Vec<String>, Vec<String>, V
         }
     }
 
-    (
+    for line in meta_lines {
+        let tokens: Vec<&str> = line.split_whitespace().collect();
+
+        metadata.insert(tokens[0].into(), line[tokens[0].len() + 1..].into());
+    }
+
+    Pkgfile {
+        metadata,
         installation_lines,
         win_installation_lines,
         removal_lines,
         win_removal_lines,
-    )
+    }
 }
 
 pub fn execute_lines(lines: Vec<String>, package_directory_path_buf: Option<&PathBuf>) {

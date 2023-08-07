@@ -29,6 +29,7 @@ use tar::Archive;
 use toml::Value;
 
 use crate::{
+    commands::remove,
     types::{LockFile, Package},
     utils::{
         execute_lines, get_aati_lock, get_aati_lock_path_buf, get_target, is_windows,
@@ -47,48 +48,55 @@ pub fn command(filename: &str, force: bool) {
     let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
-    if !installed_packages
+    if installed_packages
         .iter()
         .any(|pkg| pkg["name"].as_str().unwrap() == name)
     {
-        match File::open(&filename_path_buf) {
-            Ok(input_file) => {
-                if force
-                    || prompt_yn(
-                        format!(
-                            "/ Are you sure you want to locally install {}-{}?",
-                            name, version
-                        )
-                        .as_str(),
+        if force || prompt_yn("There's a package with the same name already installed! Do you want to remove the original and proceed?") {
+            remove::command(name, force);
+        } else {
+            exit(0);
+        }
+    }
+
+    match File::open(&filename_path_buf) {
+        Ok(input_file) => {
+            if force
+                || prompt_yn(
+                    format!(
+                        "/ Are you sure you want to locally install {}-{}?",
+                        name, version
                     )
-                {
-                    let mut tar_path_buf = temp_dir();
-                    tar_path_buf.push(&format!("{}-{}.tar", name, version));
+                    .as_str(),
+                )
+            {
+                let mut tar_path_buf = temp_dir();
+                tar_path_buf.push(&format!("{}-{}.tar", name, version));
 
-                    let mut package_directory = temp_dir();
-                    package_directory.push(&format!("{}-{}", name, version));
+                let mut package_directory = temp_dir();
+                package_directory.push(&format!("{}-{}", name, version));
 
-                    let mut tarball = match File::create(&tar_path_buf) {
-                        Ok(file) => file,
-                        Err(error) => {
-                            println!(
-                                "{}",
-                                format!(
-                                    "- FAILED TO CREATE FILE '{}'! ERROR[94]: {}",
-                                    tar_path_buf.display(),
-                                    error
-                                )
-                                .bright_red()
-                            );
+                let mut tarball = match File::create(&tar_path_buf) {
+                    Ok(file) => file,
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- FAILED TO CREATE FILE '{}'! ERROR[94]: {}",
+                                tar_path_buf.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
 
-                            exit(1);
-                        }
-                    };
+                        exit(1);
+                    }
+                };
 
-                    let mut decoder = match Decoder::new(input_file) {
-                        Ok(decoder) => decoder,
-                        Err(error) => {
-                            println!(
+                let mut decoder = match Decoder::new(input_file) {
+                    Ok(decoder) => decoder,
+                    Err(error) => {
+                        println!(
                                                 "{}",
                                                 format!(
                                             "- FAILED TO DECODE THE LZ4 COMPRESSED PACKAGE AT '{}'! ERROR[95]: {}",
@@ -98,109 +106,103 @@ pub fn command(filename: &str, force: bool) {
                                                 .bright_red()
                                             );
 
-                            exit(1);
-                        }
-                    };
-
-                    match copy(&mut decoder, &mut tarball) {
-                        Ok(_) => {}
-                        Err(error) => {
-                            println!(
-                                "{}",
-                                format!(
-                                    "- FAILED TO WRITE INTO FILE '{}'! ERROR[97]: {}",
-                                    tar_path_buf.display(),
-                                    error
-                                )
-                                .bright_red()
-                            );
-
-                            exit(1);
-                        }
+                        exit(1);
                     }
+                };
 
-                    let tarball = File::open(&tar_path_buf).unwrap();
+                match copy(&mut decoder, &mut tarball) {
+                    Ok(_) => {}
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- FAILED TO WRITE INTO FILE '{}'! ERROR[97]: {}",
+                                tar_path_buf.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
 
-                    let mut archive = Archive::new(tarball);
-
-                    match archive.unpack(temp_dir()) {
-                        Ok(_) => {}
-                        Err(error) => {
-                            println!(
-                                "{}",
-                                format!(
-                                    "- FAILED TO EXTRACT TARBALL '{}'! ERROR[81]: {}",
-                                    tar_path_buf.display(),
-                                    error
-                                )
-                                .bright_red()
-                            );
-
-                            exit(1);
-                        }
+                        exit(1);
                     }
+                }
 
-                    match remove_file(tar_path_buf) {
-                        Ok(_) => {}
-                        Err(error) => {
-                            println!(
-                                "{}",
-                                format!(
-                                    "- COULD NOT DELETE TEMPORARY PACKAGE TARBALL! ERROR[84]: {}",
-                                    error
-                                )
-                                .as_str()
-                                .bright_red()
-                            );
-                            exit(1);
-                        }
+                let tarball = File::open(&tar_path_buf).unwrap();
+
+                let mut archive = Archive::new(tarball);
+
+                match archive.unpack(temp_dir()) {
+                    Ok(_) => {}
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- FAILED TO EXTRACT TARBALL '{}'! ERROR[81]: {}",
+                                tar_path_buf.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
+
+                        exit(1);
                     }
+                }
 
-                    let mut pkgfile_path_buf = package_directory.clone();
-                    pkgfile_path_buf.push("PKGFILE");
+                match remove_file(tar_path_buf) {
+                    Ok(_) => {}
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- COULD NOT DELETE TEMPORARY PACKAGE TARBALL! ERROR[84]: {}",
+                                error
+                            )
+                            .as_str()
+                            .bright_red()
+                        );
+                        exit(1);
+                    }
+                }
 
-                    let pkgfile = match read_to_string(&pkgfile_path_buf) {
-                        Ok(contents) => contents,
-                        Err(error) => {
-                            println!(
-                                "{}",
-                                format!(
-                                    "- FAILED TO READ FILE '{}'! ERROR[82]: {}",
-                                    pkgfile_path_buf.display(),
-                                    error
-                                )
-                                .bright_red()
-                            );
+                let mut pkgfile_path_buf = package_directory.clone();
+                pkgfile_path_buf.push("PKGFILE");
 
-                            exit(1);
-                        }
-                    };
+                let pkgfile = match read_to_string(&pkgfile_path_buf) {
+                    Ok(contents) => contents,
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- FAILED TO READ FILE '{}'! ERROR[82]: {}",
+                                pkgfile_path_buf.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
 
-                    let (
-                        installation_lines,
-                        win_installation_lines,
-                        removal_lines,
-                        win_removal_lines,
-                    ) = parse_pkgfile(&pkgfile);
+                        exit(1);
+                    }
+                };
 
-                    let selected_installation_lines = if is_windows() {
-                        if !win_installation_lines.is_empty() {
-                            win_installation_lines.clone()
-                        } else {
-                            installation_lines
-                        }
+                let parsed_pkgfile = parse_pkgfile(&pkgfile);
+
+                let selected_installation_lines = if is_windows() {
+                    if !parsed_pkgfile.win_installation_lines.is_empty() {
+                        parsed_pkgfile.win_installation_lines.clone()
                     } else {
-                        installation_lines
-                    };
+                        parsed_pkgfile.installation_lines
+                    }
+                } else {
+                    parsed_pkgfile.installation_lines
+                };
 
-                    if force
-                        || prompt_yn(&format!(
-                            "+ Commands to be ran:\n  {}\n/ Do these commands seem safe to execute?",
-                            selected_installation_lines.join("\n  ")
-                        ))
-                    {
-
-                        execute_lines(selected_installation_lines, Some(&package_directory));
+                if force
+                    || prompt_yn(&format!(
+                        "+ Commands to be ran:\n  {}\n/ Do these commands seem safe to execute?",
+                        selected_installation_lines.join("\n  ")
+                    ))
+                {
+                    execute_lines(selected_installation_lines, Some(&package_directory));
 
                     match remove_dir_all(package_directory) {
                         Ok(_) => {}
@@ -241,13 +243,13 @@ pub fn command(filename: &str, force: bool) {
                     let mut lock_file: LockFile = toml::from_str(&lock_file_str).unwrap();
 
                     let selected_removal_lines = if is_windows() {
-                        if !win_installation_lines.is_empty() {
-                                win_removal_lines
+                        if !parsed_pkgfile.win_installation_lines.is_empty() {
+                            parsed_pkgfile.win_removal_lines
                         } else {
-                                removal_lines
+                            parsed_pkgfile.removal_lines
                         }
                     } else {
-                        removal_lines
+                        parsed_pkgfile.removal_lines
                     };
 
                     let package = Package {
@@ -304,7 +306,9 @@ pub fn command(filename: &str, force: bool) {
                     println!("{}", "+ Transaction aborted".bright_green());
 
                     match remove_dir_all(&package_directory) {
-                        Ok(_) => println!("{}", "+ Deleted temporary package directory".bright_green()),
+                        Ok(_) => {
+                            println!("{}", "+ Deleted temporary package directory".bright_green())
+                        }
                         Err(error) => {
                             println!(
                                 "{}",
@@ -320,44 +324,74 @@ pub fn command(filename: &str, force: bool) {
                         }
                     }
                 }
-                } else {
-                    println!("{}", "+ Transaction aborted".bright_green());
-                }
-            }
-
-            Err(error) => {
-                println!("{}", format!("- ERROR[11]: {}", error).bright_red());
-                exit(1);
+            } else {
+                println!("{}", "+ Transaction aborted".bright_green());
             }
         }
-    } else {
-        println!(
-            "{}",
-            "- A Package with the same name is already installed!".bright_red()
-        );
-        exit(1);
+
+        Err(error) => {
+            println!("{}", format!("- ERROR[11]: {}", error).bright_red());
+            exit(1);
+        }
     }
 }
 
-pub fn use_pkgfile(path_str: &str, name: &str, version: &str, force: bool) {
+pub fn use_pkgfile(
+    path_str: &str,
+    provided_name: Option<&String>,
+    provided_version: Option<&String>,
+    force: bool,
+) -> Result<(), String> {
     let pkgfile_path_buf = PathBuf::from(path_str);
 
     if pkgfile_path_buf.exists() {
         match read_to_string(&pkgfile_path_buf) {
             Ok(pkgfile) => {
+                let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+                let installed_packages = aati_lock["package"].as_array().unwrap();
+
                 let package_directory = pkgfile_path_buf.parent().unwrap().to_path_buf();
 
-                let (installation_lines, win_installation_lines, removal_lines, win_removal_lines) =
-                    parse_pkgfile(&pkgfile);
+                let parsed_pkgfile = parse_pkgfile(&pkgfile);
+
+                let name = if let Some(name) = parsed_pkgfile.metadata.get("name") {
+                    name
+                } else if let Some(name) = provided_name {
+                    name
+                } else {
+                    return Err(
+                        "Package name not provided by the PKGFILE nor as a command line argument!"
+                            .into(),
+                    );
+                };
+
+                let version = if let Some(version) = parsed_pkgfile.metadata.get("version") {
+                    version
+                } else if let Some(version) = provided_version {
+                    version
+                } else {
+                    return Err("Package version not provided by the PKGFILE nor as a command line argument!".into());
+                };
+
+                if installed_packages
+                    .iter()
+                    .any(|pkg| pkg["name"].as_str().unwrap() == name)
+                {
+                    if force || prompt_yn("There's a package with the same name already installed! Do you want to remove the original and proceed?") {
+                        remove::command(name, force);
+                    } else {
+                        return Ok(())
+                    }
+                }
 
                 let selected_installation_lines = if is_windows() {
-                    if !win_installation_lines.is_empty() {
-                        win_installation_lines.clone()
+                    if !parsed_pkgfile.win_installation_lines.is_empty() {
+                        parsed_pkgfile.win_installation_lines.clone()
                     } else {
-                        installation_lines
+                        parsed_pkgfile.installation_lines
                     }
                 } else {
-                    installation_lines
+                    parsed_pkgfile.installation_lines
                 };
 
                 if force
@@ -367,6 +401,8 @@ pub fn use_pkgfile(path_str: &str, name: &str, version: &str, force: bool) {
                     ))
                 {
                     execute_lines(selected_installation_lines, Some(&package_directory));
+                } else {
+                    return Ok(());
                 }
 
                 println!("{}", "+ Adding Package to the Lockfile...".bright_green());
@@ -392,13 +428,13 @@ pub fn use_pkgfile(path_str: &str, name: &str, version: &str, force: bool) {
                 let mut lock_file: LockFile = toml::from_str(&lock_file_str).unwrap();
 
                 let selected_removal_lines = if is_windows() {
-                    if !win_installation_lines.is_empty() {
-                        win_removal_lines
+                    if !parsed_pkgfile.win_installation_lines.is_empty() {
+                        parsed_pkgfile.win_removal_lines
                     } else {
-                        removal_lines
+                        parsed_pkgfile.removal_lines
                     }
                 } else {
-                    removal_lines
+                    parsed_pkgfile.removal_lines
                 };
 
                 let package = Package {
@@ -418,56 +454,36 @@ pub fn use_pkgfile(path_str: &str, name: &str, version: &str, force: bool) {
                 {
                     Ok(file) => file,
                     Err(error) => {
-                        println!(
-                            "{}",
-                            format!(
-                                "- FAILED TO OPEN LOCKFILE AT '{}' FOR WRITING! ERROR[80]: {}",
-                                &aati_lock_path_buf.display(),
-                                error
-                            )
-                            .bright_red()
-                        );
-
-                        exit(1);
+                        return Err(format!(
+                            "- FAILED TO OPEN LOCKFILE AT '{}' FOR WRITING! ERROR[80]: {}",
+                            &aati_lock_path_buf.display(),
+                            error
+                        ))
                     }
                 };
 
                 let toml_str = toml::to_string(&lock_file).unwrap();
                 match file.write_all(toml_str.as_bytes()) {
-                    Ok(_) => {}
-                    Err(error) => {
-                        println!(
-                            "{}",
-                            format!(
-                                "- FAILED TO WRITE INTO LOCKFILE AT '{}'! ERROR[2]: {}",
-                                &aati_lock_path_buf.display(),
-                                error
-                            )
-                            .bright_red()
-                        );
-
-                        exit(1);
-                    }
+                    Ok(_) => Ok(()),
+                    Err(error) => Err(format!(
+                        "- FAILED TO WRITE INTO LOCKFILE AT '{}'! ERROR[2]: {}",
+                        &aati_lock_path_buf.display(),
+                        error
+                    )),
                 }
             }
 
-            Err(error) => {
-                println!(
-                    "{}",
-                    format!(
-                        "Failed to read PKGFILE contents at '{}'! ERROR: {}",
-                        pkgfile_path_buf.display(),
-                        error
-                    )
-                    .bright_red()
-                );
-            }
+            Err(error) => Err(format!(
+                "Failed to read PKGFILE contents at '{}'! ERROR: {}",
+                pkgfile_path_buf.display(),
+                error
+            )),
         }
     } else {
-        println!(
-            "{}",
-            format!("No PKGFILE found at '{}'", pkgfile_path_buf.display()).bright_red()
-        );
+        Err(format!(
+            "No PKGFILE found at '{}'",
+            pkgfile_path_buf.display()
+        ))
     }
 }
 
