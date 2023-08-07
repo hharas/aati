@@ -34,7 +34,7 @@ use crate::{
     },
 };
 
-pub fn add(repository_url: String) {
+pub fn add(repository_url: String, quiet: bool) {
     let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let added_repos = aati_config["sources"]["repos"].as_array().unwrap();
 
@@ -47,17 +47,21 @@ pub fn add(repository_url: String) {
     }
 
     if already_added_repo.is_none() {
-        println!(
-            "{}",
-            format!("+ Adding ({}) as a package repository", repository_url).bright_green()
-        );
+        if !quiet {
+            println!(
+                "{}",
+                format!("+ Adding ({}) as a package repository", repository_url).bright_green()
+            );
+        }
 
         let requested_url = format!("{}/repo.toml", repository_url);
-        println!(
-            "{}",
-            format!("+ Requesting ({})", requested_url).bright_green()
-        );
 
+        if !quiet {
+            println!(
+                "{}",
+                format!("+ Requesting ({})", requested_url).bright_green()
+            );
+        }
         match ureq::get(requested_url.as_str()).call() {
             Ok(repo_toml) => {
                 let repo_toml = repo_toml.into_string().unwrap();
@@ -94,14 +98,16 @@ pub fn add(repository_url: String) {
                         }
                     };
 
-                    println!(
-                        "{}",
-                        format!(
-                            "+ Writing Repo Config to {}",
-                            &repo_config_path_buf.display()
-                        )
-                        .bright_green()
-                    );
+                    if !quiet {
+                        println!(
+                            "{}",
+                            format!(
+                                "+ Writing Repo Config to {}",
+                                &repo_config_path_buf.display()
+                            )
+                            .bright_green()
+                        );
+                    }
 
                     match writeln!(repo_config, "{}", repo_toml) {
                         Ok(_) => {}
@@ -122,7 +128,9 @@ pub fn add(repository_url: String) {
 
                     // Putting it in rc.toml
 
-                    println!("{}", "+ Adding URL to the Config File...".bright_green());
+                    if !quiet {
+                        println!("{}", "+ Adding URL to the Config File...".bright_green());
+                    }
 
                     let config_file_str = get_aati_config().unwrap();
 
@@ -176,10 +184,13 @@ pub fn add(repository_url: String) {
                         }
                     }
 
-                    println!(
-                        "{}",
-                        format!("+ Repository '{}' added successfully!", repo_name).bright_green()
-                    );
+                    if !quiet {
+                        println!(
+                            "{}",
+                            format!("+ Repository '{}' added successfully!", repo_name)
+                                .bright_green()
+                        );
+                    }
                 } else {
                     println!(
                         "{}",
@@ -218,7 +229,7 @@ pub fn add(repository_url: String) {
     }
 }
 
-pub fn remove(repo_name: String, force: bool) {
+pub fn remove(repo_name: String, force: bool, quiet: bool) {
     let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
@@ -250,14 +261,16 @@ pub fn remove(repo_name: String, force: bool) {
                 .iter()
                 .any(|pkg| pkg["source"].as_str().unwrap() == repo_name)
             {
-                println!(
-                    "{}",
-                    format!(
-                        "+ Removing all packages installed from repository '{}'...",
-                        repo_name
-                    )
-                    .bright_green()
-                );
+                if !quiet {
+                    println!(
+                        "{}",
+                        format!(
+                            "+ Removing all packages installed from repository '{}'...",
+                            repo_name
+                        )
+                        .bright_green()
+                    );
+                }
 
                 for installed_package in installed_packages {
                     if installed_package["source"].as_str().unwrap() == repo_name {
@@ -268,15 +281,18 @@ pub fn remove(repo_name: String, force: bool) {
                                 .to_string()]),
                             false,
                             force,
+                            quiet,
                         );
                     }
                 }
             }
 
-            println!(
-                "{}",
-                format!("+ Removing '{}' from the Config File...", repo_name).bright_green()
-            );
+            if !quiet {
+                println!(
+                    "{}",
+                    format!("+ Removing '{}' from the Config File...", repo_name).bright_green()
+                );
+            }
 
             let config_file_str = match read_to_string(&aati_config_path_buf) {
                 Ok(contents) => contents,
@@ -341,10 +357,12 @@ pub fn remove(repo_name: String, force: bool) {
 
             let repo_path_buf = get_repo_config_path_buf(&repo_name);
 
-            println!(
-                "{}",
-                format!("+ Deleting '{}'...", repo_path_buf.display()).bright_green()
-            );
+            if !quiet {
+                println!(
+                    "{}",
+                    format!("+ Deleting '{}'...", repo_path_buf.display()).bright_green()
+                );
+            }
 
             match remove_file(&repo_path_buf) {
                 Ok(_) => {}
@@ -363,15 +381,17 @@ pub fn remove(repo_name: String, force: bool) {
                 }
             }
 
-            println!(
-                "{}",
-                format!(
-                    "+ The Repository {} is removed successfully!",
-                    repo["name"].as_str().unwrap()
-                )
-                .bright_green()
-            );
-        } else {
+            if !quiet {
+                println!(
+                    "{}",
+                    format!(
+                        "+ The Repository {} is removed successfully!",
+                        repo["name"].as_str().unwrap()
+                    )
+                    .bright_green()
+                );
+            }
+        } else if !quiet {
             println!("{}", "+ Transaction aborted".bright_green());
         }
     } else {
@@ -432,11 +452,11 @@ pub fn list() {
     }
 }
 
-pub fn init(repo_name: String, repo_maintainer: String, repo_description: String) {
+pub fn init(repo_name: String, repo_maintainer: String, repo_description: String, quiet: bool) {
     let repo_dir = PathBuf::from("aati_repo");
+    let any_dir = PathBuf::from("aati_repo/any");
     let x86_64_linux_dir = PathBuf::from("aati_repo/x86_64-linux");
     let aarch64_dir = PathBuf::from("aati_repo/aarch64-linux");
-    let x86_64_windows_dir = PathBuf::from("aati_repo/x86_64-windows");
 
     let repo_toml_path_buf = PathBuf::from("aati_repo/repo.toml");
 
@@ -473,8 +493,39 @@ pub fn init(repo_name: String, repo_maintainer: String, repo_description: String
         }
     };
 
+    match create_dir_all(&any_dir) {
+        Ok(_) => {
+            if !quiet {
+                println!(
+                    "{}",
+                    format!("+ Created directory '{}'", any_dir.display()).bright_green()
+                );
+            }
+        }
+        Err(error) => {
+            println!(
+                "{}",
+                format!(
+                    "- FAILED TO CREATE DIRECTORY '{}'! ERROR[52]: {}",
+                    &any_dir.display(),
+                    error
+                )
+                .bright_red()
+            );
+
+            exit(1);
+        }
+    }
+
     match create_dir_all(&x86_64_linux_dir) {
-        Ok(_) => {}
+        Ok(_) => {
+            if !quiet {
+                println!(
+                    "{}",
+                    format!("+ Created directory '{}'", x86_64_linux_dir.display()).bright_green()
+                );
+            }
+        }
         Err(error) => {
             println!(
                 "{}",
@@ -490,25 +541,15 @@ pub fn init(repo_name: String, repo_maintainer: String, repo_description: String
         }
     }
 
-    match create_dir_all(&x86_64_windows_dir) {
-        Ok(_) => {}
-        Err(error) => {
-            println!(
-                "{}",
-                format!(
-                    "- FAILED TO CREATE DIRECTORY '{}'! ERROR[52]: {}",
-                    &x86_64_windows_dir.display(),
-                    error
-                )
-                .bright_red()
-            );
-
-            exit(1);
-        }
-    }
-
     match create_dir_all(&aarch64_dir) {
-        Ok(_) => {}
+        Ok(_) => {
+            if !quiet {
+                println!(
+                    "{}",
+                    format!("+ Created directory '{}'", aarch64_dir.display()).bright_green()
+                );
+            }
+        }
         Err(error) => {
             println!(
                 "{}",
@@ -539,7 +580,18 @@ packages = [
 ", repo_name, repo_maintainer, repo_description, repo_maintainer);
 
     match repo_toml.write_all(contents.as_bytes()) {
-        Ok(_) => {}
+        Ok(_) => {
+            if !quiet {
+                println!(
+                    "{}",
+                    format!(
+                        "+ Wrote repository manifest to '{}'",
+                        repo_toml_path_buf.display()
+                    )
+                    .bright_green()
+                );
+            }
+        }
         Err(error) => {
             println!(
                 "{}",
@@ -555,8 +607,10 @@ packages = [
         }
     }
 
-    println!(
-        "{}",
-        "+ The Repo is made! Now you can add your packages".bright_green()
-    );
+    if !quiet {
+        println!(
+            "{}",
+            "+ The Repo is made! Now you can add your packages".bright_green()
+        );
+    }
 }

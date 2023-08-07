@@ -28,7 +28,7 @@ use toml::Value;
 
 use crate::globals::POSSIBLE_TARGETS;
 
-pub fn command(base_url: &str, repo_url: &str) {
+pub fn command(base_url: &str, repo_url: &str, quiet: bool) {
     match read_to_string("repo.toml") {
         Ok(repo_toml) => match repo_toml.parse::<Value>() {
             Ok(repo_config) => {
@@ -135,10 +135,12 @@ pub fn command(base_url: &str, repo_url: &str) {
                         }
                     }
 
-                    println!(
-                        "{}",
-                        format!("+ Written {}", filepath.display()).bright_green()
-                    );
+                    if !quiet {
+                        println!(
+                            "{}",
+                            format!("+ Written {}", filepath.display()).bright_green()
+                        );
+                    }
                 }
             }
 

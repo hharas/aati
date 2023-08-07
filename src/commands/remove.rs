@@ -28,7 +28,7 @@ use crate::{
     utils::{execute_lines, get_aati_lock_path_buf, prompt_yn},
 };
 
-pub fn command(package_name: &str, force: bool) {
+pub fn command(package_name: &str, force: bool, quiet: bool) {
     let aati_lock_path_buf = get_aati_lock_path_buf();
 
     let lock_file_str = match read_to_string(&aati_lock_path_buf) {
@@ -49,7 +49,9 @@ pub fn command(package_name: &str, force: bool) {
     };
     let lock_file: LockFile = toml::from_str(&lock_file_str).unwrap();
 
-    println!("{}", "+ Executing removal commands...".bright_green());
+    if !quiet {
+        println!("{}", "+ Executing removal commands...".bright_green());
+    }
 
     let found_package = match lock_file
         .package
@@ -77,17 +79,22 @@ pub fn command(package_name: &str, force: bool) {
             &found_package.pkgfile.removal_lines,
             &found_package.pkgfile.data,
             None,
+            quiet,
         );
 
-        println!(
-            "{}",
-            "+ Removing package from the Lockfile...".bright_green()
-        );
+        if !quiet {
+            println!(
+                "{}",
+                "+ Removing package from the Lockfile...".bright_green()
+            );
+        }
 
         remove_from_lockfile(package_name);
 
-        println!("{}", "+ Removal finished successfully!".bright_green());
-    } else {
+        if !quiet {
+            println!("{}", "+ Removal finished successfully!".bright_green());
+        }
+    } else if !quiet {
         println!("{}", "+ Transaction aborted".bright_green());
     }
 }

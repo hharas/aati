@@ -26,7 +26,7 @@ use std::{
 };
 use tar::Builder;
 
-pub fn command(mut directory_name: String) {
+pub fn command(mut directory_name: String, quiet: bool) {
     if directory_name.ends_with('/') {
         directory_name.pop();
     }
@@ -35,20 +35,22 @@ pub fn command(mut directory_name: String) {
     let tar_destination = PathBuf::from(format!("{}.tar", source.display()));
     let lz4_destination = PathBuf::from(format!("{}.lz4", tar_destination.display()));
 
-    println!(
-        "{}",
-        format!("+ Packaging '{}'...", source.display()).bright_green()
-    );
+    if !quiet {
+        println!(
+            "{}",
+            format!("+ Packaging '{}'...", source.display()).bright_green()
+        );
 
-    println!(
-        "{}",
-        format!(
-            "+ Adding folder contents to a tarball '{}'...",
-            &tar_destination.display()
-        )
-        .as_str()
-        .bright_green()
-    );
+        println!(
+            "{}",
+            format!(
+                "+ Adding folder contents to a tarball '{}'...",
+                &tar_destination.display()
+            )
+            .as_str()
+            .bright_green()
+        );
+    }
 
     let file = match File::create(&tar_destination) {
         Ok(file) => file,
@@ -133,7 +135,9 @@ pub fn command(mut directory_name: String) {
         }
     };
 
-    println!("{}", "+ Writing the compressed buffer...".bright_green());
+    if !quiet {
+        println!("{}", "+ Writing the compressed buffer...".bright_green());
+    }
 
     let mut tarball = match File::open(&tar_destination) {
         Ok(file) => file,
@@ -202,8 +206,10 @@ pub fn command(mut directory_name: String) {
         }
     }
 
-    println!(
-        "{}",
-        format!("+ Done packaging! See: {}", lz4_destination.display()).bright_green()
-    );
+    if !quiet {
+        println!(
+            "{}",
+            format!("+ Done packaging! See: {}", lz4_destination.display()).bright_green()
+        );
+    }
 }

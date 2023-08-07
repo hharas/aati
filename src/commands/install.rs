@@ -38,7 +38,7 @@ use crate::{
     },
 };
 
-pub fn command(filename: &str, force: bool) {
+pub fn command(filename: &str, force: bool, quiet: bool) {
     let filename_path_buf = PathBuf::from(filename);
 
     let parsed_package = parse_filename(filename_path_buf.file_name().unwrap().to_str().unwrap());
@@ -54,7 +54,7 @@ pub fn command(filename: &str, force: bool) {
         .any(|pkg| pkg["name"].as_str().unwrap() == name)
     {
         if force || prompt_yn("There's a package with the same name already installed! Do you want to remove the original and proceed?") {
-            remove::command(name, force);
+            remove::command(name, force, quiet);
         } else {
             exit(0);
         }
@@ -98,14 +98,14 @@ pub fn command(filename: &str, force: bool) {
                     Ok(decoder) => decoder,
                     Err(error) => {
                         println!(
-                                                "{}",
-                                                format!(
-                                            "- FAILED TO DECODE THE LZ4 COMPRESSED PACKAGE AT '{}'! ERROR[95]: {}",
-                                            filename_path_buf.display(),
-                                            error
-                                        )
-                                                .bright_red()
-                                            );
+                            "{}",
+                            format!(
+                                "- FAILED TO DECODE THE LZ4 COMPRESSED PACKAGE AT '{}'! ERROR[95]: {}",
+                                filename_path_buf.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
 
                         exit(1);
                     }
@@ -207,6 +207,7 @@ pub fn command(filename: &str, force: bool) {
                         &selected_installation_lines,
                         &parsed_pkgfile.data,
                         Some(&package_directory),
+                        quiet,
                     );
 
                     match remove_dir_all(package_directory) {
@@ -225,7 +226,9 @@ pub fn command(filename: &str, force: bool) {
                         }
                     }
 
-                    println!("{}", "+ Adding Package to the Lockfile...".bright_green());
+                    if !quiet {
+                        println!("{}", "+ Adding Package to the Lockfile...".bright_green());
+                    }
 
                     let aati_lock_path_buf = get_aati_lock_path_buf();
 
@@ -296,13 +299,22 @@ pub fn command(filename: &str, force: bool) {
                         }
                     }
 
-                    println!("{}", "+ Installation is complete!".bright_green());
+                    if !quiet {
+                        println!("{}", "+ Installation is complete!".bright_green());
+                    }
                 } else {
-                    println!("{}", "+ Transaction aborted".bright_green());
+                    if !quiet {
+                        println!("{}", "+ Transaction aborted".bright_green());
+                    }
 
                     match remove_dir_all(&package_directory) {
                         Ok(_) => {
-                            println!("{}", "+ Deleted temporary package directory".bright_green())
+                            if !quiet {
+                                println!(
+                                    "{}",
+                                    "+ Deleted temporary package directory".bright_green()
+                                )
+                            }
                         }
                         Err(error) => {
                             println!(
@@ -319,7 +331,7 @@ pub fn command(filename: &str, force: bool) {
                         }
                     }
                 }
-            } else {
+            } else if !quiet {
                 println!("{}", "+ Transaction aborted".bright_green());
             }
         }
@@ -336,6 +348,7 @@ pub fn use_pkgfile(
     provided_name: Option<&String>,
     provided_version: Option<&String>,
     force: bool,
+    quiet: bool,
 ) -> Result<(), String> {
     let pkgfile_path_buf = PathBuf::from(path_str);
 
@@ -373,7 +386,7 @@ pub fn use_pkgfile(
                     .any(|pkg| pkg["name"].as_str().unwrap() == name)
                 {
                     if force || prompt_yn("There's a package with the same name already installed! Do you want to remove the original and proceed?") {
-                        remove::command(name, force);
+                        remove::command(name, force, quiet);
                     } else {
                         return Ok(())
                     }
@@ -399,12 +412,15 @@ pub fn use_pkgfile(
                         &selected_installation_lines,
                         &parsed_pkgfile.data,
                         Some(&package_directory),
+                        quiet,
                     );
                 } else {
                     return Ok(());
                 }
 
-                println!("{}", "+ Adding Package to the Lockfile...".bright_green());
+                if !quiet {
+                    println!("{}", "+ Adding Package to the Lockfile...".bright_green());
+                }
 
                 let aati_lock_path_buf = get_aati_lock_path_buf();
 

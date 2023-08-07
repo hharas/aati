@@ -37,7 +37,7 @@ use ring::digest;
 use tar::Archive;
 use toml::Value;
 
-pub fn command(package_name: &str, force: bool) {
+pub fn command(package_name: &str, force: bool, quiet: bool) {
     // Initialise some variables
 
     let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
@@ -152,12 +152,14 @@ pub fn command(package_name: &str, force: bool) {
                             .as_str(),
                         )
                     {
-                        println!(
-                            "{}",
-                            format!("+ Downloading ({})...", url)
-                                .as_str()
-                                .bright_green()
-                        );
+                        if !quiet {
+                            println!(
+                                "{}",
+                                format!("+ Downloading ({})...", url)
+                                    .as_str()
+                                    .bright_green()
+                            );
+                        }
 
                         // 4. Download the LZ4 compressed package
 
@@ -209,8 +211,9 @@ pub fn command(package_name: &str, force: bool) {
                                     }
                                 }
 
-                                println!("{}", "+ Finished downloading!".bright_green());
-
+                                if !quiet {
+                                    println!("{}", "+ Finished downloading!".bright_green());
+                                }
                                 // 6. Define two readers for the LZ4 compressed package:
                                 //   - One for the checksum verification function
                                 //   - and another for the LZ4 Decoder
@@ -270,7 +273,9 @@ pub fn command(package_name: &str, force: bool) {
                                 // 7. Verify the SHA256 Checksum of the LZ4 compressed package
 
                                 if verify_checksum(&body, checksum.to_string()) {
-                                    println!("{}", "+ Checksums match!".bright_green());
+                                    if !quiet {
+                                        println!("{}", "+ Checksums match!".bright_green());
+                                    }
 
                                     let mut tar_path_buf = temp_dir();
                                     tar_path_buf.push(&format!(
@@ -430,7 +435,12 @@ pub fn command(package_name: &str, force: bool) {
                                         ))
                                     {
 
-                                        execute_lines(&selected_installation_lines, &parsed_pkgfile.data, Some(&package_directory));
+                                    execute_lines(
+                                        &selected_installation_lines,
+                                        &parsed_pkgfile.data,
+                                        Some(&package_directory),
+                                        quiet
+                                    );
 
                                     match remove_dir_all(package_directory) {
                                         Ok(_) => {}
@@ -448,10 +458,12 @@ pub fn command(package_name: &str, force: bool) {
                                         }
                                     }
 
+                                    if !quiet {
                                     println!(
                                         "{}",
                                         "+ Adding Package to the Lockfile...".bright_green()
                                     );
+                                }
 
                                     // 9. Add this Package to the Lockfile
 
@@ -525,12 +537,16 @@ pub fn command(package_name: &str, force: bool) {
                                         }
                                     }
 
+                                    if !quiet {
                                     println!("{}", "+ Installation is complete!".bright_green());
+                                    }
                                 } else {
+                                    if !quiet {
                                     println!("{}", "+ Transaction aborted".bright_green());
+                                    }
 
                                     match remove_dir_all(&package_directory) {
-                                        Ok(_) => println!("{}", "+ Deleted temporary package directory".bright_green()),
+                                        Ok(_) => if !quiet {println!("{}", "+ Deleted temporary package directory".bright_green())},
                                         Err(error) => {
                                             println!(
                                                 "{}",
@@ -580,7 +596,7 @@ pub fn command(package_name: &str, force: bool) {
                                 exit(1);
                             }
                         };
-                    } else {
+                    } else if !quiet {
                         println!("{}", "+ Transaction aborted".bright_green());
                     }
                 }

@@ -25,7 +25,7 @@ use crate::utils::{
 use colored::Colorize;
 use toml::Value;
 
-pub fn command() {
+pub fn command(quiet: bool) {
     let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
 
     match aati_config
@@ -38,10 +38,12 @@ pub fn command() {
                 let url = repo["url"].as_str().unwrap();
                 let requested_url = format!("{}/repo.toml", url);
 
-                println!(
-                    "{}",
-                    format!("+ Requesting ({})", requested_url).bright_green()
-                );
+                if !quiet {
+                    println!(
+                        "{}",
+                        format!("+ Requesting ({})", requested_url).bright_green()
+                    );
+                }
 
                 match ureq::get(requested_url.as_str()).call() {
                     Ok(repo_toml) => {
@@ -72,14 +74,16 @@ pub fn command() {
                             }
                         };
 
-                        println!(
-                            "{}",
-                            format!(
-                                "+   Writing Repo Config to {}",
-                                repo_config_path_buf.display()
-                            )
-                            .bright_green()
-                        );
+                        if !quiet {
+                            println!(
+                                "{}",
+                                format!(
+                                    "+   Writing Repo Config to {}",
+                                    repo_config_path_buf.display()
+                                )
+                                .bright_green()
+                            );
+                        }
 
                         match writeln!(repo_config, "{}", repo_toml) {
                             Ok(_) => {}
@@ -98,10 +102,12 @@ pub fn command() {
                             }
                         }
 
-                        println!(
-                            "{}",
-                            format!("+   Synced with ({}) successfully!", url).bright_green()
-                        );
+                        if !quiet {
+                            println!(
+                                "{}",
+                                format!("+   Synced with ({}) successfully!", url).bright_green()
+                            );
+                        }
                     }
 
                     Err(error) => {
@@ -118,7 +124,9 @@ pub fn command() {
                 }
             }
 
-            println!("{}", "+ Done syncing!".bright_green());
+            if !quiet {
+                println!("{}", "+ Done syncing!".bright_green());
+            }
         }
 
         None => {

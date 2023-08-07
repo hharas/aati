@@ -60,7 +60,7 @@ as published by the Free Software Foundation.",
                 .about("Download and install packages from an available repository")
                 .args([
                     Arg::new("packages")
-                        .help("package(s) to get")
+                        .help("Package(s) to get")
                         .action(ArgAction::Set)
                         .required(true)
                         .num_args(1..)
@@ -69,14 +69,19 @@ as published by the Free Software Foundation.",
                         .long("force")
                         .short('f')
                         .action(ArgAction::SetTrue)
-                        .help("agree to all prompts"),
+                        .help("Agree to all prompts"),
+                    Arg::new("quiet")
+                        .long("quiet")
+                        .short('q')
+                        .action(ArgAction::SetTrue)
+                        .help("Show the least output possible"),
                 ]),
             Command::new("install")
                 .short_flag('I')
                 .about("Install a package from the local filesystem")
                 .args([
                     Arg::new("package")
-                        .help("package .tar.lz4 file")
+                        .help("Package .tar.lz4 file")
                         .action(ArgAction::Set)
                         .required_unless_present("pkgfile")
                         .conflicts_with("pkgfile")
@@ -85,7 +90,7 @@ as published by the Free Software Foundation.",
                     Arg::new("pkgfile")
                         .long("use-pkgfile")
                         .short('p')
-                        .help("path to a pkgfile")
+                        .help("Path to a pkgfile")
                         .action(ArgAction::Set)
                         .required_unless_present("package")
                         .conflicts_with("package")
@@ -94,7 +99,7 @@ as published by the Free Software Foundation.",
                     Arg::new("name")
                         .long("name")
                         .short('n')
-                        .help("name of pkgfile-installed package")
+                        .help("Name of pkgfile-installed package")
                         .action(ArgAction::Set)
                         .conflicts_with("package")
                         .num_args(1)
@@ -102,7 +107,7 @@ as published by the Free Software Foundation.",
                     Arg::new("version")
                         .long("version")
                         .short('v')
-                        .help("version of pkgfile-installed package")
+                        .help("Version of pkgfile-installed package")
                         .action(ArgAction::Set)
                         .conflicts_with("package")
                         .num_args(1)
@@ -111,7 +116,12 @@ as published by the Free Software Foundation.",
                         .long("force")
                         .short('f')
                         .action(ArgAction::SetTrue)
-                        .help("agree to all prompts"),
+                        .help("Agree to all prompts"),
+                    Arg::new("quiet")
+                        .long("quiet")
+                        .short('q')
+                        .action(ArgAction::SetTrue)
+                        .help("Show the least output possible"),
                 ]),
             Command::new("upgrade")
                 .visible_alias("update")
@@ -119,7 +129,7 @@ as published by the Free Software Foundation.",
                 .about("Upgrade local packages to their latest versions")
                 .args([
                     Arg::new("packages")
-                        .help("package(s) to upgrade")
+                        .help("Package(s) to upgrade")
                         .action(ArgAction::Set)
                         .num_args(1..)
                         .value_hint(ValueHint::Other),
@@ -127,7 +137,12 @@ as published by the Free Software Foundation.",
                         .long("force")
                         .short('f')
                         .action(ArgAction::SetTrue)
-                        .help("agree to all prompts"),
+                        .help("Agree to all prompts"),
+                    Arg::new("quiet")
+                        .long("quiet")
+                        .short('q')
+                        .action(ArgAction::SetTrue)
+                        .help("Show the least output possible"),
                 ]),
             Command::new("remove")
                 .visible_alias("uninstall")
@@ -137,7 +152,7 @@ as published by the Free Software Foundation.",
                     Arg::new("packages")
                         .required(true)
                         .action(ArgAction::Set)
-                        .help("package(s) to remove")
+                        .help("Package(s) to remove")
                         .num_args(1..)
                         .value_hint(ValueHint::Other),
                     Arg::new("all")
@@ -145,17 +160,22 @@ as published by the Free Software Foundation.",
                         .short('a')
                         .action(ArgAction::SetTrue)
                         .conflicts_with("packages")
-                        .help("remove all packages"),
+                        .help("Remove all packages"),
                     Arg::new("lock")
                         .long("lock")
                         .short('l')
                         .action(ArgAction::SetTrue)
-                        .help("remove from lockfile"),
+                        .help("Remove from lockfile"),
                     Arg::new("force")
                         .long("force")
                         .short('f')
                         .action(ArgAction::SetTrue)
-                        .help("agree to all prompts"),
+                        .help("Agree to all prompts"),
+                    Arg::new("quiet")
+                        .long("quiet")
+                        .short('q')
+                        .action(ArgAction::SetTrue)
+                        .help("Show the least output possible"),
                 ]),
             Command::new("list")
                 .short_flag('L')
@@ -164,12 +184,19 @@ as published by the Free Software Foundation.",
                     Arg::new("available")
                         .long("available")
                         .short('a')
-                        .help("list available packages")
+                        .help("List available packages")
                         .action(ArgAction::SetTrue),
                 ),
             Command::new("sync")
                 .short_flag('S')
-                .about("Sync repository manifests"),
+                .about("Sync repository manifests")
+                .arg(
+                    Arg::new("quiet")
+                        .long("quiet")
+                        .short('q')
+                        .action(ArgAction::SetTrue)
+                        .help("Show the least output possible"),
+                ),
             Command::new("repo")
                 .short_flag('P')
                 .about("Manage repositories")
@@ -178,20 +205,25 @@ as published by the Free Software Foundation.",
                     Command::new("add")
                         .short_flag('a')
                         .about("Add a repository")
-                        .arg(
+                        .args([
                             Arg::new("urls")
-                                .help("repository URL(s)")
+                                .help("Repository URL(s)")
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1..)
                                 .value_hint(ValueHint::Url),
-                        ),
+                            Arg::new("quiet")
+                                .long("quiet")
+                                .short('q')
+                                .action(ArgAction::SetTrue)
+                                .help("Show the least output possible"),
+                        ]),
                     Command::new("remove")
                         .short_flag('r')
                         .about("Remove a repository")
                         .args([
                             Arg::new("names")
-                                .help("repository name(s)")
+                                .help("Repository name(s)")
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1..)
@@ -200,14 +232,19 @@ as published by the Free Software Foundation.",
                                 .long("force")
                                 .short('f')
                                 .action(ArgAction::SetTrue)
-                                .help("agree to all prompts"),
+                                .help("Agree to all prompts"),
+                            Arg::new("quiet")
+                                .long("quiet")
+                                .short('q')
+                                .action(ArgAction::SetTrue)
+                                .help("Show the least output possible"),
                         ]),
                     Command::new("info")
                         .short_flag('i')
                         .about("Show a repository's metadata")
                         .arg(
                             Arg::new("name")
-                                .help("repository name")
+                                .help("Repository name")
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1)
@@ -223,7 +260,7 @@ as published by the Free Software Foundation.",
                             Arg::new("name")
                                 .long("name")
                                 .short('n')
-                                .help("repository name")
+                                .help("Repository name")
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1)
@@ -231,7 +268,7 @@ as published by the Free Software Foundation.",
                             Arg::new("maintainer")
                                 .long("maintainer")
                                 .short('m')
-                                .help("repository maintainer's name")
+                                .help("Repository maintainer's name")
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1)
@@ -239,11 +276,16 @@ as published by the Free Software Foundation.",
                             Arg::new("description")
                                 .long("description")
                                 .short('d')
-                                .help("repository description")
+                                .help("Repository description")
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1)
                                 .value_hint(ValueHint::Other),
+                            Arg::new("quiet")
+                                .long("quiet")
+                                .short('q')
+                                .action(ArgAction::SetTrue)
+                                .help("Show the least output possible"),
                         ]),
                 ]),
             Command::new("query")
@@ -251,7 +293,7 @@ as published by the Free Software Foundation.",
                 .about("Query a package's metadata")
                 .arg(
                     Arg::new("package")
-                        .help("selected package to query")
+                        .help("Selected package to query")
                         .required(true)
                         .action(ArgAction::Set)
                         .num_args(1)
@@ -262,27 +304,32 @@ as published by the Free Software Foundation.",
                 .about("Display a package's changelog")
                 .args([
                     Arg::new("package")
-                        .help("selected package")
+                        .help("Selected package")
                         .action(ArgAction::Set)
                         .num_args(1)
                         .value_hint(ValueHint::Other),
                     Arg::new("latest")
                         .short('l')
                         .long("latest")
-                        .help("show only the latest changes")
+                        .help("Show only the latest changes")
                         .action(ArgAction::SetTrue),
                 ]),
             Command::new("package")
                 .short_flag('K')
                 .about("Compress a directory into a .tar.lz4 package archive")
-                .arg(
+                .args([
                     Arg::new("directory")
-                        .help("path to package directory")
+                        .help("Path to package directory")
                         .action(ArgAction::Set)
                         .required(true)
                         .num_args(1)
                         .value_hint(ValueHint::DirPath),
-                ),
+                    Arg::new("quiet")
+                        .long("quiet")
+                        .short('q')
+                        .action(ArgAction::SetTrue)
+                        .help("Show the least output possible"),
+                ]),
             Command::new("generate")
                 .short_flag('N')
                 .about("Generate HTML files for a repository")
@@ -292,15 +339,20 @@ as published by the Free Software Foundation.",
                         .short('u')
                         .default_value("/")
                         .action(ArgAction::Set)
-                        .help("base url")
+                        .help("Base url")
                         .value_hint(ValueHint::Url),
                     Arg::new("repo")
                         .long("repository")
                         .short('r')
                         .required(true)
                         .action(ArgAction::Set)
-                        .help("repository url")
+                        .help("Repository url")
                         .value_hint(ValueHint::Url),
+                    Arg::new("quiet")
+                        .long("quiet")
+                        .short('q')
+                        .action(ArgAction::SetTrue)
+                        .help("Show the least output possible"),
                 ]),
             Command::new("serve")
                 .short_flag('E')
@@ -311,28 +363,28 @@ as published by the Free Software Foundation.",
                         .short('s')
                         .default_value("localhost")
                         .action(ArgAction::Set)
-                        .help("server host")
+                        .help("Server host")
                         .value_hint(ValueHint::Hostname),
                     Arg::new("port")
                         .long("port")
                         .short('p')
                         .default_value("8887")
                         .action(ArgAction::Set)
-                        .help("server port")
+                        .help("Server port")
                         .value_hint(ValueHint::Other),
                     Arg::new("url")
                         .long("url")
                         .short('u')
                         .default_value("/")
                         .action(ArgAction::Set)
-                        .help("base url")
+                        .help("Base url")
                         .value_hint(ValueHint::Url),
                     Arg::new("repo")
                         .long("repository")
                         .short('r')
                         .required(true)
                         .action(ArgAction::Set)
-                        .help("repository url")
+                        .help("Repository url")
                         .value_hint(ValueHint::Url),
                 ]),
             Command::new("completions")
@@ -350,23 +402,26 @@ as published by the Free Software Foundation.",
     match cli.clone().get_matches().subcommand() {
         Some(("get", get_matches)) => {
             let force = get_matches.get_flag("force");
+            let quiet = get_matches.get_flag("quiet");
 
             let packages = get_matches.get_many::<String>("packages").unwrap();
             let packages_vec: Vec<String> = packages.map(|s| s.into()).collect::<Vec<_>>();
             for package in packages_vec {
-                get::command(&package, force);
+                get::command(&package, force, quiet);
             }
         }
         Some(("install", install_matches)) => {
             let force = install_matches.get_flag("force");
+            let quiet = install_matches.get_flag("quiet");
+
             if let Some(package) = install_matches.get_one::<String>("package") {
-                install::command(package, force);
+                install::command(package, force, quiet);
             } else {
                 let pkgfile = install_matches.get_one::<String>("pkgfile").unwrap();
                 let name_option = install_matches.get_one::<String>("name");
                 let version_option = install_matches.get_one::<String>("version");
 
-                match install::use_pkgfile(pkgfile, name_option, version_option, force) {
+                match install::use_pkgfile(pkgfile, name_option, version_option, force, quiet) {
                     Ok(_) => {}
                     Err(error) => {
                         eprintln!("{}", format!("- {}", error).bright_red());
@@ -376,27 +431,29 @@ as published by the Free Software Foundation.",
         }
         Some(("upgrade", upgrade_matches)) => {
             let force = upgrade_matches.get_flag("force");
+            let quiet = upgrade_matches.get_flag("quiet");
 
             if let Some(packages) = upgrade_matches.get_many::<String>("packages") {
                 let packages_vec: Vec<&str> = packages.map(|s| s.as_str()).collect::<Vec<_>>();
                 for package in packages_vec {
-                    upgrade::command(Some(package), force);
+                    upgrade::command(Some(package), force, quiet);
                 }
             } else {
-                upgrade::command(None, force);
+                upgrade::command(None, force, quiet);
             }
         }
         Some(("remove", remove_matches)) => {
             let lock_flag = remove_matches.get_flag("lock");
             let force_flag = remove_matches.get_flag("force");
+            let quiet_flag = remove_matches.get_flag("quiet");
 
             if remove_matches.get_flag("all") {
-                commands::remove(None, lock_flag, force_flag);
+                commands::remove(None, lock_flag, force_flag, quiet_flag);
             } else {
                 let packages = remove_matches.get_many::<String>("packages").unwrap();
                 let packages_vec: Vec<String> = packages.map(|s| s.to_owned()).collect::<Vec<_>>();
 
-                commands::remove(Some(packages_vec), lock_flag, force_flag)
+                commands::remove(Some(packages_vec), lock_flag, force_flag, quiet_flag);
             }
         }
         Some(("list", list_matches)) => {
@@ -406,28 +463,34 @@ as published by the Free Software Foundation.",
                 list::installed();
             }
         }
-        Some(("sync", _)) => {
-            sync::command();
+        Some(("sync", sync_matches)) => {
+            let quiet = sync_matches.get_flag("quiet");
+
+            sync::command(quiet);
         }
         Some(("repo", repo_matches)) => match repo_matches.subcommand() {
             Some(("add", add_matches)) => {
+                let quiet = add_matches.get_flag("quiet");
+
                 let repository_urls = add_matches.get_many::<String>("urls").unwrap();
                 let repository_urls_vec: Vec<String> =
                     repository_urls.map(|s| s.into()).collect::<Vec<_>>();
 
                 for repository_url in repository_urls_vec {
-                    repo::add(repository_url);
+                    repo::add(repository_url, quiet);
                 }
             }
 
             Some(("remove", remove_matches)) => {
                 let force = remove_matches.get_flag("force");
+                let quiet = remove_matches.get_flag("quiet");
+
                 let repository_names = remove_matches.get_many::<String>("names").unwrap();
                 let repository_names_vec: Vec<String> =
                     repository_names.map(|s| s.into()).collect::<Vec<_>>();
 
                 for repository_name in repository_names_vec {
-                    repo::remove(repository_name, force);
+                    repo::remove(repository_name, force, quiet);
                 }
             }
 
@@ -441,6 +504,8 @@ as published by the Free Software Foundation.",
             }
 
             Some(("init", init_matches)) => {
+                let quiet = init_matches.get_flag("quiet");
+
                 let repo_name = init_matches.get_one::<String>("name").unwrap();
                 let repo_maintainer = init_matches.get_one::<String>("maintainer").unwrap();
                 let repo_description = init_matches.get_one::<String>("description").unwrap();
@@ -449,6 +514,7 @@ as published by the Free Software Foundation.",
                     repo_name.into(),
                     repo_maintainer.into(),
                     repo_description.into(),
+                    quiet,
                 );
             }
 
@@ -468,14 +534,18 @@ as published by the Free Software Foundation.",
             }
         }
         Some(("package", package_matches)) => {
+            let quiet = package_matches.get_flag("quiet");
+
             let directory_name = package_matches.get_one::<String>("directory").unwrap();
-            package::command(directory_name.into());
+            package::command(directory_name.into(), quiet);
         }
         Some(("generate", generate_matches)) => {
+            let quiet = generate_matches.get_flag("quiet");
+
             let website_url = generate_matches.get_one::<String>("url").unwrap();
             let repo_url = generate_matches.get_one::<String>("repo").unwrap();
 
-            generate::command(website_url, repo_url);
+            generate::command(website_url, repo_url, quiet);
         }
         Some(("serve", serve_matches)) => {
             let host = serve_matches.get_one::<String>("host").unwrap();

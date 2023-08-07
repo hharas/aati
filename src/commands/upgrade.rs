@@ -27,7 +27,7 @@ use crate::utils::{
 
 use super::{get, remove};
 
-pub fn command(choice: Option<&str>, force: bool) {
+pub fn command(choice: Option<&str>, force: bool, quiet: bool) {
     let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let repo_list = aati_config["sources"]["repos"].as_array().unwrap();
     let mut added_repos: Vec<Value> = Vec::new();
@@ -76,10 +76,12 @@ pub fn command(choice: Option<&str>, force: bool) {
 
                 if is_installed {
                     if !is_up_to_date {
-                        remove(Some(vec![package_name.into()]), false, true);
-                        get::command(package_name, true);
+                        remove(Some(vec![package_name.into()]), false, true, quiet);
+                        get::command(package_name, true, quiet);
                     } else {
-                        println!("{}", "+ That Package is already up to date!".bright_green());
+                        if !quiet {
+                            println!("{}", "+ That Package is already up to date!".bright_blue());
+                        }
                         exit(1);
                     }
                 } else {
@@ -96,7 +98,9 @@ pub fn command(choice: Option<&str>, force: bool) {
     } else {
         let mut to_be_upgraded: Vec<&str> = Vec::new();
 
-        println!("{}", "+ Packages to be upgraded:".bright_green());
+        if !quiet {
+            println!("{}", "+ Packages to be upgraded:".bright_green());
+        }
 
         if !installed_packages.is_empty() {
             for installed_package in installed_packages {
@@ -115,14 +119,16 @@ pub fn command(choice: Option<&str>, force: bool) {
                         {
                             to_be_upgraded.push(available_package["name"].as_str().unwrap());
 
-                            println!(
-                                "{}   {}/{}-{} -> {}",
-                                "+".bright_green(),
-                                installed_package["source"].as_str().unwrap(),
-                                installed_package["name"].as_str().unwrap(),
-                                installed_package["version"].as_str().unwrap(),
-                                available_package["current"].as_str().unwrap(),
-                            );
+                            if !quiet {
+                                println!(
+                                    "{}   {}/{}-{} -> {}",
+                                    "+".bright_green(),
+                                    installed_package["source"].as_str().unwrap(),
+                                    installed_package["name"].as_str().unwrap(),
+                                    installed_package["version"].as_str().unwrap(),
+                                    available_package["current"].as_str().unwrap(),
+                                );
+                            }
                         }
                     }
                 }
@@ -131,19 +137,21 @@ pub fn command(choice: Option<&str>, force: bool) {
             if !to_be_upgraded.is_empty() {
                 if force || prompt_yn("/ Are you sure you want to continue this Transaction?") {
                     for package in to_be_upgraded {
-                        remove(Some(vec![package.into()]), false, true);
-                        get::command(package, true);
+                        remove(Some(vec![package.into()]), false, true, quiet);
+                        get::command(package, true, quiet);
                     }
 
-                    println!("{}", "+ Finished upgrading!".bright_green());
-                } else {
+                    if !quiet {
+                        println!("{}", "+ Finished upgrading!".bright_green());
+                    }
+                } else if !quiet {
                     println!("{}", "+ Transaction aborted".bright_green());
                 }
-            } else {
+            } else if !quiet {
                 println!("{}", "+   None!".bright_green());
                 println!("{}", "+ It's all up-to-date!".bright_green());
             }
-        } else {
+        } else if !quiet {
             println!("{}", "+   None!".bright_green());
             println!(
                 "{}",

@@ -20,7 +20,7 @@ use colored::Colorize;
 use toml::Value;
 
 use crate::{
-    utils::{extract_package, get_aati_config, get_aati_lock, get_repo_config, prompt_yn},
+    utils::{get_aati_lock, prompt_yn},
     version::get_versions,
 };
 
@@ -40,33 +40,33 @@ pub mod sync;
 pub mod upgrade;
 
 // Either a Some() of a Vec of Strings or a None which will be treated as --all
-pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool) {
+pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool, quiet: bool) {
     let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     if let Some(packages) = packages_option {
         if lock {
             // $ aati remove --lock package1 package2 package3...
-            let packages = &packages[1..];
             let mut did_removal = false;
 
             for package_name in packages {
-                let result = is_installed(package_name);
+                if let Some(installed_package) = is_installed(&package_name) {
+                    if !quiet {
+                        println!(
+                            "{}",
+                            format!(
+                                "+ Removing package ({}/{}-{}) from Lockfile...",
+                                installed_package["source"].as_str().unwrap(),
+                                installed_package["name"].as_str().unwrap(),
+                                installed_package["version"].as_str().unwrap()
+                            )
+                            .bright_green()
+                        );
+                    }
 
-                if let Some(installed_package) = result {
-                    println!(
-                        "{}",
-                        format!(
-                            "+ Removing package ({}/{}-{}) from Lockfile...",
-                            installed_package["source"].as_str().unwrap(),
-                            installed_package["name"].as_str().unwrap(),
-                            installed_package["version"].as_str().unwrap()
-                        )
-                        .bright_green()
-                    );
-                    remove::remove_from_lockfile(package_name);
+                    remove::remove_from_lockfile(&package_name);
                     did_removal = true;
-                } else {
+                } else if !quiet {
                     println!(
                         "{}",
                         format!(
@@ -78,7 +78,7 @@ pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool) {
                 }
             }
 
-            if did_removal {
+            if did_removal && !quiet {
                 println!(
                     "{}",
                     "+ Removal from Lockfile finished successfully!".bright_green()
@@ -86,35 +86,35 @@ pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool) {
             }
         } else {
             // $ aati remove package1 package2 package3...
-            let package_name = packages.first().unwrap();
-
-            let result = is_installed(package_name);
-
-            if let Some(package) = result {
-                if force
-                    || prompt_yn(
-                        format!(
-                            "/ Are you sure you want to completely remove {}/{}-{}?",
-                            package["source"].as_str().unwrap(),
-                            package_name,
-                            package["version"].as_str().unwrap()
+            for package_name in packages {
+                if let Some(package) = is_installed(&package_name) {
+                    if force
+                        || prompt_yn(
+                            format!(
+                                "/ Are you sure you want to completely remove {}/{}-{}?",
+                                package["source"].as_str().unwrap(),
+                                package_name,
+                                package["version"].as_str().unwrap()
+                            )
+                            .as_str(),
                         )
-                        .as_str(),
-                    )
-                {
+                    {
+                        if !quiet {
+                            println!(
+                                "{}",
+                                format!("+ Removing '{}'...", package_name).bright_green()
+                            );
+                        }
+                        remove::command(package["name"].as_str().unwrap(), force, quiet);
+                    } else if !quiet {
+                        println!("{}", "+ Transaction aborted".bright_green());
+                    }
+                } else {
                     println!(
                         "{}",
-                        format!("+ Removing '{}'...", package_name).bright_green()
+                        format!("- Package '{}' is not installed!", package_name).bright_red()
                     );
-                    remove::command(package["name"].as_str().unwrap(), force);
-                } else {
-                    println!("{}", "+ Transaction aborted".bright_green());
                 }
-            } else {
-                println!(
-                    "{}",
-                    format!("- Package '{}' is not installed!", package_name).bright_red()
-                );
             }
         }
     } else if lock {
@@ -127,17 +127,22 @@ pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool) {
             for installed_package in installed_packages {
                 let package_name = installed_package["name"].as_str().unwrap();
 
-                println!(
-                    "{}",
-                    format!("+ Removing '{}'...", package_name).bright_green()
-                );
+                if !quiet {
+                    println!(
+                        "{}",
+                        format!("+ Removing '{}'...", package_name).bright_green()
+                    );
+                }
+
                 remove::remove_from_lockfile(package_name);
             }
-            println!(
-                "{}",
-                "+ Removal from Lockfile finished successfully!".bright_green()
-            );
-        } else {
+            if !quiet {
+                println!(
+                    "{}",
+                    "+ Removal from Lockfile finished successfully!".bright_green()
+                );
+            }
+        } else if !quiet {
             println!("{}", "+ Transaction aborted".bright_green());
         }
     } else {
@@ -145,20 +150,23 @@ pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool) {
         if !installed_packages.is_empty() {
             if force || prompt_yn("/ Are you sure you want to remove all of your packages?") {
                 for installed_package in installed_packages {
-                    println!(
-                        "{}",
-                        format!(
-                            "+ Removing '{}'...",
-                            installed_package["name"].as_str().unwrap()
-                        )
-                        .bright_green()
-                    );
-                    remove::command(installed_package["name"].as_str().unwrap(), force);
+                    if !quiet {
+                        println!(
+                            "{}",
+                            format!(
+                                "+ Removing '{}'...",
+                                installed_package["name"].as_str().unwrap()
+                            )
+                            .bright_green()
+                        );
+                    }
+
+                    remove::command(installed_package["name"].as_str().unwrap(), force, quiet);
                 }
-            } else {
+            } else if !quiet {
                 println!("{}", "+ Transaction aborted".bright_green());
             }
-        } else {
+        } else if !quiet {
             println!("{}", "+ No packages to remove".bright_green());
         }
     }
@@ -185,27 +193,13 @@ pub fn changelog(package_name_option: Option<&str>, latest_only: bool) {
 
 fn is_installed(package_name: &str) -> Option<Value> {
     let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
-    let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
-    let repo_list = aati_config["sources"]["repos"].as_array().unwrap();
-    let mut package_option = None;
-    let mut added_repos: Vec<Value> = Vec::new();
-
-    for repo_info in repo_list {
-        added_repos.push(
-            get_repo_config(repo_info["name"].as_str().unwrap())
-                .unwrap()
-                .parse::<Value>()
-                .unwrap(),
-        );
-    }
-
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
-    if let Some(extracted_package) = extract_package(package_name, &added_repos) {
-        for installed_package in installed_packages {
-            if installed_package["name"].as_str().unwrap() == extracted_package[1] {
-                package_option = Some(installed_package.clone());
-            }
+    let mut package_option = None;
+
+    for installed_package in installed_packages {
+        if installed_package["name"].as_str().unwrap() == package_name {
+            package_option = Some(installed_package.clone());
         }
     }
 

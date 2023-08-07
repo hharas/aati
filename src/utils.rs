@@ -978,10 +978,6 @@ pub fn make_executable(_installation_path_buf: &PathBuf) {
             os::unix::prelude::PermissionsExt,
         };
 
-        println!("{}", "+ Changing Permissions...".bright_green());
-
-        // 10. (non-windows only) Turn it into an executable file, simply: chmod +x ~/.local/bin/<package name>
-
         let metadata = match metadata(_installation_path_buf) {
             Ok(metadata) => metadata,
             Err(error) => {
@@ -1075,6 +1071,7 @@ pub fn execute_lines(
     lines: &Vec<String>,
     data: &HashMap<String, String>,
     package_directory_path_buf: Option<&PathBuf>,
+    quiet: bool,
 ) {
     for line in lines {
         let mut line = line
@@ -1115,11 +1112,6 @@ pub fn execute_lines(
                     }
 
                     make_executable(&destination_path_buf);
-                } else {
-                    println!(
-                        "{}",
-                        format!("+ Command '{}' was ignored due to ", line).yellow()
-                    );
                 }
             }
 
@@ -1147,11 +1139,6 @@ pub fn execute_lines(
                             exit(1);
                         }
                     }
-                } else {
-                    println!(
-                        "{}",
-                        format!("+ Command '{}' was ignored due to ", line).yellow()
-                    );
                 }
             }
 
@@ -1188,10 +1175,11 @@ pub fn execute_lines(
                     command.arg("/C")
                 };
 
-                command
-                    .arg(line.split_off(7))
-                    .stdout(Stdio::inherit())
-                    .stderr(Stdio::inherit());
+                command.arg(line.split_off(7)).stderr(Stdio::inherit());
+
+                if !quiet {
+                    command.stdout(Stdio::inherit());
+                }
 
                 if let Some(package_directory_path_buf) = package_directory_path_buf {
                     command.current_dir(package_directory_path_buf);
