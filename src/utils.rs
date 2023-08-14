@@ -28,7 +28,10 @@ use std::{
 use toml::Value;
 
 use super::types::Package;
-use crate::types::Pkgfile;
+use crate::{
+    globals::{CONFIG_FILENAME, LOCK_FILENAME, REPO_DIRNAME},
+    types::Pkgfile,
+};
 
 pub fn is_windows() -> bool {
     std::env::consts::OS == "windows"
@@ -58,9 +61,9 @@ pub fn check_config_dirs() {
     };
 
     let repos_dir = if !is_windows() {
-        home_dir.join(".config/aati/repos")
+        home_dir.join(format!(".config/aati/{}", REPO_DIRNAME))
     } else {
-        home_dir.join("Aati\\Repositories")
+        home_dir.join(format!("Aati\\{}", REPO_DIRNAME))
     };
 
     if !config_dir.exists() {
@@ -225,9 +228,9 @@ pub fn get_aati_config_path_buf() -> PathBuf {
     let home_dir = home_dir().unwrap();
 
     if !is_windows() {
-        home_dir.join(".config/aati/rc.toml")
+        home_dir.join(format!(".config/aati/{}", CONFIG_FILENAME))
     } else {
-        home_dir.join("Aati\\Config.toml")
+        home_dir.join(format!("Aati\\{}", CONFIG_FILENAME))
     }
 }
 
@@ -237,9 +240,9 @@ pub fn get_aati_lock_path_buf() -> PathBuf {
     let home_dir = home_dir().unwrap();
 
     if !is_windows() {
-        home_dir.join(".config/aati/lock.toml")
+        home_dir.join(format!(".config/aati/{}", LOCK_FILENAME))
     } else {
-        home_dir.join("Aati\\Lock.toml")
+        home_dir.join(format!("Aati\\{}", LOCK_FILENAME))
     }
 }
 
@@ -249,9 +252,9 @@ pub fn get_repo_config_path_buf(repo_name: &str) -> PathBuf {
     let home_dir = home_dir().unwrap();
 
     if !is_windows() {
-        home_dir.join(format!(".config/aati/repos/{}.toml", repo_name))
+        home_dir.join(format!(".config/aati/{}/{}.toml", REPO_DIRNAME, repo_name))
     } else {
-        home_dir.join(format!("Aati\\Repositories\\{}.toml", repo_name))
+        home_dir.join(format!("Aati\\{}\\{}.toml", REPO_DIRNAME, repo_name))
     }
 }
 
