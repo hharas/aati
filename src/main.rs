@@ -64,7 +64,7 @@ as published by the Free Software Foundation.",
                         .action(ArgAction::Set)
                         .required(true)
                         .num_args(1..)
-                        .value_hint(ValueHint::Other),
+                        .value_hint(ValueHint::Unknown),
                     Arg::new("force")
                         .long("force")
                         .short('f')
@@ -103,7 +103,7 @@ as published by the Free Software Foundation.",
                         .action(ArgAction::Set)
                         .conflicts_with("package")
                         .num_args(1)
-                        .value_hint(ValueHint::Other),
+                        .value_hint(ValueHint::Unknown),
                     Arg::new("version")
                         .long("version")
                         .short('v')
@@ -111,7 +111,7 @@ as published by the Free Software Foundation.",
                         .action(ArgAction::Set)
                         .conflicts_with("package")
                         .num_args(1)
-                        .value_hint(ValueHint::Other),
+                        .value_hint(ValueHint::Unknown),
                     Arg::new("force")
                         .long("force")
                         .short('f')
@@ -132,7 +132,7 @@ as published by the Free Software Foundation.",
                         .help("Package(s) to upgrade")
                         .action(ArgAction::Set)
                         .num_args(1..)
-                        .value_hint(ValueHint::Other),
+                        .value_hint(ValueHint::Unknown),
                     Arg::new("force")
                         .long("force")
                         .short('f')
@@ -154,7 +154,7 @@ as published by the Free Software Foundation.",
                         .action(ArgAction::Set)
                         .help("Package(s) to remove")
                         .num_args(1..)
-                        .value_hint(ValueHint::Other),
+                        .value_hint(ValueHint::Unknown),
                     Arg::new("all")
                         .long("all")
                         .short('a')
@@ -227,7 +227,7 @@ as published by the Free Software Foundation.",
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1..)
-                                .value_hint(ValueHint::Other),
+                                .value_hint(ValueHint::Unknown),
                             Arg::new("force")
                                 .long("force")
                                 .short('f')
@@ -248,7 +248,7 @@ as published by the Free Software Foundation.",
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1)
-                                .value_hint(ValueHint::Other),
+                                .value_hint(ValueHint::Unknown),
                         ),
                     Command::new("list")
                         .short_flag('l')
@@ -264,7 +264,7 @@ as published by the Free Software Foundation.",
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1)
-                                .value_hint(ValueHint::Other),
+                                .value_hint(ValueHint::Unknown),
                             Arg::new("maintainer")
                                 .long("maintainer")
                                 .short('m')
@@ -272,7 +272,7 @@ as published by the Free Software Foundation.",
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1)
-                                .value_hint(ValueHint::Other),
+                                .value_hint(ValueHint::Unknown),
                             Arg::new("description")
                                 .long("description")
                                 .short('d')
@@ -280,7 +280,7 @@ as published by the Free Software Foundation.",
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1)
-                                .value_hint(ValueHint::Other),
+                                .value_hint(ValueHint::Unknown),
                             Arg::new("quiet")
                                 .long("quiet")
                                 .short('q')
@@ -297,7 +297,7 @@ as published by the Free Software Foundation.",
                         .required(true)
                         .action(ArgAction::Set)
                         .num_args(1)
-                        .value_hint(ValueHint::Other),
+                        .value_hint(ValueHint::Unknown),
                 ),
             Command::new("changelog")
                 .short_flag('C')
@@ -307,7 +307,7 @@ as published by the Free Software Foundation.",
                         .help("Selected package")
                         .action(ArgAction::Set)
                         .num_args(1)
-                        .value_hint(ValueHint::Other),
+                        .value_hint(ValueHint::Unknown),
                     Arg::new("latest")
                         .short('l')
                         .long("latest")
@@ -371,7 +371,7 @@ as published by the Free Software Foundation.",
                         .default_value("8887")
                         .action(ArgAction::Set)
                         .help("Server port")
-                        .value_hint(ValueHint::Other),
+                        .value_hint(ValueHint::Unknown),
                     Arg::new("url")
                         .long("url")
                         .short('u')
