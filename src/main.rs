@@ -1,7 +1,7 @@
 /* بسم الله الرحمن الرحيم
 
    Aati - Cross-platform Package Manager written in Rust.
-   Copyright (C) 2023  Husayn Haras <husayn@dnmx.org>
+   Copyright (C) 2023  Husayn Haras <haras@disroot.org>
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of version 3 of the GNU General Public License
@@ -39,7 +39,7 @@ Issue tracker: https://github.com/hharas/aati/issues";
 
     let long_version = format!(
         "{} ({})
-Copyright (C) 2023  Husayn Haras <husayn@dnmx.org>
+Copyright (C) 2023  Husayn Haras <haras@disroot.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of version 3 of the GNU General Public License

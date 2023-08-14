@@ -1,7 +1,7 @@
 [package]
 name = "aati"
 description = "Cross-platform package manager written in Rust."
-authors = ["Husayn Haras <husayn@dnmx.org>"]
+authors = ["Husayn Haras <haras@disroot.org>"]
 readme = "README.md"
 license = "GPL-3.0-only"
 repository = "https://github.com/hharas/aati"
