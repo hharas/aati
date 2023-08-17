@@ -229,7 +229,7 @@ pub fn add(repository_url: String, quiet: bool) {
     }
 }
 
-pub fn remove(repo_name: String, force: bool, quiet: bool) {
+pub fn remove(repo_name_option: Option<String>, force: bool, quiet: bool) {
     let aati_lock: Value = get_aati_lock().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
@@ -237,172 +237,185 @@ pub fn remove(repo_name: String, force: bool, quiet: bool) {
     let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let added_repos = aati_config["sources"]["repos"].as_array().unwrap();
 
-    let mut is_added = false;
-    let mut repo: &Value = &Value::from("name = \"dummy-repo\"\nurl = \"http://localhost:8000\"");
+    if let Some(repo_name) = repo_name_option {
+        let mut is_added = false;
+        let mut repo: &Value =
+            &Value::from("name = \"dummy-repo\"\nurl = \"http://localhost:8000\"");
 
-    for added_repo in added_repos {
-        if added_repo["name"].as_str().unwrap() == repo_name {
-            repo = added_repo;
-            is_added = true;
+        for added_repo in added_repos {
+            if added_repo["name"].as_str().unwrap() == repo_name {
+                repo = added_repo;
+                is_added = true;
+            }
         }
-    }
 
-    if is_added {
-        if force
-            || prompt_yn(
-                format!(
+        if is_added {
+            if force
+                || prompt_yn(
+                    format!(
                     "Are you sure you want to remove '{}' from your added package repositories?",
                     repo_name
                 )
-                .as_str(),
-            )
-        {
-            if installed_packages
-                .iter()
-                .any(|pkg| pkg["source"].as_str().unwrap() == repo_name)
+                    .as_str(),
+                )
             {
+                if installed_packages
+                    .iter()
+                    .any(|pkg| pkg["source"].as_str().unwrap() == repo_name)
+                {
+                    if !quiet {
+                        println!(
+                            "{}",
+                            format!(
+                                "+ Removing all packages installed from repository '{}'...",
+                                repo_name
+                            )
+                            .bright_green()
+                        );
+                    }
+
+                    for installed_package in installed_packages {
+                        if installed_package["source"].as_str().unwrap() == repo_name {
+                            commands::remove(
+                                Some(vec![installed_package["name"]
+                                    .as_str()
+                                    .unwrap()
+                                    .to_string()]),
+                                false,
+                                force,
+                                quiet,
+                            );
+                        }
+                    }
+                }
+
+                if !quiet {
+                    println!(
+                        "{}",
+                        format!("+ Removing '{}' from the Config File...", repo_name)
+                            .bright_green()
+                    );
+                }
+
+                let config_file_str = match read_to_string(&aati_config_path_buf) {
+                    Ok(contents) => contents,
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- FAILED TO READ CONFIG FILE AT '{}'! ERROR[72]: {}",
+                                &aati_config_path_buf.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
+
+                        exit(1);
+                    }
+                };
+                let mut config_file: ConfigFile = toml::from_str(&config_file_str).unwrap();
+
+                config_file.sources.repos.retain(|r| {
+                    r.name != repo["name"].as_str().unwrap()
+                        && r.url != repo["url"].as_str().unwrap()
+                });
+
+                let mut file = match OpenOptions::new()
+                    .write(true)
+                    .truncate(true)
+                    .open(&aati_config_path_buf)
+                {
+                    Ok(file) => file,
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- FAILED TO OPEN CONFIG FILE AT '{}' FOR WRITING! ERROR[73]: {}",
+                                &aati_config_path_buf.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
+
+                        exit(1);
+                    }
+                };
+
+                let toml_str = toml::to_string_pretty(&config_file).unwrap();
+                match file.write_all(toml_str.as_bytes()) {
+                    Ok(_) => {}
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- FAILED TO WRITE INTO CONFIG FILE AT '{}'! ERROR[74]: {}",
+                                aati_config_path_buf.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
+
+                        exit(1);
+                    }
+                }
+
+                let repo_path_buf = get_repo_config_path_buf(&repo_name);
+
+                if !quiet {
+                    println!(
+                        "{}",
+                        format!("+ Deleting '{}'...", repo_path_buf.display()).bright_green()
+                    );
+                }
+
+                match remove_file(&repo_path_buf) {
+                    Ok(_) => {}
+                    Err(error) => {
+                        println!(
+                            "{}",
+                            format!(
+                                "- FAILED TO DELETE FILE '{}'! ERROR[79]: {}",
+                                repo_path_buf.display(),
+                                error
+                            )
+                            .bright_red()
+                        );
+
+                        exit(1);
+                    }
+                }
+
                 if !quiet {
                     println!(
                         "{}",
                         format!(
-                            "+ Removing all packages installed from repository '{}'...",
-                            repo_name
+                            "+ The Repository {} is removed successfully!",
+                            repo["name"].as_str().unwrap()
                         )
                         .bright_green()
                     );
                 }
-
-                for installed_package in installed_packages {
-                    if installed_package["source"].as_str().unwrap() == repo_name {
-                        commands::remove(
-                            Some(vec![installed_package["name"]
-                                .as_str()
-                                .unwrap()
-                                .to_string()]),
-                            false,
-                            force,
-                            quiet,
-                        );
-                    }
-                }
+            } else if !quiet {
+                println!("{}", "+ Transaction aborted".bright_green());
             }
-
-            if !quiet {
-                println!(
-                    "{}",
-                    format!("+ Removing '{}' from the Config File...", repo_name).bright_green()
-                );
-            }
-
-            let config_file_str = match read_to_string(&aati_config_path_buf) {
-                Ok(contents) => contents,
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO READ CONFIG FILE AT '{}'! ERROR[72]: {}",
-                            &aati_config_path_buf.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            };
-            let mut config_file: ConfigFile = toml::from_str(&config_file_str).unwrap();
-
-            config_file.sources.repos.retain(|r| {
-                r.name != repo["name"].as_str().unwrap() && r.url != repo["url"].as_str().unwrap()
-            });
-
-            let mut file = match OpenOptions::new()
-                .write(true)
-                .truncate(true)
-                .open(&aati_config_path_buf)
-            {
-                Ok(file) => file,
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO OPEN CONFIG FILE AT '{}' FOR WRITING! ERROR[73]: {}",
-                            &aati_config_path_buf.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            };
-
-            let toml_str = toml::to_string_pretty(&config_file).unwrap();
-            match file.write_all(toml_str.as_bytes()) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO WRITE INTO CONFIG FILE AT '{}'! ERROR[74]: {}",
-                            aati_config_path_buf.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            }
-
-            let repo_path_buf = get_repo_config_path_buf(&repo_name);
-
-            if !quiet {
-                println!(
-                    "{}",
-                    format!("+ Deleting '{}'...", repo_path_buf.display()).bright_green()
-                );
-            }
-
-            match remove_file(&repo_path_buf) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO DELETE FILE '{}'! ERROR[79]: {}",
-                            repo_path_buf.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-
-                    exit(1);
-                }
-            }
-
-            if !quiet {
-                println!(
-                    "{}",
-                    format!(
-                        "+ The Repository {} is removed successfully!",
-                        repo["name"].as_str().unwrap()
-                    )
-                    .bright_green()
-                );
-            }
-        } else if !quiet {
-            println!("{}", "+ Transaction aborted".bright_green());
+        } else {
+            println!(
+                "{}",
+                format!(
+                    "- Repository '{}' is not added to the Config file!",
+                    repo_name
+                )
+                .bright_red()
+            );
         }
     } else {
-        println!(
-            "{}",
-            format!(
-                "- Repository '{}' is not added to the Config file!",
-                repo_name
+        for repo in added_repos {
+            remove(
+                Some(repo["name"].as_str().unwrap().to_string()),
+                force,
+                quiet,
             )
-            .bright_red()
-        );
+        }
     }
 }
 

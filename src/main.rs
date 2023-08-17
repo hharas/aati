@@ -233,6 +233,12 @@ as published by the Free Software Foundation.",
                                 .short('f')
                                 .action(ArgAction::SetTrue)
                                 .help("Agree to all prompts"),
+                            Arg::new("all")
+                                .long("all")
+                                .short('a')
+                                .action(ArgAction::SetTrue)
+                                .conflicts_with("names")
+                                .help("Remove all repositories"),
                             Arg::new("quiet")
                                 .long("quiet")
                                 .short('q')
@@ -485,12 +491,16 @@ as published by the Free Software Foundation.",
                 let force = remove_matches.get_flag("force");
                 let quiet = remove_matches.get_flag("quiet");
 
-                let repository_names = remove_matches.get_many::<String>("names").unwrap();
-                let repository_names_vec: Vec<String> =
-                    repository_names.map(|s| s.into()).collect::<Vec<_>>();
+                if remove_matches.get_flag("all") {
+                    repo::remove(None, force, quiet)
+                } else {
+                    let repository_names = remove_matches.get_many::<String>("names").unwrap();
+                    let repository_names_vec: Vec<String> =
+                        repository_names.map(|s| s.into()).collect::<Vec<_>>();
 
-                for repository_name in repository_names_vec {
-                    repo::remove(repository_name, force, quiet);
+                    for repository_name in repository_names_vec {
+                        repo::remove(Some(repository_name), force, quiet);
+                    }
                 }
             }
 
