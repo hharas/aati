@@ -35,13 +35,12 @@ pub fn command(choice: Option<&str>, force: bool, quiet: bool) {
     for repo_info in repo_list {
         added_repos.push(
             get_repo_config(repo_info["name"].as_str().unwrap())
-                .unwrap()
                 .parse::<Value>()
                 .unwrap(),
         );
     }
 
-    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_lock: Value = get_aati_lock().parse().unwrap();
 
     let repos = aati_config["sources"]["repos"].as_array().unwrap();
     let mut repos_toml: Vec<Value> = Vec::new();
@@ -49,7 +48,6 @@ pub fn command(choice: Option<&str>, force: bool, quiet: bool) {
     for repo in repos {
         repos_toml.push(
             get_repo_config(repo["name"].as_str().unwrap())
-                .unwrap()
                 .parse::<Value>()
                 .unwrap(),
         )

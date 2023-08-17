@@ -29,8 +29,8 @@ use crate::{
     commands,
     types::{ConfigFile, Repo},
     utils::{
-        check_config_dirs, get_aati_config, get_aati_config_path_buf, get_aati_lock,
-        get_repo_config, get_repo_config_path_buf, prompt_yn,
+        check_aati_dirs, get_aati_config, get_aati_config_path_buf, get_aati_lock, get_repo_config,
+        get_repo_config_path_buf, prompt_yn,
     },
 };
 
@@ -77,7 +77,7 @@ pub fn add(repository_url: String, quiet: bool) {
                 }
 
                 if already_added_repo.is_none() {
-                    check_config_dirs();
+                    check_aati_dirs();
 
                     let repo_config_path_buf = get_repo_config_path_buf(repo_name);
 
@@ -230,7 +230,7 @@ pub fn add(repository_url: String, quiet: bool) {
 }
 
 pub fn remove(repo_name: String, force: bool, quiet: bool) {
-    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_lock: Value = get_aati_lock().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     let aati_config_path_buf = get_aati_config_path_buf();
@@ -412,7 +412,7 @@ pub fn info(repo_name: String) {
 
     let repos = aati_toml["sources"]["repos"].as_array().unwrap();
 
-    let repo_config = get_repo_config(&repo_name).unwrap();
+    let repo_config = get_repo_config(&repo_name);
     let repo_toml: Value = repo_config.parse().unwrap();
 
     let url = repos

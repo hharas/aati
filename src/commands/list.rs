@@ -22,7 +22,7 @@ use toml::Value;
 use crate::utils::{get_aati_config, get_aati_lock, get_repo_config, is_supported};
 
 pub fn installed() {
-    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_lock: Value = get_aati_lock().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     println!("{}", "+ Installed Packages:".bright_green());
@@ -31,7 +31,6 @@ pub fn installed() {
         for installed_package in installed_packages {
             if installed_package["source"].as_str().unwrap() != "local" {
                 match get_repo_config(installed_package["source"].as_str().unwrap())
-                    .unwrap()
                     .parse::<Value>()
                     .unwrap()["index"]["packages"]
                     .as_array()
@@ -98,7 +97,7 @@ pub fn available() {
     let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let repos = aati_config["sources"]["repos"].as_array().unwrap();
 
-    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_lock: Value = get_aati_lock().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     println!("{}", "+ Available Packages:".bright_green());
@@ -107,7 +106,7 @@ pub fn available() {
         for repo in repos {
             let repo_name = repo["name"].as_str().unwrap();
 
-            let repo_toml: Value = get_repo_config(repo_name).unwrap().parse().unwrap();
+            let repo_toml: Value = get_repo_config(repo_name).parse().unwrap();
             let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
             println!("{}   {}/", "+".bright_green(), repo_name);
@@ -153,7 +152,7 @@ pub fn available() {
         for repo in repos {
             let repo_name = repo["name"].as_str().unwrap();
 
-            let repo_toml: Value = get_repo_config(repo_name).unwrap().parse().unwrap();
+            let repo_toml: Value = get_repo_config(repo_name).parse().unwrap();
             let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
             println!("{}   {}/", "+".yellow(), repo_name);

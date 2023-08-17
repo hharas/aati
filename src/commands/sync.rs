@@ -19,7 +19,7 @@
 use std::{fs::File, io::Write, process::exit};
 
 use crate::utils::{
-    check_config_dirs, get_aati_config, get_aati_config_path_buf, get_repo_config_path_buf,
+    check_aati_dirs, get_aati_config, get_aati_config_path_buf, get_repo_config_path_buf,
 };
 
 use colored::Colorize;
@@ -53,7 +53,7 @@ pub fn command(quiet: bool) {
 
                         let repo_name = repo_value["repo"]["name"].as_str().unwrap();
 
-                        check_config_dirs();
+                        check_aati_dirs();
 
                         let repo_config_path_buf = get_repo_config_path_buf(repo_name);
 

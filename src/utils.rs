@@ -29,7 +29,9 @@ use toml::Value;
 
 use super::types::Package;
 use crate::{
-    globals::{CONFIG_FILENAME, LOCK_FILENAME, REPO_DIRNAME},
+    globals::{
+        AATI_DIRNAME, BIN_DIRNAME, CONFIG_FILENAME, LIB_DIRNAME, LOCK_FILENAME, REPOS_DIRNAME,
+    },
     types::Pkgfile,
 };
 
@@ -45,45 +47,13 @@ pub fn is_supported(target: &str) -> bool {
     target == get_target() || target == "any"
 }
 
-pub fn check_config_dirs() {
+pub fn check_aati_dirs() {
     let home_dir = home_dir().unwrap();
 
-    let config_dir = if !is_windows() {
-        home_dir.join(".config")
-    } else {
-        home_dir.join("Aati")
-    };
-
-    let aati_dir = if !is_windows() {
-        home_dir.join(".config/aati")
-    } else {
-        home_dir.join("Aati")
-    };
-
-    let repos_dir = if !is_windows() {
-        home_dir.join(format!(".config/aati/{}", REPO_DIRNAME))
-    } else {
-        home_dir.join(format!("Aati\\{}", REPO_DIRNAME))
-    };
-
-    if !config_dir.exists() {
-        match create_dir_all(&config_dir) {
-            Ok(_) => {}
-
-            Err(error) => {
-                println!(
-                    "{}",
-                    format!(
-                        "- FAILED TO CREATE DIRECTORY '{}'! ERROR[19]: {}",
-                        &config_dir.display(),
-                        error
-                    )
-                    .bright_red()
-                );
-                exit(1);
-            }
-        }
-    }
+    let aati_dir = home_dir.join(AATI_DIRNAME);
+    let repos_dir = aati_dir.join(REPOS_DIRNAME);
+    let bin_dir = aati_dir.join(BIN_DIRNAME);
+    let lib_dir = aati_dir.join(LIB_DIRNAME);
 
     if !aati_dir.exists() {
         match create_dir_all(&aati_dir) {
@@ -122,143 +92,90 @@ pub fn check_config_dirs() {
             }
         }
     }
+
+    if !bin_dir.exists() {
+        match create_dir_all(&bin_dir) {
+            Ok(_) => {}
+
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- FAILED TO CREATE DIRECTORY '{}'! ERROR[22]: {}",
+                        &bin_dir.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+                exit(1);
+            }
+        }
+    }
+
+    if !lib_dir.exists() {
+        match create_dir_all(&lib_dir) {
+            Ok(_) => {}
+
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- FAILED TO CREATE DIRECTORY '{}'! ERROR[23]: {}",
+                        &lib_dir.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+                exit(1);
+            }
+        }
+    }
 }
 
 pub fn get_bin_path_buf() -> PathBuf {
+    check_aati_dirs();
+
     let home_dir = home_dir().unwrap();
 
-    if !is_windows() {
-        let local_dir = home_dir.join(".local");
-        let bin_dir = home_dir.join(".local/bin");
-
-        if !local_dir.exists() {
-            match create_dir_all(&local_dir) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[99]: {}",
-                            local_dir.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-                    exit(1);
-                }
-            }
-        }
-
-        if !bin_dir.exists() {
-            match create_dir_all(&bin_dir) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[55]: {}",
-                            bin_dir.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-                    exit(1);
-                }
-            }
-        }
-
-        home_dir.join(".local/bin")
-    } else {
-        home_dir.join("Aati\\Binaries")
-    }
+    home_dir.join(AATI_DIRNAME).join(BIN_DIRNAME)
 }
 
 pub fn get_lib_path_buf() -> PathBuf {
+    check_aati_dirs();
+
     let home_dir = home_dir().unwrap();
 
-    if !is_windows() {
-        let local_dir = home_dir.join(".local");
-        let lib_dir = home_dir.join(".local/lib");
-
-        if !local_dir.exists() {
-            match create_dir_all(&local_dir) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[56]: {}",
-                            local_dir.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-                    exit(1);
-                }
-            }
-        }
-
-        if !lib_dir.exists() {
-            match create_dir_all(&lib_dir) {
-                Ok(_) => {}
-                Err(error) => {
-                    println!(
-                        "{}",
-                        format!(
-                            "- FAILED TO CREATE DIRECTORY '{}'! ERROR[57]: {}",
-                            lib_dir.display(),
-                            error
-                        )
-                        .bright_red()
-                    );
-                    exit(1);
-                }
-            }
-        }
-
-        home_dir.join(".local/lib")
-    } else {
-        home_dir.join("Aati\\Binaries")
-    }
+    home_dir.join(AATI_DIRNAME).join(LIB_DIRNAME)
 }
 
 pub fn get_aati_config_path_buf() -> PathBuf {
-    check_config_dirs();
+    check_aati_dirs();
 
     let home_dir = home_dir().unwrap();
 
-    if !is_windows() {
-        home_dir.join(format!(".config/aati/{}", CONFIG_FILENAME))
-    } else {
-        home_dir.join(format!("Aati\\{}", CONFIG_FILENAME))
-    }
+    home_dir.join(AATI_DIRNAME).join(CONFIG_FILENAME)
 }
 
 pub fn get_aati_lock_path_buf() -> PathBuf {
-    check_config_dirs();
+    check_aati_dirs();
 
     let home_dir = home_dir().unwrap();
 
-    if !is_windows() {
-        home_dir.join(format!(".config/aati/{}", LOCK_FILENAME))
-    } else {
-        home_dir.join(format!("Aati\\{}", LOCK_FILENAME))
-    }
+    home_dir.join(AATI_DIRNAME).join(LOCK_FILENAME)
 }
 
 pub fn get_repo_config_path_buf(repo_name: &str) -> PathBuf {
-    check_config_dirs();
+    check_aati_dirs();
 
     let home_dir = home_dir().unwrap();
 
-    if !is_windows() {
-        home_dir.join(format!(".config/aati/{}/{}.toml", REPO_DIRNAME, repo_name))
-    } else {
-        home_dir.join(format!("Aati\\{}\\{}.toml", REPO_DIRNAME, repo_name))
-    }
+    home_dir
+        .join(AATI_DIRNAME)
+        .join(REPOS_DIRNAME)
+        .join(format!("{}.toml", repo_name))
 }
 
-pub fn get_aati_lock() -> Option<String> {
+pub fn get_aati_lock() -> String {
     let aati_lock_path_buf = get_aati_lock_path_buf();
 
     if !aati_lock_path_buf.exists() {
@@ -300,18 +217,23 @@ pub fn get_aati_lock() -> Option<String> {
         if !is_windows() {
             println!(
                 "{}",
-                "+ Make sure to add ~/.local/bin to PATH and ~/.local/lib to LD_LIBRARY_PATH.
+                format!(
+                    "+ Make sure to add '{}' to PATH and '{}' to LD_LIBRARY_PATH.
   You can do this by appending these two lines at the end of your .bashrc file:
-    export PATH=\"$PATH:$HOME/.local/bin\"
-    export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:$HOME/.local/lib\""
-                    .yellow()
+    export PATH=\"$PATH:$HOME/.aati/bin\"
+    export LD_LIBRARY_PATH=\"$LD_LIBRARY_PATH:$HOME/.aati/lib\"",
+                    get_bin_path_buf().display(),
+                    get_lib_path_buf().display()
+                )
+                .yellow()
             );
         } else {
             println!(
                 "{}",
                 format!(
-                    "+ Make sure to add {}\\Aati\\Binaries to %PATH%.",
-                    home_dir().unwrap().display()
+                    "+ Make sure to add '{}' and '{}' to %PATH%.",
+                    get_bin_path_buf().display(),
+                    get_lib_path_buf().display()
                 )
                 .yellow()
             );
@@ -335,10 +257,10 @@ pub fn get_aati_lock() -> Option<String> {
         }
     };
 
-    Some(aati_lock.trim().to_string())
+    aati_lock.trim().to_string()
 }
 
-pub fn get_repo_config(repo_name: &str) -> Option<String> {
+pub fn get_repo_config(repo_name: &str) -> String {
     let repo_config_path_buf = get_repo_config_path_buf(repo_name);
 
     if !repo_config_path_buf.exists() {
@@ -370,7 +292,7 @@ pub fn get_repo_config(repo_name: &str) -> Option<String> {
         }
     };
 
-    Some(repo_config.trim().to_string())
+    repo_config.trim().to_string()
 }
 
 pub fn get_aati_config() -> Option<String> {

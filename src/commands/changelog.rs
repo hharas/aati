@@ -37,7 +37,6 @@ pub fn get_package_versions(package_name: &str) -> Option<Vec<Value>> {
     for repo_info in repo_list {
         added_repos.push(
             get_repo_config(repo_info["name"].as_str().unwrap())
-                .unwrap()
                 .parse::<Value>()
                 .unwrap(),
         );

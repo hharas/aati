@@ -28,7 +28,7 @@ pub fn command(text: &str, repo_name: Option<&str>) {
     let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let repos = aati_config["sources"]["repos"].as_array().unwrap();
 
-    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_lock: Value = get_aati_lock().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     // Some placeholders too
@@ -40,7 +40,7 @@ pub fn command(text: &str, repo_name: Option<&str>) {
         let mut results: Vec<Vec<Value>> = Vec::new();
 
         if let Some(repo_name) = repo_name {
-            let repo_toml: Value = get_repo_config(repo_name).unwrap().parse().unwrap();
+            let repo_toml: Value = get_repo_config(repo_name).parse().unwrap();
             let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
             for available_package in available_packages {
@@ -70,7 +70,7 @@ pub fn command(text: &str, repo_name: Option<&str>) {
             for repo in repos {
                 let repo_name = repo["name"].as_str().unwrap();
 
-                let repo_toml: Value = get_repo_config(repo_name).unwrap().parse().unwrap();
+                let repo_toml: Value = get_repo_config(repo_name).parse().unwrap();
                 let available_packages = repo_toml["index"]["packages"].as_array().unwrap();
 
                 for available_package in available_packages {

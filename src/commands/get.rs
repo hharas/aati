@@ -40,7 +40,7 @@ use toml::Value;
 pub fn command(package_name: &str, force: bool, quiet: bool) {
     // Initialise some variables
 
-    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_lock: Value = get_aati_lock().parse().unwrap();
     let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
     let repo_list = aati_config["sources"]["repos"].as_array().unwrap();
     let mut added_repos: Vec<Value> = Vec::new();
@@ -48,7 +48,6 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
     for repo_info in repo_list {
         added_repos.push(
             get_repo_config(repo_info["name"].as_str().unwrap())
-                .unwrap()
                 .parse::<Value>()
                 .unwrap(),
         );
@@ -58,7 +57,6 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
 
     if let Some(extracted_package) = extract_package(package_name, &added_repos) {
         let repo_toml: Value = get_repo_config(extracted_package[0].as_str())
-            .unwrap()
             .parse()
             .unwrap();
         let available_packages = repo_toml["index"]["packages"].as_array().unwrap();

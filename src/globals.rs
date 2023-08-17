@@ -16,9 +16,13 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+pub const AATI_DIRNAME: &str = ".aati";
+pub const REPOS_DIRNAME: &str = "repos";
+pub const BIN_DIRNAME: &str = "bin";
+pub const LIB_DIRNAME: &str = "lib";
 pub const CONFIG_FILENAME: &str = "rc.toml";
 pub const LOCK_FILENAME: &str = "lock.toml";
-pub const REPO_DIRNAME: &str = "repos";
+
 pub const POSSIBLE_TARGETS: [&str; 131] = [
     "any",
     "x86-linux",

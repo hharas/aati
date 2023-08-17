@@ -41,7 +41,7 @@ pub mod upgrade;
 
 // Either a Some() of a Vec of Strings or a None which will be treated as --all
 pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool, quiet: bool) {
-    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_lock: Value = get_aati_lock().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     if let Some(packages) = packages_option {
@@ -192,7 +192,7 @@ pub fn changelog(package_name_option: Option<&str>, latest_only: bool) {
 }
 
 fn is_installed(package_name: &str) -> Option<Value> {
-    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_lock: Value = get_aati_lock().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     let mut package_option = None;

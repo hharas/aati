@@ -46,7 +46,7 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
     let name = parsed_package.name.as_str();
     let version = parsed_package.version.as_str();
 
-    let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+    let aati_lock: Value = get_aati_lock().parse().unwrap();
     let installed_packages = aati_lock["package"].as_array().unwrap();
 
     if installed_packages
@@ -355,7 +355,7 @@ pub fn use_pkgfile(
     if pkgfile_path_buf.exists() {
         match read_to_string(&pkgfile_path_buf) {
             Ok(pkgfile) => {
-                let aati_lock: Value = get_aati_lock().unwrap().parse().unwrap();
+                let aati_lock: Value = get_aati_lock().parse().unwrap();
                 let installed_packages = aati_lock["package"].as_array().unwrap();
 
                 let package_directory = pkgfile_path_buf.parent().unwrap().to_path_buf();
