@@ -1,4 +1,23 @@
 [[version]]
+tag = "0.12.0"
+date = "Thu Aug 17 09:57:05 2023 +0300"
+changes = '''
+BREAKING CHANGES:
+  - Aati now has its own directory '.aati/' under the user's home directory, which has its configuration, lockfile, repository manifests and more
+  - Filenames and directory names have been unified between all operating systems
+Bugfixes:
+  - Fixed a major bug in the PKGFILE 'system' command that prevented it from functioning at all on Windows
+  - Also fixed 'system' command's broken error messages
+  - Fixed 'remove' command's weird behaviour when deleting multiple packages
+Features:
+  - Added '[data]' section in PKGFILEs to store global variables (See: https://man.sr.ht/~haras/aati/pkgfile-manual.md)
+  - Added '--quiet' option to all commands
+  - Added '--all' option to 'repo remove'
+  - Updated 'install' command's about message
+News:
+  - Moved the project over to SourceHut! (See: https://sr.ht/~haras/aati)'''
+
+[[version]]
 tag = "0.11.8"
 date = "Sat Aug 05 15:49:11 2023 +0300"
 changes = '''

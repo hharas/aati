@@ -7,7 +7,7 @@ license = "GPL-3.0-only"
 homepage = "https://sr.ht/~haras/aati"
 repository = "https://git.sr.ht/~haras/aati"
 documentation = "https://man.sr.ht/~haras/aati"
-version = "0.11.8"
+version = "0.12.0"
 edition = "2021"
 
 [dependencies]
