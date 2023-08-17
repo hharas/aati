@@ -1085,9 +1085,6 @@ pub fn execute_lines(
             }
 
             "system" => {
-                // let mut command = Command::new(tokens[1]);
-                // command.args(tokens[2..].to_vec());
-
                 let mut command = if !is_windows() {
                     Command::new("sh")
                 } else {
@@ -1100,7 +1097,9 @@ pub fn execute_lines(
                     command.arg("/C")
                 };
 
-                command.arg(line.split_off(7)).stderr(Stdio::inherit());
+                let mut line_copy = line.clone();
+
+                command.arg(line_copy.split_off(7)).stderr(Stdio::inherit());
 
                 if !quiet {
                     command.stdout(Stdio::inherit());
