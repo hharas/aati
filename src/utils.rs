@@ -1088,7 +1088,7 @@ pub fn execute_lines(
                 let mut command = if !is_windows() {
                     Command::new("sh")
                 } else {
-                    Command::new("cmd")
+                    Command::new("cmd.exe")
                 };
 
                 if !is_windows() {
