@@ -782,11 +782,11 @@ description = \"APR made for testing the extract_package() function\"
 packages = [
     {{ name = \"testing-package\", current = \"0.1.0\", target = \"any\", versions = [
         {{ tag = \"0.1.0\", checksum = \"checksum-placeholder\" }}
-    ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"https://github.com/hharas/aati\" }},
+    ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"https://sr.ht/~haras/aati\" }},
     {{ name = \"calculator\", current = \"0.1.1\", target = \"{}\", versions = [
         {{ tag = \"0.1.0\", checksum = \"checksum-placeholder\" }},
         {{ tag = \"0.1.1\", checksum = \"checksum-placeholder\" }},
-    ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"https://github.com/hharas/aati\" }},
+    ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"https://sr.ht/~haras/aati\" }},
 ]", get_target());
 
     let repo_config: Value = repo_toml.parse().unwrap();

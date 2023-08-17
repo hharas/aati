@@ -588,7 +588,7 @@ packages = [
 #   {{ name = \"package-name-here\", current = \"0.1.1\", target = \"x86_64-linux\", versions = [
 #       {{ tag = \"0.1.1\", checksum = \"sha256-sum-here\" }},
 #       {{ tag = \"0.1.0\", checksum = \"sha256-sum-here\" }},
-#   ], author = \"{}\", description = \"Package description here.\", url = \"https://github.com/hharas/aati\" }},
+#   ], author = \"{}\", description = \"Package description here.\", url = \"https://sr.ht/~haras/aati\" }},
 ]
 ", repo_name, repo_maintainer, repo_description, repo_maintainer);
 

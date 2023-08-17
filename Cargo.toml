@@ -4,8 +4,9 @@ description = "Cross-platform package manager written in Rust."
 authors = ["Husayn Haras <haras@disroot.org>"]
 readme = "README.md"
 license = "GPL-3.0-only"
-repository = "https://github.com/hharas/aati"
-documentation = "https://github.com/hharas/aati/wiki"
+homepage = "https://sr.ht/~haras/aati"
+repository = "https://git.sr.ht/~haras/aati"
+documentation = "https://man.sr.ht/~haras/aati"
 version = "0.11.8"
 edition = "2021"
 

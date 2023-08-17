@@ -34,8 +34,8 @@ mod utils;
 mod version;
 
 fn main() {
-    let after_help = "User Guide: https://github.com/hharas/aati/wiki/2.-User-Guide
-Issue tracker: https://github.com/hharas/aati/issues";
+    let after_help = "User Guide: https://man.sr.ht/~haras/aati/user-guide.md
+Issue tracker: https://todo.sr.ht/~haras/aati";
 
     let long_version = format!(
         "{} ({})

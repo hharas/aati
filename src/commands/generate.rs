@@ -245,7 +245,7 @@ pub fn generate_apr_html(
         );
 
         header.push_str(&format!(
-            "<p>{}</p><p>Number of packages: <b>{}</b></p><p>Maintained by: <b>{}</b></p><hr /><p>Generated using the <a href=\"https://github.com/hharas/aati\">Aati Package Manager</a> as a hosted Aati Package Repository.</p>",
+            "<p>{}</p><p>Number of packages: <b>{}</b></p><p>Maintained by: <b>{}</b></p><hr /><p>Generated using the <a href=\"https://sr.ht/~haras/aati\">Aati Package Manager</a> as a hosted Aati Package Repository.</p>",
             repo_description,
             available_packages.len(),
             repo_maintainer
