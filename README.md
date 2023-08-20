@@ -11,15 +11,17 @@
 
 The Aati Package Manager focuses on providing a Simple, Efficient and Performant Interface for installing, managing and removing packages that uses a [PKGFILE](https://man.sr.ht/~haras/aati/pkgfile-manual.md)-based packaging system that's easy to use and adopt. Aati can run on both Unix and Windows operating systems.
 
-Aati's Development is hosted on [SourceHut](https://sr.ht/~haras/aati), there is a mirror on [GitHub](https://github.com/hharas/aati) nonetheless. Read the [Wiki](https://man.sr.ht/~haras/aati/) for more Information how to install Aati, use it, package applications for it, etc.
+Read the [Wiki](https://man.sr.ht/~haras/aati/) for more Information how to install Aati, use it, package applications for it, etc.
 
 ## But why?
 
 Simply: It was so fun to develop. I always thought of building my own package manager, so here it goes!
 
-## Contribution
+## Contributing
 
 Any contributions to Aati are welcomed. This Project is definitely incomplete and immature, so any development is appreciated.
+
+Aati's upstream development is hosted on [SourceHut](https://sr.ht/~haras/aati), there is a [GitHub mirror](https://github.com/hharas/aati) nonetheless. Contribue either by submitting a GitHub pull request or by sending patches to the [development mailing list](https://lists.sr.ht/~haras/aati-devel).
 
 ## License
 
