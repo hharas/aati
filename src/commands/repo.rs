@@ -459,168 +459,194 @@ pub fn list() {
     }
 }
 
-pub fn init(repo_name: String, repo_maintainer: String, repo_description: String, quiet: bool) {
-    let repo_dir = PathBuf::from("aati_repo");
-    let any_dir = PathBuf::from("aati_repo/any");
-    let x86_64_linux_dir = PathBuf::from("aati_repo/x86_64-unknown-linux-gnu");
-    let aarch64_dir = PathBuf::from("aati_repo/aarch64-unknown-linux-gnu");
+pub fn init(
+    repo_name: String,
+    repo_maintainer: String,
+    repo_description: String,
+    parent_directory: PathBuf,
+    quiet: bool,
+) {
+    if parent_directory.exists() {
+        let mut repo_dir = parent_directory.clone();
+        repo_dir.push("aati_repo");
 
-    let repo_toml_path_buf = PathBuf::from("aati_repo/repo.toml");
+        let mut any_dir = repo_dir.clone();
+        any_dir.push("any");
 
-    match create_dir_all(&repo_dir) {
-        Ok(_) => {}
-        Err(error) => {
-            println!(
-                "{}",
-                format!(
-                    "- FAILED TO CREATE DIRECTORY '{}'! ERROR[49]: {}",
-                    &repo_dir.display(),
-                    error
-                )
-                .bright_red()
-            );
-            exit(1);
-        }
-    }
+        let mut x86_64_linux_dir = repo_dir.clone();
+        x86_64_linux_dir.push("x86_64-unknown-linux-gnu");
 
-    let mut repo_toml = match File::create(&repo_toml_path_buf) {
-        Ok(file) => file,
-        Err(error) => {
-            println!(
-                "{}",
-                format!(
-                    "- FAILED TO CREATE FILE '{}'! ERROR[50]: {}",
-                    &repo_toml_path_buf.display(),
-                    error
-                )
-                .bright_red()
-            );
+        let mut aarch64_dir = repo_dir.clone();
+        aarch64_dir.push("aarch64-unknown-linux-gnu");
 
-            exit(1);
-        }
-    };
+        let mut repo_toml_path_buf = repo_dir.clone();
+        repo_toml_path_buf.push("repo.toml");
 
-    match create_dir_all(&any_dir) {
-        Ok(_) => {
-            if !quiet {
-                println!(
-                    "{}",
-                    format!("+ Created directory '{}'", any_dir.display()).bright_green()
-                );
-            }
-        }
-        Err(error) => {
-            println!(
-                "{}",
-                format!(
-                    "- FAILED TO CREATE DIRECTORY '{}'! ERROR[52]: {}",
-                    &any_dir.display(),
-                    error
-                )
-                .bright_red()
-            );
-
-            exit(1);
-        }
-    }
-
-    match create_dir_all(&x86_64_linux_dir) {
-        Ok(_) => {
-            if !quiet {
-                println!(
-                    "{}",
-                    format!("+ Created directory '{}'", x86_64_linux_dir.display()).bright_green()
-                );
-            }
-        }
-        Err(error) => {
-            println!(
-                "{}",
-                format!(
-                    "- FAILED TO CREATE DIRECTORY '{}'! ERROR[51]: {}",
-                    &x86_64_linux_dir.display(),
-                    error
-                )
-                .bright_red()
-            );
-
-            exit(1);
-        }
-    }
-
-    match create_dir_all(&aarch64_dir) {
-        Ok(_) => {
-            if !quiet {
-                println!(
-                    "{}",
-                    format!("+ Created directory '{}'", aarch64_dir.display()).bright_green()
-                );
-            }
-        }
-        Err(error) => {
-            println!(
-                "{}",
-                format!(
-                    "- FAILED TO CREATE DIRECTORY '{}'! ERROR[53]: {}",
-                    &aarch64_dir.display(),
-                    error
-                )
-                .bright_red()
-            );
-
-            exit(1);
-        }
-    }
-
-    let contents = format!(
-        "[repo]
-name = \"{}\"
-maintainer = \"{}\"
-description = \"{}\"
-
-[index]
-packages = [
-#   {{ name = \"package-name-here\", current = \"0.1.1\", target = \"any\", versions = [
-#       {{ tag = \"0.1.1\", checksum = \"sha256-sum-here\" }},
-#       {{ tag = \"0.1.0\", checksum = \"sha256-sum-here\" }},
-#   ], author = \"{}\", description = \"Package description here.\", url = \"{}\" }},
-]
-",
-        repo_name, repo_maintainer, repo_description, repo_maintainer, HOMEPAGE_URL
-    );
-
-    match repo_toml.write_all(contents.as_bytes()) {
-        Ok(_) => {
-            if !quiet {
+        match create_dir_all(&repo_dir) {
+            Ok(_) => {}
+            Err(error) => {
                 println!(
                     "{}",
                     format!(
-                        "+ Wrote repository manifest to '{}'",
-                        repo_toml_path_buf.display()
+                        "- FAILED TO CREATE DIRECTORY '{}'! ERROR[49]: {}",
+                        &repo_dir.display(),
+                        error
                     )
-                    .bright_green()
+                    .bright_red()
                 );
+                exit(1);
             }
         }
-        Err(error) => {
+
+        let mut repo_toml = match File::create(&repo_toml_path_buf) {
+            Ok(file) => file,
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- FAILED TO CREATE FILE '{}'! ERROR[50]: {}",
+                        &repo_toml_path_buf.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+
+                exit(1);
+            }
+        };
+
+        match create_dir_all(&any_dir) {
+            Ok(_) => {
+                if !quiet {
+                    println!(
+                        "{}",
+                        format!("+ Created directory '{}'", any_dir.display()).bright_green()
+                    );
+                }
+            }
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- FAILED TO CREATE DIRECTORY '{}'! ERROR[52]: {}",
+                        &any_dir.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+
+                exit(1);
+            }
+        }
+
+        match create_dir_all(&x86_64_linux_dir) {
+            Ok(_) => {
+                if !quiet {
+                    println!(
+                        "{}",
+                        format!("+ Created directory '{}'", x86_64_linux_dir.display())
+                            .bright_green()
+                    );
+                }
+            }
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- FAILED TO CREATE DIRECTORY '{}'! ERROR[51]: {}",
+                        &x86_64_linux_dir.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+
+                exit(1);
+            }
+        }
+
+        match create_dir_all(&aarch64_dir) {
+            Ok(_) => {
+                if !quiet {
+                    println!(
+                        "{}",
+                        format!("+ Created directory '{}'", aarch64_dir.display()).bright_green()
+                    );
+                }
+            }
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- FAILED TO CREATE DIRECTORY '{}'! ERROR[53]: {}",
+                        &aarch64_dir.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+
+                exit(1);
+            }
+        }
+
+        let contents = format!(
+            "[repo]
+    name = \"{}\"
+    maintainer = \"{}\"
+    description = \"{}\"
+
+    [index]
+    packages = [
+    #   {{ name = \"package-name-here\", current = \"0.1.1\", target = \"any\", versions = [
+    #       {{ tag = \"0.1.1\", checksum = \"sha256-sum-here\" }},
+    #       {{ tag = \"0.1.0\", checksum = \"sha256-sum-here\" }},
+    #   ], author = \"{}\", description = \"Package description here.\", url = \"{}\" }},
+    ]
+    ",
+            repo_name, repo_maintainer, repo_description, repo_maintainer, HOMEPAGE_URL
+        );
+
+        match repo_toml.write_all(contents.as_bytes()) {
+            Ok(_) => {
+                if !quiet {
+                    println!(
+                        "{}",
+                        format!(
+                            "+ Wrote repository manifest to '{}'",
+                            repo_toml_path_buf.display()
+                        )
+                        .bright_green()
+                    );
+                }
+            }
+            Err(error) => {
+                println!(
+                    "{}",
+                    format!(
+                        "- FAILED TO WRITE INTO FILE '{}'! ERROR[67]: {}",
+                        repo_toml_path_buf.display(),
+                        error
+                    )
+                    .bright_red()
+                );
+
+                exit(1);
+            }
+        }
+
+        if !quiet {
             println!(
                 "{}",
-                format!(
-                    "- FAILED TO WRITE INTO FILE '{}'! ERROR[67]: {}",
-                    repo_toml_path_buf.display(),
-                    error
-                )
-                .bright_red()
+                "+ The Repo is made! Now you can add your packages".bright_green()
             );
-
-            exit(1);
         }
-    }
-
-    if !quiet {
+    } else {
         println!(
             "{}",
-            "+ The Repo is made! Now you can add your packages".bright_green()
+            format!(
+                "+ Directory '{}' doesn't exist!",
+                parent_directory.display()
+            )
+            .bright_red()
         );
     }
 }

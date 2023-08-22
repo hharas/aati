@@ -286,6 +286,12 @@ as published by the Free Software Foundation.",
                                 .action(ArgAction::Set)
                                 .required(true)
                                 .num_args(1),
+                            Arg::new("directory")
+                                .action(ArgAction::Set)
+                                .num_args(1)
+                                .default_value(".")
+                                .value_hint(ValueHint::DirPath)
+                                .help("Directory under which the repository is created"),
                             Arg::new("quiet")
                                 .long("quiet")
                                 .short('q')
@@ -520,11 +526,13 @@ as published by the Free Software Foundation.",
                 let repo_name = init_matches.get_one::<String>("name").unwrap();
                 let repo_maintainer = init_matches.get_one::<String>("maintainer").unwrap();
                 let repo_description = init_matches.get_one::<String>("description").unwrap();
+                let repo_directory = init_matches.get_one::<String>("directory").unwrap();
 
                 repo::init(
                     repo_name.into(),
                     repo_maintainer.into(),
                     repo_description.into(),
+                    repo_directory.into(),
                     quiet,
                 );
             }
