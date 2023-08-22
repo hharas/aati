@@ -358,7 +358,7 @@ as published by the Free Software Foundation.",
                         .help("Repository url")
                         .value_hint(ValueHint::Url),
                     Arg::new("manifest")
-                        .default_value("./repo.toml")
+                        .default_value("repo.toml")
                         .action(ArgAction::Set)
                         .help("Path to the repo.toml file")
                         .value_hint(ValueHint::FilePath),
@@ -404,6 +404,11 @@ as published by the Free Software Foundation.",
                         .action(ArgAction::Set)
                         .help("Repository url")
                         .value_hint(ValueHint::Url),
+                    Arg::new("manifest")
+                        .default_value("repo.toml")
+                        .action(ArgAction::Set)
+                        .help("Path to the repo.toml file")
+                        .value_hint(ValueHint::FilePath),
                 ]),
             Command::new("completions")
                 .short_flag('O')
@@ -589,8 +594,9 @@ as published by the Free Software Foundation.",
             let port = serve_matches.get_one::<String>("port").unwrap();
             let base_url = serve_matches.get_one::<String>("url").unwrap();
             let repo_url = serve_matches.get_one::<String>("repo").unwrap();
+            let manifest_path = serve_matches.get_one::<String>("manifest").unwrap();
 
-            serve::command(host, port, base_url, repo_url);
+            serve::command(host, port, base_url, repo_url, manifest_path.into());
         }
         Some(("completions", completions_matches)) => {
             let shell = completions_matches.get_one::<String>("shell").unwrap();

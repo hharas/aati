@@ -18,18 +18,18 @@
 
 use ascii::AsciiString;
 use colored::Colorize;
-use std::{fs::read_to_string, process::exit};
+use std::{fs::read_to_string, path::PathBuf, process::exit};
 use toml::Value;
 
 use tiny_http::{Header, Response, Server};
 
 use crate::{commands::generate::generate_apr_html, config::POSSIBLE_TARGETS};
 
-pub fn command(host: &str, port: &str, base_url: &str, repo_url: &str) {
+pub fn command(host: &str, port: &str, base_url: &str, repo_url: &str, manifest_path: PathBuf) {
     let address = format!("{host}:{port}");
 
     match Server::http(address) {
-        Ok(server) => match read_to_string("repo.toml") {
+        Ok(server) => match read_to_string(manifest_path) {
             Ok(repo_toml) => match repo_toml.parse::<Value>() {
                 Ok(repo_config) => {
                     let packages = repo_config["index"]["packages"].as_array().unwrap();
