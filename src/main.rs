@@ -287,6 +287,8 @@ as published by the Free Software Foundation.",
                                 .required(true)
                                 .num_args(1),
                             Arg::new("directory")
+                                .long("output-directory")
+                                .short('o')
                                 .action(ArgAction::Set)
                                 .num_args(1)
                                 .default_value(".")
@@ -358,11 +360,17 @@ as published by the Free Software Foundation.",
                         .help("Repository url")
                         .value_hint(ValueHint::Url),
                     Arg::new("manifest")
+                        .long("manifest-path")
+                        .short('m')
                         .default_value("repo.toml")
                         .action(ArgAction::Set)
+                        .num_args(1)
                         .help("Path to the repo.toml file")
                         .value_hint(ValueHint::FilePath),
                     Arg::new("directory")
+                        .long("output-directory")
+                        .short('o')
+                        .num_args(1)
                         .default_value(".")
                         .action(ArgAction::Set)
                         .help("Directory under which HTML files will be written")
@@ -405,6 +413,8 @@ as published by the Free Software Foundation.",
                         .help("Repository url")
                         .value_hint(ValueHint::Url),
                     Arg::new("manifest")
+                        .long("manifest-path")
+                        .short('m')
                         .default_value("repo.toml")
                         .action(ArgAction::Set)
                         .help("Path to the repo.toml file")
