@@ -26,7 +26,10 @@ use std::{
 };
 use toml::Value;
 
-use crate::{globals::POSSIBLE_TARGETS, version::get_version};
+use crate::{
+    config::{HOMEPAGE_URL, POSSIBLE_TARGETS},
+    version::get_version,
+};
 
 pub fn command(base_url: &str, repo_url: &str, quiet: bool) {
     match read_to_string("repo.toml") {
@@ -180,24 +183,18 @@ pub fn generate_apr_html(
     let mut response = "<!DOCTYPE html><html lang=\"en\">".to_string();
 
     let mut head = format!("<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><meta property=\"og:site_name\" content=\"{}\" /><meta property=\"og:type\" content=\"website\" /><meta property=\"twitter:card\" content=\"summary\" /><meta name=\"description\" content=\"{}\"><style>table, th, td {{ border: 1px solid black; border-collapse: collapse; padding: 5px; }} .installation_guide {{ background-color: #f0f0f0; }}</style>", repo_name, repo_description);
-    let mut header;
+
+    let mut header = format!(
+        "<body><h3><code>{}/</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
+        repo_name, base_url, base_url, base_url
+    );
 
     if template == "index" {
-        header = format!(
-            "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
-            repo_name, base_url, base_url, base_url
-        );
-
         head.push_str(&format!("<meta property=\"og:title\" content=\"index\" /><meta property=\"og:url\" content=\"{}\" /><meta property=\"og:description\" content=\"{}\" />", base_url, repo_description));
         head.push_str(&format!("<title>{}</title></head>", repo_name));
         header.push_str(&format!("<p>{}</p>", repo_description));
         header.push_str(&format!("<p>Add this Package Repository in Aati by running:</p><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati repo add {}</code>", repo_url));
     } else if template == "packages" {
-        header = format!(
-            "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
-            repo_name, base_url, base_url, base_url
-        );
-
         header.push_str(&format!(
             "<p>Number of packages: <b>{}</b></p>",
             available_packages.len()
@@ -242,27 +239,18 @@ pub fn generate_apr_html(
         head.push_str(&format!("<meta property=\"og:title\" content=\"packages\" /><meta property=\"og:url\" content=\"{}/packages.html\" /><meta property=\"og:description\" content=\"{} packages available to install\" />", base_url, available_packages.len()));
         head.push_str(&format!("<title>packages - {}</title></head>", repo_name));
     } else if template == "about" {
-        header = format!(
-            "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
-            repo_name, base_url, base_url, base_url
-        );
-
         header.push_str(&format!(
-            "<p>{}</p><p>Number of packages: <b>{}</b></p><p>Maintained by: <b>{}</b></p><hr /><p>Generated using <a href=\"https://sr.ht/~haras/aati\">aati {}</a> as a hosted Aati Package Repository.</p>",
+            "<p>{}</p><p>Number of packages: <b>{}</b></p><p>Maintained by: <b>{}</b></p><hr /><p>Generated using <a href=\"{}\">aati {}</a> as a hosted Aati Package Repository.</p>",
             repo_description,
             available_packages.len(),
             repo_maintainer,
+            HOMEPAGE_URL,
             get_version()
         ));
 
         head.push_str(&format!("<meta property=\"og:title\" content=\"about\" /><meta property=\"og:url\" content=\"{}/about.html\" /><meta property=\"og:description\" content=\"about {}\" />", base_url, repo_name));
         head.push_str(&format!("<title>about - {}</title></head>", repo_name));
     } else if template == "package" {
-        header = format!(
-            "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
-            repo_name, base_url, base_url, base_url
-        );
-
         if let Some(package) = current_package {
             let package_name = package["name"].as_str().unwrap();
             let package_target = package["target"].as_str().unwrap();
@@ -356,11 +344,6 @@ pub fn generate_apr_html(
             ));
         }
     } else {
-        header = format!(
-            "<body><h3><code>{}</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
-            repo_name, base_url, base_url, base_url
-        );
-
         let target = template;
 
         // Borrow Checker headache, had to do all this

@@ -17,6 +17,7 @@
 */
 
 use colored::Colorize;
+use config::{ISSUE_TRACKER_URL, USER_GUIDE_URL};
 use std::io::stdout;
 
 use clap::{Arg, ArgAction, Command, ValueHint};
@@ -28,14 +29,17 @@ use utils::get_target;
 use version::get_version;
 
 mod commands;
-mod globals;
+mod config;
 mod types;
 mod utils;
 mod version;
 
 fn main() {
-    let after_help = "User Guide: https://man.sr.ht/~haras/aati/user-guide.md
-Issue tracker: https://todo.sr.ht/~haras/aati";
+    let after_help = format!(
+        "User Guide: {}
+Issue tracker: {}",
+        USER_GUIDE_URL, ISSUE_TRACKER_URL
+    );
 
     let long_version = format!(
         "{} ({})

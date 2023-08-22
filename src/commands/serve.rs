@@ -23,7 +23,7 @@ use toml::Value;
 
 use tiny_http::{Header, Response, Server};
 
-use crate::{commands::generate::generate_apr_html, globals::POSSIBLE_TARGETS};
+use crate::{commands::generate::generate_apr_html, config::POSSIBLE_TARGETS};
 
 pub fn command(host: &str, port: &str, base_url: &str, repo_url: &str) {
     let address = format!("{host}:{port}");

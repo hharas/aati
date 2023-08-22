@@ -29,7 +29,7 @@ use toml::Value;
 
 use super::types::Package;
 use crate::{
-    globals::{
+    config::{
         AATI_DIRNAME, BIN_DIRNAME, CONFIG_FILENAME, LIB_DIRNAME, LOCK_FILENAME, REPOS_DIRNAME,
     },
     types::Pkgfile,
@@ -789,6 +789,8 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
 
 #[test]
 fn test_extract_package() {
+    use crate::config::HOMEPAGE_URL;
+
     let repo_toml = format!("[repo]
 name = \"testing\"
 maintainer = \"Husayn Haras\"
@@ -798,12 +800,12 @@ description = \"APR made for testing the extract_package() function\"
 packages = [
     {{ name = \"testing-package\", target = \"any\", versions = [
         {{ tag = \"0.1.0\", checksum = \"checksum-placeholder\" }}
-    ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"https://sr.ht/~haras/aati\" }},
+    ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"{}\" }},
     {{ name = \"calculator\", target = \"{}\", versions = [
         {{ tag = \"0.1.1\", checksum = \"checksum-placeholder\" }},
         {{ tag = \"0.1.0\", checksum = \"checksum-placeholder\" }},
-    ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"https://sr.ht/~haras/aati\" }},
-]", get_target());
+    ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"{}\" }},
+]", HOMEPAGE_URL, get_target(), HOMEPAGE_URL);
 
     let repo_config: Value = repo_toml.parse().unwrap();
     let added_repos = vec![repo_config];

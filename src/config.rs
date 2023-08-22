@@ -16,6 +16,12 @@
    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+// App links
+pub const HOMEPAGE_URL: &str = "https://haras.srht.site/projects/aati.html";
+pub const USER_GUIDE_URL: &str = "https://man.sr.ht/~haras/aati/user-guide.md";
+pub const ISSUE_TRACKER_URL: &str = "https://todo.sr.ht/~haras/aati";
+
+// App configuration
 pub const AATI_DIRNAME: &str = ".aati";
 pub const REPOS_DIRNAME: &str = "repos";
 pub const BIN_DIRNAME: &str = "bin";
@@ -23,6 +29,7 @@ pub const LIB_DIRNAME: &str = "lib";
 pub const CONFIG_FILENAME: &str = "rc.toml";
 pub const LOCK_FILENAME: &str = "lock.toml";
 
+// Package targets
 pub const POSSIBLE_TARGETS: [&str; 131] = [
     "any",
     "x86-linux",

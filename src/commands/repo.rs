@@ -27,6 +27,7 @@ use toml::Value;
 
 use crate::{
     commands,
+    config::HOMEPAGE_URL,
     types::{ConfigFile, Repo},
     utils::{
         check_aati_dirs, get_aati_config, get_aati_config_path_buf, get_aati_lock, get_repo_config,
@@ -571,7 +572,8 @@ pub fn init(repo_name: String, repo_maintainer: String, repo_description: String
         }
     }
 
-    let contents = format!("[repo]
+    let contents = format!(
+        "[repo]
 name = \"{}\"
 maintainer = \"{}\"
 description = \"{}\"
@@ -581,9 +583,11 @@ packages = [
 #   {{ name = \"package-name-here\", current = \"0.1.1\", target = \"x86_64-linux\", versions = [
 #       {{ tag = \"0.1.1\", checksum = \"sha256-sum-here\" }},
 #       {{ tag = \"0.1.0\", checksum = \"sha256-sum-here\" }},
-#   ], author = \"{}\", description = \"Package description here.\", url = \"https://sr.ht/~haras/aati\" }},
+#   ], author = \"{}\", description = \"Package description here.\", url = \"{}\" }},
 ]
-", repo_name, repo_maintainer, repo_description, repo_maintainer);
+",
+        repo_name, repo_maintainer, repo_description, repo_maintainer, HOMEPAGE_URL
+    );
 
     match repo_toml.write_all(contents.as_bytes()) {
         Ok(_) => {
