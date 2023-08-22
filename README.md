@@ -21,7 +21,7 @@ Simply: It was so fun to develop. I always thought of building my own package ma
 
 Any contributions to Aati are welcomed. This Project is definitely incomplete and immature, so any development is appreciated.
 
-Aati's upstream development is hosted on [SourceHut](https://sr.ht/~haras/aati), there is a [GitHub mirror](https://github.com/hharas/aati) nonetheless. Contribue either by submitting a GitHub pull request or by sending patches to the [development mailing list](https://lists.sr.ht/~haras/aati-devel).
+Aati's upstream development is hosted on [sr.ht](https://sr.ht/~haras/aati), there is a [GitHub mirror](https://github.com/hharas/aati) nonetheless. Contribue either by submitting a GitHub pull request or by sending patches to the [development mailing list](https://lists.sr.ht/~haras/aati-devel).
 
 ## License
 

@@ -1,6 +1,29 @@
 [[version]]
-tag = "0.12.0"
-date = "Thu Aug 17 09:57:05 2023 +0300"
+tag = '0.12.1'
+date = 'Tue Aug 22 20:02:26 2023 +0300'
+changes = '''
+BREAKING CHANGES:
+  - Updated method of platform targeting by using rustc build triples instead of the legacy $ARCH-$OS format
+    e.g. 'x86_64-linux' back then is now 'x86_64-unknown-linux-gnu'
+    This requires packagers for such platforms to update their target names
+Bugfixes:
+  - Fixed logging issues in 'serve' command's webserver
+Features:
+  Packaging:
+    - Deprecated 'current' field in repo.toml packages as it's totally useless now
+  Webgen:
+    - Updated webgen to include aati version in the about page
+  CLI:
+    - Updated query command's package displaying
+    - Updated 'install' command's help message
+    - Added '[repos]' optional argument to 'sync' command
+    - Added '--output-directory' optional argument to 'repo init' command
+    - Added '--manifest-path' and '--output-directory' optional arguments to 'generate' command
+    - Added '--manifest-path' optional argument to 'serve' command'''
+
+[[version]]
+tag = '0.12.0'
+date = 'Thu Aug 17 09:57:05 2023 +0300'
 changes = '''
 BREAKING CHANGES:
   - Aati now has its own directory '.aati/' under the user's home directory, which has its configuration, lockfile, repository manifests and more
@@ -18,8 +41,8 @@ News:
   - Moved the project over to SourceHut! (See: https://sr.ht/~haras/aati)'''
 
 [[version]]
-tag = "0.11.8"
-date = "Sat Aug 05 15:49:11 2023 +0300"
+tag = '0.11.8'
+date = 'Sat Aug 05 15:49:11 2023 +0300'
 changes = '''
 - Fixed $bin_dir, $lib_dir and $home_dir not being created
 - Added 'any' target that supports all platforms
@@ -28,8 +51,8 @@ changes = '''
   Namely '--use-pkgfile', '--name' and '--version' options'''
 
 [[version]]
-tag = "0.11.7"
-date = "Mon Jul 31 21:02:57 2023 +0300"
+tag = '0.11.7'
+date = 'Mon Jul 31 21:02:57 2023 +0300'
 changes = '''
 - Added 'completions' command
   The 'completions' command can generate tab-completion scripts for bash, zsh, fish and more shells
@@ -38,8 +61,8 @@ changes = '''
 - Updated '--help' and '--version' options'''
 
 [[version]]
-tag = "0.11.6"
-date = "Sun Jul 30 19:59:42 2023 +0300"
+tag = '0.11.6'
+date = 'Sun Jul 30 19:59:42 2023 +0300'
 changes = '''
 - Removed trailing single quote from Changelog.toml
 - Added --force to all (sub)commands that have a y/n prompt
@@ -48,8 +71,8 @@ changes = '''
 - Updated 'generate' command's '--url' argument to set the base url and not the full website url'''
 
 [[version]]
-tag = "0.11.5"
-date = "Sat Jul 22 17:56:57 2023 +0300"
+tag = '0.11.5'
+date = 'Sat Jul 22 17:56:57 2023 +0300'
 changes = '''
 - Replaced 'generate' command's prompts with proper command line arguments
 - Added default values for '--host' and '--url' options in 'serve' command
@@ -57,8 +80,8 @@ changes = '''
 - Removed a bug concerning the 'changelog' command on windows showing color-encoded text in notepad.exe instead of plain text'''
 
 [[version]]
-tag = "0.11.4"
-date = "Mon Jul 17 20:53:22 2023 +0300"
+tag = '0.11.4'
+date = 'Mon Jul 17 20:53:22 2023 +0300'
 changes = '''
 - Migrated to clap-rs instead of vanilla argument parsing
 - Better 'get' command
@@ -69,8 +92,7 @@ changes = '''
 [[version]]
 tag = '0.11.3'
 date = 'Sat Jul 15 21:43:54 2023 +0300'
-changes = '''
-- Added usage of 'date' and 'changes' fields to the web index generator'''
+changes = '''- Added usage of 'date' and 'changes' fields to the web index generator'''
 
 [[version]]
 tag = '0.11.2'
@@ -174,8 +196,7 @@ changes = '''
 [[version]]
 tag = '0.9.1'
 date = 'Sun Jun 25 01:51:51 2023 +0300'
-changes = '''
-- Removed all unnecessary .unwrap()'s (+1kloc increase)'''
+changes = '''- Removed all unnecessary .unwrap()'s (+1kloc increase)'''
 
 [[version]]
 tag = '0.9.0'
@@ -243,8 +264,7 @@ changes = '''
 [[version]]
 tag = '0.6.2'
 date = 'Wed Jun 14 08:25:01 2023 +0300'
-changes = '''
-- Fixed a bug in extract_package() involving not making sure of the packages' target field'''
+changes = '''- Fixed a bug in extract_package() involving not making sure of the packages' target field'''
 
 [[version]]
 tag = '0.6.1'
@@ -273,8 +293,7 @@ changes = "- Fixed a major bug in 'aati --version'"
 [[version]]
 tag = '0.4.0'
 date = 'Thu May 4 12:23:54 2023 +0300'
-changes = '''
-- Added 'aati install' command for local installation (e.g. 'aati install path/to/package-x.x.x.lz4')'''
+changes = '''- Added 'aati install' command for local installation (e.g. 'aati install path/to/package-x.x.x.lz4')'''
 
 [[version]]
 tag = '0.3.0'
