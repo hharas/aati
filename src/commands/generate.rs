@@ -26,7 +26,7 @@ use std::{
 };
 use toml::Value;
 
-use crate::globals::POSSIBLE_TARGETS;
+use crate::{globals::POSSIBLE_TARGETS, version::get_version};
 
 pub fn command(base_url: &str, repo_url: &str, quiet: bool) {
     match read_to_string("repo.toml") {
@@ -245,10 +245,11 @@ pub fn generate_apr_html(
         );
 
         header.push_str(&format!(
-            "<p>{}</p><p>Number of packages: <b>{}</b></p><p>Maintained by: <b>{}</b></p><hr /><p>Generated using the <a href=\"https://sr.ht/~haras/aati\">Aati Package Manager</a> as a hosted Aati Package Repository.</p>",
+            "<p>{}</p><p>Number of packages: <b>{}</b></p><p>Maintained by: <b>{}</b></p><hr /><p>Generated using <a href=\"https://sr.ht/~haras/aati\">aati {}</a> as a hosted Aati Package Repository.</p>",
             repo_description,
             available_packages.len(),
-            repo_maintainer
+            repo_maintainer,
+            get_version()
         ));
 
         head.push_str(&format!("<meta property=\"og:title\" content=\"about\" /><meta property=\"og:url\" content=\"{}/about.html\" /><meta property=\"og:description\" content=\"about {}\" />", base_url, repo_name));
