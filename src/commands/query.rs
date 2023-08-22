@@ -245,7 +245,7 @@ pub fn display_package(
     let description = package["description"].as_str().unwrap();
 
     println!(
-        "{}\n    Name: {}\n    Author: {}\n    Architecture: {}\n    Repository: {} ({})",
+        "{}\n    Name: {}\n    Author: {}\n    Architecture: {}\n    Repository: {}/ ({})",
         "+ Package Information:".bright_green(),
         name,
         author,
