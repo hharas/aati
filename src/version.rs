@@ -25,7 +25,7 @@ pub fn get_version() -> String {
     let versions = changelog_toml["version"].as_array().unwrap();
     let version = versions.first().unwrap();
     let tag = version["tag"].as_str().unwrap();
-    tag.to_string()
+    tag.into()
 }
 
 pub fn get_versions() -> Vec<Value> {

@@ -137,8 +137,8 @@ pub fn add(repository_url: String, quiet: bool) {
                     let mut config_file: ConfigFile = toml::from_str(&config_file_str).unwrap();
 
                     let repo = Repo {
-                        name: repo_name.to_string(),
-                        url: repository_url.to_string(),
+                        name: repo_name.into(),
+                        url: repository_url,
                     };
 
                     config_file.sources.repos.push(repo);
@@ -277,10 +277,7 @@ pub fn remove(repo_name_option: Option<String>, force: bool, quiet: bool) {
                     for installed_package in installed_packages {
                         if installed_package["source"].as_str().unwrap() == repo_name {
                             commands::remove(
-                                Some(vec![installed_package["name"]
-                                    .as_str()
-                                    .unwrap()
-                                    .to_string()]),
+                                Some(vec![installed_package["name"].as_str().unwrap().into()]),
                                 false,
                                 force,
                                 quiet,
@@ -410,11 +407,7 @@ pub fn remove(repo_name_option: Option<String>, force: bool, quiet: bool) {
         }
     } else {
         for repo in added_repos {
-            remove(
-                Some(repo["name"].as_str().unwrap().to_string()),
-                force,
-                quiet,
-            )
+            remove(Some(repo["name"].as_str().unwrap().into()), force, quiet)
         }
     }
 }

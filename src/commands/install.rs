@@ -251,9 +251,9 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
                     let mut lock_file: LockFile = toml::from_str(&lock_file_str).unwrap();
 
                     let package = Package {
-                        name: name.to_string(),
-                        version: version.to_string(),
-                        source: source.to_string(),
+                        name: name.into(),
+                        version: version.into(),
+                        source: source.into(),
                         target: get_target(),
                         pkgfile: parsed_pkgfile.clone(),
                     };
@@ -443,9 +443,9 @@ pub fn use_pkgfile(
                 let mut lock_file: LockFile = toml::from_str(&lock_file_str).unwrap();
 
                 let package = Package {
-                    name: name.to_string(),
-                    version: version.to_string(),
-                    source: "local".to_string(),
+                    name: name.into(),
+                    version: version.into(),
+                    source: "local".into(),
                     target: get_target(),
                     pkgfile: parsed_pkgfile,
                 };
@@ -529,9 +529,9 @@ pub fn parse_filename(mut filename: &str) -> Package {
         // Now: name = "dummy-package", version = "0.1.0"
 
         Package {
-            name: name.to_string(),
-            version: version.to_string(),
-            source: "local".to_string(),
+            name: name.into(),
+            version: version.into(),
+            source: "local".into(),
             target: get_target(),
             pkgfile: Pkgfile {
                 data: HashMap::new(),
@@ -555,9 +555,9 @@ pub fn parse_filename(mut filename: &str) -> Package {
 fn test_parse_filename() {
     let filename1 = "silm-0.3.3.tar.lz4";
     let expected_result1 = Package {
-        name: "silm".to_string(),
-        version: "0.3.3".to_string(),
-        source: "local".to_string(),
+        name: "silm".into(),
+        version: "0.3.3".into(),
+        source: "local".into(),
         target: get_target(),
         pkgfile: Pkgfile {
             data: HashMap::new(),
@@ -570,9 +570,9 @@ fn test_parse_filename() {
 
     let filename2 = "arsil-server-0.2.1.tar.lz4";
     let expected_result2 = Package {
-        name: "arsil-server".to_string(),
-        version: "0.2.1".to_string(),
-        source: "local".to_string(),
+        name: "arsil-server".into(),
+        version: "0.2.1".into(),
+        source: "local".into(),
         target: get_target(),
         pkgfile: Pkgfile {
             data: HashMap::new(),

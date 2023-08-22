@@ -132,8 +132,8 @@ pub fn command(text: &str, repo_name: Option<&str>) {
                     .map(|(i, value)| {
                         [
                             (i + 1).to_string(),
-                            value[0]["name"].as_str().unwrap().to_string(),
-                            value[1]["name"].as_str().unwrap().to_string(),
+                            value[0]["name"].as_str().unwrap().into(),
+                            value[1]["name"].as_str().unwrap().into(),
                         ]
                     })
                     .collect();

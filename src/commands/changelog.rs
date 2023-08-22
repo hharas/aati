@@ -213,7 +213,7 @@ pub fn format_changelog(versions: &Vec<Value>, latest_only: bool, is_colored: bo
         }
     }
 
-    let returned_string = returned_string.trim().to_string();
+    let returned_string = returned_string.trim().into();
 
     returned_string
 }

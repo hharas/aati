@@ -257,7 +257,7 @@ pub fn get_aati_lock() -> String {
         }
     };
 
-    aati_lock.trim().to_string()
+    aati_lock.trim().into()
 }
 
 pub fn get_repo_config(repo_name: &str) -> String {
@@ -292,7 +292,7 @@ pub fn get_repo_config(repo_name: &str) -> String {
         }
     };
 
-    repo_config.trim().to_string()
+    repo_config.trim().into()
 }
 
 pub fn get_aati_config() -> Option<String> {
@@ -357,7 +357,7 @@ pub fn get_aati_config() -> Option<String> {
         }
     };
 
-    Some(aati_config.trim().to_string())
+    Some(aati_config.trim().into())
 }
 
 pub fn prompt(prompt_text: &str) -> String {
@@ -377,7 +377,7 @@ pub fn prompt(prompt_text: &str) -> String {
         }
     };
 
-    input.trim().to_string()
+    input.trim().into()
 }
 
 pub fn prompt_yn(prompt_text: &str) -> bool {
@@ -444,19 +444,10 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                 && is_supported(available_package["target"].as_str().unwrap())
                             {
                                 results.push(Package {
-                                    name: available_package["name"].as_str().unwrap().to_string(),
-                                    version: available_package["current"]
-                                        .as_str()
-                                        .unwrap()
-                                        .to_string(),
-                                    source: added_repo["repo"]["name"]
-                                        .as_str()
-                                        .unwrap()
-                                        .to_string(),
-                                    target: available_package["target"]
-                                        .as_str()
-                                        .unwrap()
-                                        .to_string(),
+                                    name: available_package["name"].as_str().unwrap().into(),
+                                    version: available_package["current"].as_str().unwrap().into(),
+                                    source: added_repo["repo"]["name"].as_str().unwrap().into(),
+                                    target: available_package["target"].as_str().unwrap().into(),
                                     pkgfile: Pkgfile {
                                         data: HashMap::new(),
                                         installation_lines: vec![],
@@ -480,19 +471,10 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                 && is_supported(available_package["target"].as_str().unwrap())
                             {
                                 results.push(Package {
-                                    name: available_package["name"].as_str().unwrap().to_string(),
-                                    version: available_package["current"]
-                                        .as_str()
-                                        .unwrap()
-                                        .to_string(),
-                                    source: added_repo["repo"]["name"]
-                                        .as_str()
-                                        .unwrap()
-                                        .to_string(),
-                                    target: available_package["target"]
-                                        .as_str()
-                                        .unwrap()
-                                        .to_string(),
+                                    name: available_package["name"].as_str().unwrap().into(),
+                                    version: available_package["current"].as_str().unwrap().into(),
+                                    source: added_repo["repo"]["name"].as_str().unwrap().into(),
+                                    target: available_package["target"].as_str().unwrap().into(),
                                     pkgfile: Pkgfile {
                                         data: HashMap::new(),
                                         installation_lines: vec![],
@@ -523,16 +505,16 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                             name: available_package["name"]
                                                 .as_str()
                                                 .unwrap()
-                                                .to_string(),
-                                            version: version.to_string(),
+                                                .into(),
+                                            version: version.into(),
                                             source: added_repo["repo"]["name"]
                                                 .as_str()
                                                 .unwrap()
-                                                .to_string(),
+                                                .into(),
                                             target: available_package["target"]
                                                 .as_str()
                                                 .unwrap()
-                                                .to_string(),
+                                                .into(),
                                             pkgfile: Pkgfile {
                                                 data: HashMap::new(),
                                                 installation_lines: vec![],
@@ -556,10 +538,10 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                             && is_supported(available_package["target"].as_str().unwrap())
                         {
                             results.push(Package {
-                                name: available_package["name"].as_str().unwrap().to_string(),
-                                version: available_package["current"].as_str().unwrap().to_string(),
-                                source: added_repo["repo"]["name"].as_str().unwrap().to_string(),
-                                target: available_package["target"].as_str().unwrap().to_string(),
+                                name: available_package["name"].as_str().unwrap().into(),
+                                version: available_package["current"].as_str().unwrap().into(),
+                                source: added_repo["repo"]["name"].as_str().unwrap().into(),
+                                target: available_package["target"].as_str().unwrap().into(),
                                 pkgfile: Pkgfile {
                                     data: HashMap::new(),
                                     installation_lines: vec![],
@@ -582,10 +564,10 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                             && is_supported(available_package["target"].as_str().unwrap())
                         {
                             results.push(Package {
-                                name: available_package["name"].as_str().unwrap().to_string(),
-                                version: available_package["current"].as_str().unwrap().to_string(),
-                                source: added_repo["repo"]["name"].as_str().unwrap().to_string(),
-                                target: available_package["target"].as_str().unwrap().to_string(),
+                                name: available_package["name"].as_str().unwrap().into(),
+                                version: available_package["current"].as_str().unwrap().into(),
+                                source: added_repo["repo"]["name"].as_str().unwrap().into(),
+                                target: available_package["target"].as_str().unwrap().into(),
                                 pkgfile: Pkgfile {
                                     data: HashMap::new(),
                                     installation_lines: vec![],
@@ -609,19 +591,13 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                     && is_supported(available_package["target"].as_str().unwrap())
                                 {
                                     results.push(Package {
-                                        name: available_package["name"]
-                                            .as_str()
-                                            .unwrap()
-                                            .to_string(),
-                                        version: version.to_string(),
-                                        source: added_repo["repo"]["name"]
-                                            .as_str()
-                                            .unwrap()
-                                            .to_string(),
+                                        name: available_package["name"].as_str().unwrap().into(),
+                                        version: version.into(),
+                                        source: added_repo["repo"]["name"].as_str().unwrap().into(),
                                         target: available_package["target"]
                                             .as_str()
                                             .unwrap()
-                                            .to_string(),
+                                            .into(),
                                         pkgfile: Pkgfile {
                                             data: HashMap::new(),
                                             installation_lines: vec![],
@@ -680,9 +656,9 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                 }
 
                 Some(vec![
-                    repo_name.to_string(),
-                    name.to_string(),
-                    version.to_string(),
+                    repo_name.into(),
+                    name.into(),
+                    version.into(),
                     found_package.target.clone(),
                 ])
             } else if repo_name == "$unprovided$" {
@@ -795,100 +771,100 @@ packages = [
     assert_eq!(
         extract_package("calculator", &added_repos),
         Some(vec![
-            "testing".to_string(),
-            "calculator".to_string(),
-            "0.1.1".to_string(),
-            get_target().to_string()
+            "testing".into(),
+            "calculator".into(),
+            "0.1.1".into(),
+            get_target().into()
         ])
     );
 
     assert_eq!(
         extract_package("calculator-0.1.0", &added_repos),
         Some(vec![
-            "testing".to_string(),
-            "calculator".to_string(),
-            "0.1.0".to_string(),
-            get_target().to_string()
+            "testing".into(),
+            "calculator".into(),
+            "0.1.0".into(),
+            get_target().into()
         ])
     );
 
     assert_eq!(
         extract_package("calculator-0.1.1", &added_repos),
         Some(vec![
-            "testing".to_string(),
-            "calculator".to_string(),
-            "0.1.1".to_string(),
-            get_target().to_string()
+            "testing".into(),
+            "calculator".into(),
+            "0.1.1".into(),
+            get_target().into()
         ])
     );
 
     assert_eq!(
         extract_package("testing/calculator", &added_repos),
         Some(vec![
-            "testing".to_string(),
-            "calculator".to_string(),
-            "0.1.1".to_string(),
-            get_target().to_string()
+            "testing".into(),
+            "calculator".into(),
+            "0.1.1".into(),
+            get_target().into()
         ])
     );
 
     assert_eq!(
         extract_package("testing/calculator-0.1.0", &added_repos),
         Some(vec![
-            "testing".to_string(),
-            "calculator".to_string(),
-            "0.1.0".to_string(),
-            get_target().to_string()
+            "testing".into(),
+            "calculator".into(),
+            "0.1.0".into(),
+            get_target().into()
         ])
     );
 
     assert_eq!(
         extract_package("testing/calculator-0.1.1", &added_repos),
         Some(vec![
-            "testing".to_string(),
-            "calculator".to_string(),
-            "0.1.1".to_string(),
-            get_target().to_string()
+            "testing".into(),
+            "calculator".into(),
+            "0.1.1".into(),
+            get_target().into()
         ])
     );
 
     assert_eq!(
         extract_package("testing-package", &added_repos),
         Some(vec![
-            "testing".to_string(),
-            "testing-package".to_string(),
-            "0.1.0".to_string(),
-            "any".to_string()
+            "testing".into(),
+            "testing-package".into(),
+            "0.1.0".into(),
+            "any".into()
         ])
     );
 
     assert_eq!(
         extract_package("testing-package-0.1.0", &added_repos),
         Some(vec![
-            "testing".to_string(),
-            "testing-package".to_string(),
-            "0.1.0".to_string(),
-            "any".to_string()
+            "testing".into(),
+            "testing-package".into(),
+            "0.1.0".into(),
+            "any".into()
         ])
     );
 
     assert_eq!(
         extract_package("testing/testing-package", &added_repos),
         Some(vec![
-            "testing".to_string(),
-            "testing-package".to_string(),
-            "0.1.0".to_string(),
-            "any".to_string()
+            "testing".into(),
+            "testing-package".into(),
+            "0.1.0".into(),
+            "any".into()
         ])
     );
 
     assert_eq!(
         extract_package("testing/testing-package-0.1.0", &added_repos),
         Some(vec![
-            "testing".to_string(),
-            "testing-package".to_string(),
-            "0.1.0".to_string(),
-            "any".to_string()
+            "testing".into(),
+            "testing-package".into(),
+            "0.1.0".into(),
+            "any".into()
         ])
     );
 
@@ -942,7 +918,7 @@ pub fn make_executable(_installation_path_buf: &PathBuf) {
 }
 
 pub fn parse_pkgfile(pkgfile: &str) -> Pkgfile {
-    let mut meta_lines = Vec::new();
+    let mut meta_lines: Vec<String> = Vec::new();
     let mut installation_lines = Vec::new();
     let mut win_installation_lines = Vec::new();
     let mut removal_lines = Vec::new();
@@ -965,15 +941,15 @@ pub fn parse_pkgfile(pkgfile: &str) -> Pkgfile {
         }
 
         if current_section == "[data]" {
-            meta_lines.push(trimmed_line.to_string());
+            meta_lines.push(trimmed_line.into());
         } else if current_section == "[installation]" {
-            installation_lines.push(trimmed_line.to_string());
+            installation_lines.push(trimmed_line.into());
         } else if current_section == "[win-installation]" {
-            win_installation_lines.push(trimmed_line.to_string());
+            win_installation_lines.push(trimmed_line.into());
         } else if current_section == "[removal]" {
-            removal_lines.push(trimmed_line.to_string());
+            removal_lines.push(trimmed_line.into());
         } else if current_section == "[win-removal]" {
-            win_removal_lines.push(trimmed_line.to_string());
+            win_removal_lines.push(trimmed_line.into());
         }
     }
 

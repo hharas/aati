@@ -270,7 +270,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
 
                                 // 7. Verify the SHA256 Checksum of the LZ4 compressed package
 
-                                if verify_checksum(&body, checksum.to_string()) {
+                                if verify_checksum(&body, checksum.into()) {
                                     if !quiet {
                                         println!("{}", "+ Checksums match!".bright_green());
                                     }
@@ -489,8 +489,8 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     let package = Package {
                                         name,
                                         version,
-                                        source: extracted_package[0].to_string(),
-                                        target: extracted_package[3].to_string(),
+                                        source: extracted_package[0].clone(),
+                                        target: extracted_package[3].clone(),
                                         pkgfile: parsed_pkgfile.clone()
                                     };
 
