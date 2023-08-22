@@ -26,10 +26,8 @@ use std::{
 
 use toml::Value;
 
-use crate::utils::is_windows;
-
 pub fn display(changelog: &Vec<Value>, latest_only: bool) {
-    let is_colored = !is_windows() || latest_only;
+    let is_colored = !cfg!(windows) || latest_only;
 
     let parsed_changelog = format_changelog(changelog, latest_only, is_colored);
 
@@ -84,7 +82,7 @@ pub fn display(changelog: &Vec<Value>, latest_only: bool) {
             }
         }
 
-        if !is_windows() {
+        if !cfg!(windows) {
             Command::new("less")
                 .arg("-rf")
                 .arg(temp_changelog_path.as_os_str())

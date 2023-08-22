@@ -35,14 +35,6 @@ use crate::{
     types::Pkgfile,
 };
 
-pub fn is_windows() -> bool {
-    if cfg!(windows) {
-        true
-    } else {
-        false
-    }
-}
-
 pub fn get_target() -> String {
     let version_metadata = rustc_version::version_meta().unwrap();
     version_metadata.host
@@ -219,7 +211,7 @@ pub fn get_aati_lock() -> String {
             }
         }
 
-        if !is_windows() {
+        if !cfg!(windows) {
             println!(
                 "{}",
                 format!(
@@ -1108,13 +1100,13 @@ pub fn execute_lines(
             }
 
             "system" => {
-                let mut command = if !is_windows() {
+                let mut command = if !cfg!(windows) {
                     Command::new("sh")
                 } else {
                     Command::new("cmd.exe")
                 };
 
-                if !is_windows() {
+                if !cfg!(windows) {
                     command.arg("-c")
                 } else {
                     command.arg("/C")

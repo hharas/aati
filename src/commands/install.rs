@@ -33,8 +33,7 @@ use crate::{
     commands::remove,
     types::{LockFile, Package, Pkgfile},
     utils::{
-        execute_lines, get_aati_lock, get_aati_lock_path_buf, get_target, is_windows,
-        parse_pkgfile, prompt_yn,
+        execute_lines, get_aati_lock, get_aati_lock_path_buf, get_target, parse_pkgfile, prompt_yn,
     },
 };
 
@@ -187,7 +186,7 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
 
                 let parsed_pkgfile = parse_pkgfile(&pkgfile);
 
-                let selected_installation_lines = if is_windows() {
+                let selected_installation_lines = if cfg!(windows) {
                     if !parsed_pkgfile.win_installation_lines.is_empty() {
                         parsed_pkgfile.win_installation_lines.clone()
                     } else {
@@ -392,7 +391,7 @@ pub fn use_pkgfile(
                     }
                 }
 
-                let selected_installation_lines = if is_windows() {
+                let selected_installation_lines = if cfg!(windows) {
                     if !parsed_pkgfile.win_installation_lines.is_empty() {
                         parsed_pkgfile.win_installation_lines.clone()
                     } else {

@@ -67,8 +67,7 @@ as published by the Free Software Foundation.",
                         .help("Package(s) to get")
                         .action(ArgAction::Set)
                         .required(true)
-                        .num_args(1..)
-                        .value_hint(ValueHint::Unknown),
+                        .num_args(1..),
                     Arg::new("force")
                         .long("force")
                         .short('f')
@@ -106,16 +105,14 @@ as published by the Free Software Foundation.",
                         .help("Name of pkgfile-installed package")
                         .action(ArgAction::Set)
                         .conflicts_with("package")
-                        .num_args(1)
-                        .value_hint(ValueHint::Unknown),
+                        .num_args(1),
                     Arg::new("version")
                         .long("version")
                         .short('v')
                         .help("Version of pkgfile-installed package")
                         .action(ArgAction::Set)
                         .conflicts_with("package")
-                        .num_args(1)
-                        .value_hint(ValueHint::Unknown),
+                        .num_args(1),
                     Arg::new("force")
                         .long("force")
                         .short('f')
@@ -135,8 +132,7 @@ as published by the Free Software Foundation.",
                     Arg::new("packages")
                         .help("Package(s) to upgrade")
                         .action(ArgAction::Set)
-                        .num_args(1..)
-                        .value_hint(ValueHint::Unknown),
+                        .num_args(1..),
                     Arg::new("force")
                         .long("force")
                         .short('f')
@@ -157,8 +153,7 @@ as published by the Free Software Foundation.",
                         .required(true)
                         .action(ArgAction::Set)
                         .help("Package(s) to remove")
-                        .num_args(1..)
-                        .value_hint(ValueHint::Unknown),
+                        .num_args(1..),
                     Arg::new("all")
                         .long("all")
                         .short('a')
@@ -194,13 +189,18 @@ as published by the Free Software Foundation.",
             Command::new("sync")
                 .short_flag('S')
                 .about("Sync repository manifests")
-                .arg(
+                .args([
+                    Arg::new("repos")
+                        .action(ArgAction::Set)
+                        .required(false)
+                        .num_args(1..)
+                        .help("Selected repositories to sync"),
                     Arg::new("quiet")
                         .long("quiet")
                         .short('q')
                         .action(ArgAction::SetTrue)
                         .help("Show the least output possible"),
-                ),
+                ]),
             Command::new("repo")
                 .short_flag('P')
                 .about("Manage repositories")
@@ -230,8 +230,7 @@ as published by the Free Software Foundation.",
                                 .help("Repository name(s)")
                                 .action(ArgAction::Set)
                                 .required(true)
-                                .num_args(1..)
-                                .value_hint(ValueHint::Unknown),
+                                .num_args(1..),
                             Arg::new("force")
                                 .long("force")
                                 .short('f')
@@ -257,8 +256,7 @@ as published by the Free Software Foundation.",
                                 .help("Repository name")
                                 .action(ArgAction::Set)
                                 .required(true)
-                                .num_args(1)
-                                .value_hint(ValueHint::Unknown),
+                                .num_args(1),
                         ),
                     Command::new("list")
                         .short_flag('l')
@@ -273,24 +271,21 @@ as published by the Free Software Foundation.",
                                 .help("Repository name")
                                 .action(ArgAction::Set)
                                 .required(true)
-                                .num_args(1)
-                                .value_hint(ValueHint::Unknown),
+                                .num_args(1),
                             Arg::new("maintainer")
                                 .long("maintainer")
                                 .short('m')
                                 .help("Repository maintainer's name")
                                 .action(ArgAction::Set)
                                 .required(true)
-                                .num_args(1)
-                                .value_hint(ValueHint::Unknown),
+                                .num_args(1),
                             Arg::new("description")
                                 .long("description")
                                 .short('d')
                                 .help("Repository description")
                                 .action(ArgAction::Set)
                                 .required(true)
-                                .num_args(1)
-                                .value_hint(ValueHint::Unknown),
+                                .num_args(1),
                             Arg::new("quiet")
                                 .long("quiet")
                                 .short('q')
@@ -306,8 +301,7 @@ as published by the Free Software Foundation.",
                         .help("Selected package to query")
                         .required(true)
                         .action(ArgAction::Set)
-                        .num_args(1)
-                        .value_hint(ValueHint::Unknown),
+                        .num_args(1),
                 ),
             Command::new("changelog")
                 .short_flag('C')
@@ -316,8 +310,7 @@ as published by the Free Software Foundation.",
                     Arg::new("package")
                         .help("Selected package")
                         .action(ArgAction::Set)
-                        .num_args(1)
-                        .value_hint(ValueHint::Unknown),
+                        .num_args(1),
                     Arg::new("latest")
                         .short('l')
                         .long("latest")
@@ -380,8 +373,7 @@ as published by the Free Software Foundation.",
                         .short('p')
                         .default_value("8887")
                         .action(ArgAction::Set)
-                        .help("Server port")
-                        .value_hint(ValueHint::Unknown),
+                        .help("Server port"),
                     Arg::new("url")
                         .long("url")
                         .short('u')
@@ -476,7 +468,12 @@ as published by the Free Software Foundation.",
         Some(("sync", sync_matches)) => {
             let quiet = sync_matches.get_flag("quiet");
 
-            sync::command(quiet);
+            if let Some(repos) = sync_matches.get_many::<String>("repos") {
+                let repos_vec = repos.map(|r| r.to_owned()).collect::<Vec<_>>();
+                sync::command(Some(repos_vec), quiet);
+            } else {
+                sync::command(None, quiet);
+            }
         }
         Some(("repo", repo_matches)) => match repo_matches.subcommand() {
             Some(("add", add_matches)) => {

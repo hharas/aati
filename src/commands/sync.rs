@@ -25,7 +25,7 @@ use crate::utils::{
 use colored::Colorize;
 use toml::Value;
 
-pub fn command(quiet: bool) {
+pub fn command(repo_names_option: Option<Vec<String>>, quiet: bool) {
     let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
 
     match aati_config
@@ -34,7 +34,24 @@ pub fn command(quiet: bool) {
         .and_then(|repos| repos.as_array())
     {
         Some(repos) => {
-            for repo in repos {
+            let mut selected_repos = Vec::new();
+
+            if let Some(repo_names) = repo_names_option {
+                for repo_name in repo_names {
+                    if let Some(found_repo) = repos
+                        .iter()
+                        .find(|r| r["name"].as_str().unwrap() == repo_name)
+                    {
+                        selected_repos.push(found_repo.to_owned());
+                    } else if !quiet {
+                        println!("{}", format!("+ Repository '{}' ignored due to not being found in the config file", repo_name).yellow());
+                    }
+                }
+            } else {
+                selected_repos.extend(repos.to_owned());
+            }
+
+            for repo in selected_repos {
                 let url = repo["url"].as_str().unwrap();
                 let requested_url = format!("{}/repo.toml", url);
 
@@ -122,10 +139,6 @@ pub fn command(quiet: bool) {
                         exit(1);
                     }
                 }
-            }
-
-            if !quiet {
-                println!("{}", "+ Done syncing!".bright_green());
             }
         }
 

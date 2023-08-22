@@ -27,7 +27,7 @@ use crate::{
     types::{LockFile, Package},
     utils::{
         execute_lines, extract_package, get_aati_config, get_aati_lock, get_aati_lock_path_buf,
-        get_repo_config, is_supported, is_windows, parse_pkgfile, prompt_yn,
+        get_repo_config, is_supported, parse_pkgfile, prompt_yn,
     },
 };
 use colored::Colorize;
@@ -416,7 +416,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
 
                                     let parsed_pkgfile = parse_pkgfile(&pkgfile);
 
-                                    let selected_installation_lines = if is_windows() {
+                                    let selected_installation_lines = if cfg!(windows) {
                                         if !parsed_pkgfile.win_installation_lines.is_empty() {
                                             parsed_pkgfile.win_installation_lines.clone()
                                         } else {
