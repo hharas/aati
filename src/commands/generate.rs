@@ -31,8 +31,14 @@ use crate::{
     version::get_version,
 };
 
-pub fn command(base_url: &str, repo_url: &str, quiet: bool) {
-    match read_to_string("repo.toml") {
+pub fn command(
+    base_url: &str,
+    repo_url: &str,
+    manifest_path_buf: PathBuf,
+    parent_directory: PathBuf,
+    quiet: bool,
+) {
+    match read_to_string(manifest_path_buf) {
         Ok(repo_toml) => match repo_toml.parse::<Value>() {
             Ok(repo_config) => {
                 let available_packages = repo_config["index"]["packages"].as_array().unwrap();
@@ -40,18 +46,27 @@ pub fn command(base_url: &str, repo_url: &str, quiet: bool) {
 
                 let mut html_files: HashMap<PathBuf, String> = HashMap::new();
 
+                let mut index_html_path_buf = PathBuf::from(&parent_directory);
+                index_html_path_buf.push("index.html");
+
+                let mut packages_html_path_buf = PathBuf::from(&parent_directory);
+                packages_html_path_buf.push("packages.html");
+
+                let mut about_html_path_buf = PathBuf::from(&parent_directory);
+                about_html_path_buf.push("about.html");
+
                 html_files.insert(
-                    PathBuf::from("index.html"),
+                    index_html_path_buf,
                     generate_apr_html(&repo_config, "index", None, base_url, repo_url),
                 );
 
                 html_files.insert(
-                    PathBuf::from("packages.html"),
+                    packages_html_path_buf,
                     generate_apr_html(&repo_config, "packages", None, base_url, repo_url),
                 );
 
                 html_files.insert(
-                    PathBuf::from("about.html"),
+                    about_html_path_buf,
                     generate_apr_html(&repo_config, "about", None, base_url, repo_url),
                 );
 
@@ -62,19 +77,19 @@ pub fn command(base_url: &str, repo_url: &str, quiet: bool) {
                                 .iter()
                                 .any(|pkg| &pkg["target"].as_str().unwrap() == target)
                             {
-                                let target_directory = PathBuf::from(target);
+                                let mut target_directory = PathBuf::from(&parent_directory);
+                                target_directory.push(target);
 
-                                if !target_directory.exists() {
-                                    create_dir_all(format!(
-                                        "{}/{}",
-                                        target_directory.display(),
-                                        package["name"].as_str().unwrap()
-                                    ))
-                                    .unwrap();
-                                }
+                                let mut package_directory = PathBuf::from(&target_directory);
+                                package_directory.push(package["name"].as_str().unwrap());
+
+                                let mut target_html_path_buf = PathBuf::from(&target_directory);
+                                target_html_path_buf.push("index.html");
+
+                                create_dir_all(package_directory).unwrap();
 
                                 html_files.insert(
-                                    PathBuf::from(format!("{}/index.html", target,)),
+                                    target_html_path_buf,
                                     generate_apr_html(
                                         &repo_config,
                                         target,
@@ -86,13 +101,14 @@ pub fn command(base_url: &str, repo_url: &str, quiet: bool) {
                             }
                         }
 
+                        let mut package_html_path_buf = PathBuf::from(&parent_directory);
+                        package_html_path_buf.push(package["target"].as_str().unwrap());
+                        package_html_path_buf.push(package["name"].as_str().unwrap());
+                        package_html_path_buf
+                            .push(format!("{}.html", package["name"].as_str().unwrap()));
+
                         html_files.insert(
-                            PathBuf::from(format!(
-                                "{}/{}/{}.html",
-                                package["target"].as_str().unwrap(),
-                                package["name"].as_str().unwrap(),
-                                package["name"].as_str().unwrap(),
-                            )),
+                            package_html_path_buf,
                             generate_apr_html(
                                 &repo_config,
                                 "package",

@@ -357,6 +357,16 @@ as published by the Free Software Foundation.",
                         .action(ArgAction::Set)
                         .help("Repository url")
                         .value_hint(ValueHint::Url),
+                    Arg::new("manifest")
+                        .default_value("./repo.toml")
+                        .action(ArgAction::Set)
+                        .help("Path to the repo.toml file")
+                        .value_hint(ValueHint::FilePath),
+                    Arg::new("directory")
+                        .default_value(".")
+                        .action(ArgAction::Set)
+                        .help("Directory under which HTML files will be written")
+                        .value_hint(ValueHint::DirPath),
                     Arg::new("quiet")
                         .long("quiet")
                         .short('q')
@@ -563,8 +573,16 @@ as published by the Free Software Foundation.",
 
             let website_url = generate_matches.get_one::<String>("url").unwrap();
             let repo_url = generate_matches.get_one::<String>("repo").unwrap();
+            let manifest_path = generate_matches.get_one::<String>("manifest").unwrap();
+            let output_directory = generate_matches.get_one::<String>("directory").unwrap();
 
-            generate::command(website_url, repo_url, quiet);
+            generate::command(
+                website_url,
+                repo_url,
+                manifest_path.into(),
+                output_directory.into(),
+                quiet,
+            );
         }
         Some(("serve", serve_matches)) => {
             let host = serve_matches.get_one::<String>("host").unwrap();
