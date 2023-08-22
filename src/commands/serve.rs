@@ -46,14 +46,14 @@ pub fn command(host: &str, port: &str, base_url: &str, repo_url: &str) {
                     );
 
                     for request in server.incoming_requests() {
-                        let mut html =
-                            generate_apr_html(&repo_config, "index", None, base_url, repo_url);
-                        let mut url = request.url().to_string();
-
-                        print!(
+                        println!(
                             "{}",
                             format!("+   {} {}", request.method(), request.url()).bright_green()
                         );
+
+                        let mut html =
+                            generate_apr_html(&repo_config, "index", None, base_url, repo_url);
+                        let mut url = request.url().to_string();
 
                         url.remove(0);
 
