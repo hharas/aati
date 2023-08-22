@@ -85,7 +85,7 @@ as published by the Free Software Foundation.",
                 .about("Install a package from the local filesystem")
                 .args([
                     Arg::new("package")
-                        .help("Package .tar.lz4 file")
+                        .help("Package .tar.lz4 filepath")
                         .action(ArgAction::Set)
                         .required_unless_present("pkgfile")
                         .conflicts_with("pkgfile")
