@@ -20,11 +20,9 @@ use colored::Colorize;
 use toml::Value;
 
 use crate::{
-    utils::{get_aati_lock, prompt_yn},
+    utils::{get_aati_lock, get_package_versions, prompt_yn},
     version::get_versions,
 };
-
-use self::changelog::get_package_versions;
 
 mod changelog;
 pub mod generate;

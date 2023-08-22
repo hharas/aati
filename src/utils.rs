@@ -1136,3 +1136,40 @@ pub fn execute_lines(
         }
     }
 }
+
+pub fn get_package_versions(package_name: &str) -> Option<Vec<Value>> {
+    let aati_config: Value = get_aati_config().unwrap().parse().unwrap();
+    let repo_list = aati_config["sources"]["repos"].as_array().unwrap();
+    let mut added_repos: Vec<Value> = Vec::new();
+    let mut versions: Vec<Value> = Vec::new();
+
+    for repo_info in repo_list {
+        added_repos.push(
+            get_repo_config(repo_info["name"].as_str().unwrap())
+                .parse::<Value>()
+                .unwrap(),
+        );
+    }
+
+    match extract_package(package_name, &added_repos) {
+        Some(package_vec) => {
+            let repo_name = &package_vec[0];
+            let package_name = &package_vec[1];
+
+            let repo = added_repos
+                .iter()
+                .find(|r| r["repo"]["name"].as_str().unwrap() == repo_name)
+                .unwrap();
+            let available_packages = repo["index"]["packages"].as_array().unwrap();
+
+            for package in available_packages {
+                if package["name"].as_str().unwrap() == package_name {
+                    versions = package["versions"].as_array().unwrap().to_owned();
+                }
+            }
+
+            Some(versions)
+        }
+        None => None,
+    }
+}
