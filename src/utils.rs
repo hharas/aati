@@ -40,7 +40,8 @@ pub fn is_windows() -> bool {
 }
 
 pub fn get_target() -> String {
-    format!("{}-{}", std::env::consts::ARCH, std::env::consts::OS)
+    let version_metadata = rustc_version::version_meta().unwrap();
+    version_metadata.host
 }
 
 pub fn is_supported(target: &str) -> bool {

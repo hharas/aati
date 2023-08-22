@@ -462,8 +462,8 @@ pub fn list() {
 pub fn init(repo_name: String, repo_maintainer: String, repo_description: String, quiet: bool) {
     let repo_dir = PathBuf::from("aati_repo");
     let any_dir = PathBuf::from("aati_repo/any");
-    let x86_64_linux_dir = PathBuf::from("aati_repo/x86_64-linux");
-    let aarch64_dir = PathBuf::from("aati_repo/aarch64-linux");
+    let x86_64_linux_dir = PathBuf::from("aati_repo/x86_64-unknown-linux-gnu");
+    let aarch64_dir = PathBuf::from("aati_repo/aarch64-unknown-linux-gnu");
 
     let repo_toml_path_buf = PathBuf::from("aati_repo/repo.toml");
 
@@ -580,7 +580,7 @@ description = \"{}\"
 
 [index]
 packages = [
-#   {{ name = \"package-name-here\", current = \"0.1.1\", target = \"x86_64-linux\", versions = [
+#   {{ name = \"package-name-here\", current = \"0.1.1\", target = \"any\", versions = [
 #       {{ tag = \"0.1.1\", checksum = \"sha256-sum-here\" }},
 #       {{ tag = \"0.1.0\", checksum = \"sha256-sum-here\" }},
 #   ], author = \"{}\", description = \"Package description here.\", url = \"{}\" }},
