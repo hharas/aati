@@ -36,7 +36,11 @@ use crate::{
 };
 
 pub fn is_windows() -> bool {
-    std::env::consts::OS == "windows"
+    if cfg!(windows) {
+        true
+    } else {
+        false
+    }
 }
 
 pub fn get_target() -> String {
