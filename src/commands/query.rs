@@ -109,7 +109,11 @@ pub fn command(text: &str, repo_name: Option<&str>) {
                         installed_package_version = installed_package["version"].as_str().unwrap();
 
                         is_installed = true;
-                        if installed_package["version"] == package["current"] {
+                        if installed_package["version"].as_str().unwrap()
+                            == package["versions"].as_array().unwrap().first().unwrap()["tag"]
+                                .as_str()
+                                .unwrap()
+                        {
                             is_up_to_date = true;
                         }
                     }
@@ -179,7 +183,12 @@ pub fn command(text: &str, repo_name: Option<&str>) {
                                     && installed_package["source"].as_str().unwrap() == repo_name
                                 {
                                     is_installed = true;
-                                    if installed_package["version"] == package["current"] {
+                                    if installed_package["version"].as_str().unwrap()
+                                        == package["versions"].as_array().unwrap().first().unwrap()
+                                            ["tag"]
+                                            .as_str()
+                                            .unwrap()
+                                    {
                                         is_up_to_date = true;
                                         installed_package_version =
                                             installed_package["version"].as_str().unwrap()
@@ -232,13 +241,14 @@ pub fn display_package(
     installed_package_version: &str,
 ) {
     let name = package["name"].as_str().unwrap();
-    let version = package["current"].as_str().unwrap();
-
     let versions = package["versions"].as_array().unwrap();
+    let version = versions.first().unwrap()["tag"].as_str().unwrap();
+
     let mut tags: Vec<&str> = vec![];
     for version in versions {
         tags.push(version["tag"].as_str().unwrap())
     }
+
     let author = package["author"].as_str().unwrap();
     let arch = package["target"].as_str().unwrap();
     let url = package["url"].as_str().unwrap();

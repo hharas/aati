@@ -113,7 +113,14 @@ pub fn command(choice: Option<&str>, force: bool, quiet: bool) {
                     for available_package in available_packages {
                         if installed_package["name"] == available_package["name"]
                             && is_supported(available_package["target"].as_str().unwrap())
-                            && installed_package["version"] != available_package["current"]
+                            && installed_package["version"].as_str().unwrap()
+                                != available_package["versions"]
+                                    .as_array()
+                                    .unwrap()
+                                    .first()
+                                    .unwrap()["tag"]
+                                    .as_str()
+                                    .unwrap()
                         {
                             to_be_upgraded.push(available_package["name"].as_str().unwrap());
 
@@ -124,7 +131,13 @@ pub fn command(choice: Option<&str>, force: bool, quiet: bool) {
                                     installed_package["source"].as_str().unwrap(),
                                     installed_package["name"].as_str().unwrap(),
                                     installed_package["version"].as_str().unwrap(),
-                                    available_package["current"].as_str().unwrap(),
+                                    available_package["versions"]
+                                        .as_array()
+                                        .unwrap()
+                                        .first()
+                                        .unwrap()["tag"]
+                                        .as_str()
+                                        .unwrap(),
                                 );
                             }
                         }

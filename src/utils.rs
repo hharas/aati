@@ -445,7 +445,14 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                             {
                                 results.push(Package {
                                     name: available_package["name"].as_str().unwrap().into(),
-                                    version: available_package["current"].as_str().unwrap().into(),
+                                    version: available_package["versions"]
+                                        .as_array()
+                                        .unwrap()
+                                        .first()
+                                        .unwrap()["tag"]
+                                        .as_str()
+                                        .unwrap()
+                                        .into(),
                                     source: added_repo["repo"]["name"].as_str().unwrap().into(),
                                     target: available_package["target"].as_str().unwrap().into(),
                                     pkgfile: Pkgfile {
@@ -472,7 +479,14 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                             {
                                 results.push(Package {
                                     name: available_package["name"].as_str().unwrap().into(),
-                                    version: available_package["current"].as_str().unwrap().into(),
+                                    version: available_package["versions"]
+                                        .as_array()
+                                        .unwrap()
+                                        .first()
+                                        .unwrap()["tag"]
+                                        .as_str()
+                                        .unwrap()
+                                        .into(),
                                     source: added_repo["repo"]["name"].as_str().unwrap().into(),
                                     target: available_package["target"].as_str().unwrap().into(),
                                     pkgfile: Pkgfile {
@@ -539,7 +553,14 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                         {
                             results.push(Package {
                                 name: available_package["name"].as_str().unwrap().into(),
-                                version: available_package["current"].as_str().unwrap().into(),
+                                version: available_package["versions"]
+                                    .as_array()
+                                    .unwrap()
+                                    .first()
+                                    .unwrap()["tag"]
+                                    .as_str()
+                                    .unwrap()
+                                    .into(),
                                 source: added_repo["repo"]["name"].as_str().unwrap().into(),
                                 target: available_package["target"].as_str().unwrap().into(),
                                 pkgfile: Pkgfile {
@@ -565,7 +586,14 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                         {
                             results.push(Package {
                                 name: available_package["name"].as_str().unwrap().into(),
-                                version: available_package["current"].as_str().unwrap().into(),
+                                version: available_package["versions"]
+                                    .as_array()
+                                    .unwrap()
+                                    .first()
+                                    .unwrap()["tag"]
+                                    .as_str()
+                                    .unwrap()
+                                    .into(),
                                 source: added_repo["repo"]["name"].as_str().unwrap().into(),
                                 target: available_package["target"].as_str().unwrap().into(),
                                 pkgfile: Pkgfile {
@@ -640,7 +668,13 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                         if available_package["name"].as_str().unwrap() == name
                             && is_supported(available_package["target"].as_str().unwrap())
                         {
-                            version = available_package["current"].as_str().unwrap();
+                            version = available_package["versions"]
+                                .as_array()
+                                .unwrap()
+                                .first()
+                                .unwrap()["tag"]
+                                .as_str()
+                                .unwrap();
                         }
                     }
                 } else if !version.chars().next().unwrap().is_ascii_digit() {
@@ -650,7 +684,13 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                         if available_package["name"].as_str().unwrap() == text
                             && is_supported(available_package["target"].as_str().unwrap())
                         {
-                            version = available_package["current"].as_str().unwrap();
+                            version = available_package["versions"]
+                                .as_array()
+                                .unwrap()
+                                .first()
+                                .unwrap()["tag"]
+                                .as_str()
+                                .unwrap();
                         }
                     }
                 }
@@ -756,12 +796,12 @@ description = \"APR made for testing the extract_package() function\"
 
 [index]
 packages = [
-    {{ name = \"testing-package\", current = \"0.1.0\", target = \"any\", versions = [
+    {{ name = \"testing-package\", target = \"any\", versions = [
         {{ tag = \"0.1.0\", checksum = \"checksum-placeholder\" }}
     ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"https://sr.ht/~haras/aati\" }},
-    {{ name = \"calculator\", current = \"0.1.1\", target = \"{}\", versions = [
-        {{ tag = \"0.1.0\", checksum = \"checksum-placeholder\" }},
+    {{ name = \"calculator\", target = \"{}\", versions = [
         {{ tag = \"0.1.1\", checksum = \"checksum-placeholder\" }},
+        {{ tag = \"0.1.0\", checksum = \"checksum-placeholder\" }},
     ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"https://sr.ht/~haras/aati\" }},
 ]", get_target());
 

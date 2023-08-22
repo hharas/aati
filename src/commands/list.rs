@@ -39,7 +39,10 @@ pub fn installed() {
                     .find(|pkg| {
                         pkg["name"] == installed_package["name"]
                             && is_supported(pkg["target"].as_str().unwrap())
-                            && pkg["current"] != installed_package["version"]
+                            && pkg["versions"].as_array().unwrap().first().unwrap()["tag"]
+                                .as_str()
+                                .unwrap()
+                                != installed_package["version"].as_str().unwrap()
                     }) {
                     Some(_) => {
                         println!(

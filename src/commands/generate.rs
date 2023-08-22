@@ -217,7 +217,10 @@ pub fn generate_apr_html(
                 ));
                 for package in available_packages {
                     let package_name = package["name"].as_str().unwrap();
-                    let package_version = package["current"].as_str().unwrap();
+                    let package_version = package["versions"].as_array().unwrap().first().unwrap()
+                        ["tag"]
+                        .as_str()
+                        .unwrap();
                     let package_target = package["target"].as_str().unwrap();
                     if target == package_target {
                         header.push_str(&format!(
@@ -262,9 +265,9 @@ pub fn generate_apr_html(
 
         if let Some(package) = current_package {
             let package_name = package["name"].as_str().unwrap();
-            let package_version = package["current"].as_str().unwrap();
             let package_target = package["target"].as_str().unwrap();
             let package_versions = package["versions"].as_array().unwrap();
+            let package_version = package_versions.first().unwrap()["tag"].as_str().unwrap();
             let package_author = package["author"].as_str().unwrap();
             let package_description = package["description"].as_str().unwrap();
             let package_url = package["url"].as_str().unwrap();
@@ -378,7 +381,10 @@ pub fn generate_apr_html(
             header.push_str("<ul>");
             for package in available_packages {
                 let package_name = package["name"].as_str().unwrap();
-                let package_version = package["current"].as_str().unwrap();
+                let package_version = package["versions"].as_array().unwrap().first().unwrap()
+                    ["tag"]
+                    .as_str()
+                    .unwrap();
                 let package_target = package["target"].as_str().unwrap();
                 if target == package_target {
                     header.push_str(&format!(
