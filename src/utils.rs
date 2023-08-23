@@ -786,8 +786,6 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
 
 #[test]
 fn test_extract_package() {
-    use crate::config::HOMEPAGE_URL;
-
     let repo_toml = format!("[repo]
 name = \"testing\"
 maintainer = \"Husayn Haras\"
@@ -797,12 +795,12 @@ description = \"APR made for testing the extract_package() function\"
 packages = [
     {{ name = \"testing-package\", target = \"any\", versions = [
         {{ tag = \"0.1.0\", checksum = \"checksum-placeholder\" }}
-    ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"{}\" }},
+    ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"https://example.com\" }},
     {{ name = \"calculator\", target = \"{}\", versions = [
         {{ tag = \"0.1.1\", checksum = \"checksum-placeholder\" }},
         {{ tag = \"0.1.0\", checksum = \"checksum-placeholder\" }},
-    ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"{}\" }},
-]", HOMEPAGE_URL, get_target(), HOMEPAGE_URL);
+    ], author = \"Husayn Haras\", description = \"Package made to test the extract_package() function\", url = \"https://example.com\" }},
+]", get_target());
 
     let repo_config: Value = repo_toml.parse().unwrap();
     let added_repos = vec![repo_config];
