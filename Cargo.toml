@@ -34,7 +34,7 @@ maintenance = { status = "actively-developed" }
 
 [profile.release]
 opt-level = "z"
-strip = true
+strip = "symbols"
 lto = true
 panic = "abort"
 codegen-units = 1
