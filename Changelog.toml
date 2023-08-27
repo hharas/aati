@@ -1,4 +1,9 @@
 [[version]]
+tag = "0.12.2"
+date = 'Sun Aug 27 13:10:38 2023 +0300'
+changes = '''- Removed '--url' from 'generate' and 'serve' commands'''
+
+[[version]]
 tag = '0.12.1'
 date = 'Tue Aug 22 20:02:26 2023 +0300'
 changes = '''
