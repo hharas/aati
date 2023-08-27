@@ -172,38 +172,39 @@ pub fn generate_apr_html(
     let mut response = "<!DOCTYPE html><html lang=\"en\">".to_string();
 
     let mut head = format!("<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><meta property=\"og:site_name\" content=\"{}\" /><meta property=\"og:type\" content=\"website\" /><meta property=\"twitter:card\" content=\"summary\" /><meta name=\"description\" content=\"{}\"><style>table, th, td {{ border: 1px solid black; border-collapse: collapse; padding: 5px; }} .installation_guide {{ background-color: #f0f0f0; }}</style>", repo_name, repo_description);
-    let mut header: String;
+    let mut body: String;
 
     if template == "index" {
-        header = format!(
+        body = format!(
             "<body><h3><code>{}/</code> - aati package repository</h3><a href=\"index.html\">home</a> - <a href=\"packages.html\">packages</a> - <a href=\"about.html\">about</a><hr />",
             repo_name
         );
 
         head.push_str(&format!("<meta property=\"og:title\" content=\"index\" /><meta property=\"og:description\" content=\"{}\" />", repo_description));
         head.push_str(&format!("<title>{}</title></head>", repo_name));
-        header.push_str(&format!("<p>{}</p>", repo_description));
-        header.push_str(&format!("<p>Add this Package Repository in Aati by running:</p><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati repo add {}</code>", repo_url));
+
+        body.push_str(&format!("<p>{}</p>", repo_description));
+        body.push_str(&format!("<p>Add this Package Repository in Aati by running:</p><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati repo add {}</code>", repo_url));
     } else if template == "packages" {
-        header = format!(
+        body = format!(
             "<body><h3><code>{}/</code> - aati package repository</h3><a href=\"index.html\">home</a> - <a href=\"packages.html\">packages</a> - <a href=\"about.html\">about</a><hr />",
             repo_name
         );
 
-        header.push_str(&format!(
+        body.push_str(&format!(
             "<p>Number of packages: <b>{}</b></p>",
             available_packages.len()
         ));
 
         let targets = POSSIBLE_TARGETS;
 
-        header.push_str("<ul>");
+        body.push_str("<ul>");
         for target in targets {
             if available_packages
                 .iter()
                 .any(|package| package["target"].as_str().unwrap() == target)
             {
-                header.push_str(&format!(
+                body.push_str(&format!(
                     "<li><code style=\"font-size: 0.9rem;\"><a href=\"{}\">{}</a></code><ul>",
                     target, target
                 ));
@@ -215,7 +216,7 @@ pub fn generate_apr_html(
                         .unwrap();
                     let package_target = package["target"].as_str().unwrap();
                     if target == package_target {
-                        header.push_str(&format!(
+                        body.push_str(&format!(
                             "<li><a href=\"{}/{}/{}.html\"><b>{}</b>-{}</a></li>",
                             package_target,
                             package_name,
@@ -225,20 +226,20 @@ pub fn generate_apr_html(
                         ));
                     }
                 }
-                header.push_str("</ul></li>");
+                body.push_str("</ul></li>");
             }
         }
-        header.push_str("</ul>");
+        body.push_str("</ul>");
 
         head.push_str(&format!("<meta property=\"og:title\" content=\"packages\" /><meta property=\"og:description\" content=\"{} packages available to install\" />", available_packages.len()));
         head.push_str(&format!("<title>packages - {}</title></head>", repo_name));
     } else if template == "about" {
-        header = format!(
+        body = format!(
             "<body><h3><code>{}/</code> - aati package repository</h3><a href=\"index.html\">home</a> - <a href=\"packages.html\">packages</a> - <a href=\"about.html\">about</a><hr />",
             repo_name
         );
 
-        header.push_str(&format!(
+        body.push_str(&format!(
             "<p>{}</p><p>Number of packages: <b>{}</b></p><p>Maintained by: <b>{}</b></p><hr /><p>Generated using <a href=\"{}\">aati {}</a> as a hosted Aati Package Repository.</p>",
             repo_description,
             available_packages.len(),
@@ -250,7 +251,7 @@ pub fn generate_apr_html(
         head.push_str(&format!("<meta property=\"og:title\" content=\"about\" /><meta property=\"og:description\" content=\"about {}\" />", repo_name));
         head.push_str(&format!("<title>about - {}</title></head>", repo_name));
     } else if template == "package" {
-        header = format!(
+        body = format!(
             "<body><h3><code>{}/</code> - aati package repository</h3><a href=\"../../index.html\">home</a> - <a href=\"../../packages.html\">packages</a> - <a href=\"../../about.html\">about</a><hr />",
             repo_name
         );
@@ -264,12 +265,12 @@ pub fn generate_apr_html(
             let package_description = package["description"].as_str().unwrap();
             let package_url = package["url"].as_str().unwrap();
 
-            header.push_str(&format!(
+            body.push_str(&format!(
                 "<h3>Package: <code style=\"font-size: 1rem;\">{}</code></h3>",
                 package_name
             ));
 
-            header.push_str(&format!(
+            body.push_str(&format!(
                 "<div class=\"installation_guide\"><p>You can install this package by:</p><ol><li>Adding this package repository to Aati by running:<br/><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati repo add {}</code></li><li>Then telling Aati to fetch it for you by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati get {}/{}</code></li></ol>or you can download the version you want of this package below and install it locally by running:<br /><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati install {}-<i>version</i>.tar.lz4</code></div><br />",
                 repo_url,
                 repo_name,
@@ -277,27 +278,27 @@ pub fn generate_apr_html(
                 package_name
             ));
 
-            header.push_str(&format!(
+            body.push_str(&format!(
                 "Made by: <b>{}</b>, targeted for <b><code style=\"font-size: 0.9rem;\">{}</code></b>.",
                 package_author, package_target
             ));
-            header.push_str(&format!(
+            body.push_str(&format!(
                 "<p>Description: <b>{}</b></p>",
                 package_description
             ));
 
-            header.push_str(&format!(
+            body.push_str(&format!(
                 "<p>URL: <a href=\"{}\">{}</a></p>",
                 package_url, package_url
             ));
 
-            header.push_str(&format!(
+            body.push_str(&format!(
                 "<p>Current version: <b>{}</b></p>",
                 package_version
             ));
-            header.push_str("<p>Available versions:</p>");
+            body.push_str("<p>Available versions:</p>");
 
-            header.push_str("<table><tr><th>Version</th><th>Changes</th><th>SHA256 Checksum</th><th>Release date</th></tr>");
+            body.push_str("<table><tr><th>Version</th><th>Changes</th><th>SHA256 Checksum</th><th>Release date</th></tr>");
             for version in package_versions {
                 let version_table = version.as_table().unwrap();
                 let tag = version_table.get("tag").unwrap().as_str().unwrap();
@@ -307,14 +308,14 @@ pub fn generate_apr_html(
                     Some(date) => match version_table.get("changes") {
                         Some(changes) => {
                             let changes = changes.as_str().unwrap();
-                            header.push_str(&format!(
+                            body.push_str(&format!(
                                 "<tr><td><a href=\"{}/{}/{}/{}-{}.tar.lz4\">{}</a></td><td><pre><code>{}</code></pre></td><td>{}</td><td>{}</td></tr>",
                                 repo_url, package_target, package_name, package_name, tag, tag, changes, checksum, date.as_str().unwrap()
                             ));
                         }
 
                         None => {
-                            header.push_str(&format!(
+                            body.push_str(&format!(
                                 "<tr><td><a href=\"{}/{}/{}/{}-{}.tar.lz4\">{}</a></td><td><b>Unavailable</b></td><td>{}</td><td>{}</td></tr>",
                                 repo_url, package_target, package_name, package_name, tag, tag, checksum, date.as_str().unwrap()
                             ));
@@ -324,14 +325,14 @@ pub fn generate_apr_html(
                     None => match version_table.get("changes") {
                         Some(changes) => {
                             let changes = changes.as_str().unwrap();
-                            header.push_str(&format!(
+                            body.push_str(&format!(
                                 "<tr><td><a href=\"{}/{}/{}/{}-{}.tar.lz4\">{}</a></td><td><pre><code>{}</code></pre></td><td>{}</td><td><b>Unavailable</b></td></tr>",
                                 repo_url, package_target, package_name, package_name, tag, tag, changes, checksum
                             ));
                         }
 
                         None => {
-                            header.push_str(&format!(
+                            body.push_str(&format!(
                                 "<tr><td><a href=\"{}/{}/{}/{}-{}.tar.lz4\">{}</a></td><td><b>Unavailable</b></td><td>{}</td><td><b>Unavailable</b></td></tr>",
                                 repo_url, package_target, package_name, package_name, tag, tag, checksum
                             ));
@@ -339,7 +340,7 @@ pub fn generate_apr_html(
                     },
                 }
             }
-            header.push_str("</table>");
+            body.push_str("</table>");
 
             head.push_str(&format!("<meta property=\"og:title\" content=\"{}/{}\" /><meta property=\"og:description\" content=\"{}\" />", repo_name, package_name, package_description));
             head.push_str(&format!(
@@ -348,7 +349,7 @@ pub fn generate_apr_html(
             ));
         }
     } else {
-        header = format!(
+        body = format!(
             "<body><h3><code>{}/</code> - aati package repository</h3><a href=\"../index.html\">home</a> - <a href=\"../packages.html\">packages</a> - <a href=\"../about.html\">about</a><hr />",
             repo_name
         );
@@ -360,7 +361,7 @@ pub fn generate_apr_html(
         let retained_available_packages: &mut Vec<Value> = these_available_packages.as_mut();
         retained_available_packages.retain(|package| package["target"].as_str().unwrap() == target);
 
-        header.push_str(&format!(
+        body.push_str(&format!(
             "<p>Number of <code style=\"font-size: 0.9rem;\">{}</code>-targeted packages: <b>{}</b></p>",
             target,
             retained_available_packages.len()
@@ -370,7 +371,7 @@ pub fn generate_apr_html(
             .iter()
             .any(|package| package["target"].as_str().unwrap() == target)
         {
-            header.push_str("<ul>");
+            body.push_str("<ul>");
             for package in available_packages {
                 let package_name = package["name"].as_str().unwrap();
                 let package_version = package["versions"].as_array().unwrap().first().unwrap()
@@ -379,13 +380,13 @@ pub fn generate_apr_html(
                     .unwrap();
                 let package_target = package["target"].as_str().unwrap();
                 if target == package_target {
-                    header.push_str(&format!(
+                    body.push_str(&format!(
                         "<li><a href=\"{}/{}/{}.html\"><b>{}</b>-{}</a></li>",
                         package_target, package_name, package_name, package_name, package_version,
                     ));
                 }
             }
-            header.push_str("</ul>");
+            body.push_str("</ul>");
         }
 
         head.push_str(&format!("<meta property=\"og:title\" content=\"{} packages\" /><meta property=\"og:description\" content=\"{} {} packages available to install\" />", target, retained_available_packages.len(), target));
@@ -396,7 +397,7 @@ pub fn generate_apr_html(
     }
 
     response.push_str(&head);
-    response.push_str(&header);
+    response.push_str(&body);
     response.push_str("</body></html>");
 
     response
