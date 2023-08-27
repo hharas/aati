@@ -35,6 +35,7 @@ use crate::{
     types::Pkgfile,
 };
 
+// Get the host machine's target triple
 pub fn get_target() -> String {
     let version_metadata = rustc_version::version_meta().unwrap();
     version_metadata.host
@@ -44,6 +45,8 @@ pub fn is_supported(target: &str) -> bool {
     target == get_target() || target == "any"
 }
 
+// Create `.aati`, `.aati/bin`, `.aati/lib`, `.aati/repos` under
+// the user's home directory if they don't exist
 pub fn check_aati_dirs() {
     let home_dir = home_dir().unwrap();
 
