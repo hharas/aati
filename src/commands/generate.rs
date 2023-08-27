@@ -31,13 +31,7 @@ use crate::{
     version::get_version,
 };
 
-pub fn command(
-    base_url: &str,
-    repo_url: &str,
-    manifest_path_buf: PathBuf,
-    parent_directory: PathBuf,
-    quiet: bool,
-) {
+pub fn command(repo_url: &str, manifest_path_buf: PathBuf, parent_directory: PathBuf, quiet: bool) {
     match read_to_string(manifest_path_buf) {
         Ok(repo_toml) => match repo_toml.parse::<Value>() {
             Ok(repo_config) => {
@@ -57,17 +51,17 @@ pub fn command(
 
                 html_files.insert(
                     index_html_path_buf,
-                    generate_apr_html(&repo_config, "index", None, base_url, repo_url),
+                    generate_apr_html(&repo_config, "index", None, repo_url),
                 );
 
                 html_files.insert(
                     packages_html_path_buf,
-                    generate_apr_html(&repo_config, "packages", None, base_url, repo_url),
+                    generate_apr_html(&repo_config, "packages", None, repo_url),
                 );
 
                 html_files.insert(
                     about_html_path_buf,
-                    generate_apr_html(&repo_config, "about", None, base_url, repo_url),
+                    generate_apr_html(&repo_config, "about", None, repo_url),
                 );
 
                 if !available_packages.is_empty() {
@@ -90,13 +84,7 @@ pub fn command(
 
                                 html_files.insert(
                                     target_html_path_buf,
-                                    generate_apr_html(
-                                        &repo_config,
-                                        target,
-                                        None,
-                                        base_url,
-                                        repo_url,
-                                    ),
+                                    generate_apr_html(&repo_config, target, None, repo_url),
                                 );
                             }
                         }
@@ -109,13 +97,7 @@ pub fn command(
 
                         html_files.insert(
                             package_html_path_buf,
-                            generate_apr_html(
-                                &repo_config,
-                                "package",
-                                Some(package),
-                                base_url,
-                                repo_url,
-                            ),
+                            generate_apr_html(&repo_config, "package", Some(package), repo_url),
                         );
                     }
                 }
@@ -180,17 +162,8 @@ pub fn generate_apr_html(
     repo_config: &Value,
     template: &str,
     current_package: Option<&Value>,
-    base_url: &str,
     repo_url: &str,
 ) -> String {
-    let base_url = if base_url == "/" {
-        ""
-    } else if base_url.ends_with('/') {
-        base_url.get(..1).unwrap()
-    } else {
-        base_url
-    };
-
     let repo_name = repo_config["repo"]["name"].as_str().unwrap();
     let repo_description = repo_config["repo"]["description"].as_str().unwrap();
     let repo_maintainer = repo_config["repo"]["maintainer"].as_str().unwrap();
@@ -199,18 +172,24 @@ pub fn generate_apr_html(
     let mut response = "<!DOCTYPE html><html lang=\"en\">".to_string();
 
     let mut head = format!("<head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><meta property=\"og:site_name\" content=\"{}\" /><meta property=\"og:type\" content=\"website\" /><meta property=\"twitter:card\" content=\"summary\" /><meta name=\"description\" content=\"{}\"><style>table, th, td {{ border: 1px solid black; border-collapse: collapse; padding: 5px; }} .installation_guide {{ background-color: #f0f0f0; }}</style>", repo_name, repo_description);
-
-    let mut header = format!(
-        "<body><h3><code>{}/</code> - aati package repository</h3><a href=\"{}/index.html\">home</a> - <a href=\"{}/packages.html\">packages</a> - <a href=\"{}/about.html\">about</a><hr />",
-        repo_name, base_url, base_url, base_url
-    );
+    let mut header: String;
 
     if template == "index" {
-        head.push_str(&format!("<meta property=\"og:title\" content=\"index\" /><meta property=\"og:url\" content=\"{}\" /><meta property=\"og:description\" content=\"{}\" />", base_url, repo_description));
+        header = format!(
+            "<body><h3><code>{}/</code> - aati package repository</h3><a href=\"index.html\">home</a> - <a href=\"packages.html\">packages</a> - <a href=\"about.html\">about</a><hr />",
+            repo_name
+        );
+
+        head.push_str(&format!("<meta property=\"og:title\" content=\"index\" /><meta property=\"og:description\" content=\"{}\" />", repo_description));
         head.push_str(&format!("<title>{}</title></head>", repo_name));
         header.push_str(&format!("<p>{}</p>", repo_description));
         header.push_str(&format!("<p>Add this Package Repository in Aati by running:</p><code>&nbsp;&nbsp;&nbsp;&nbsp;$ aati repo add {}</code>", repo_url));
     } else if template == "packages" {
+        header = format!(
+            "<body><h3><code>{}/</code> - aati package repository</h3><a href=\"index.html\">home</a> - <a href=\"packages.html\">packages</a> - <a href=\"about.html\">about</a><hr />",
+            repo_name
+        );
+
         header.push_str(&format!(
             "<p>Number of packages: <b>{}</b></p>",
             available_packages.len()
@@ -225,8 +204,8 @@ pub fn generate_apr_html(
                 .any(|package| package["target"].as_str().unwrap() == target)
             {
                 header.push_str(&format!(
-                    "<li><code style=\"font-size: 0.9rem;\"><a href=\"{}/{}\">{}</a></code><ul>",
-                    base_url, target, target
+                    "<li><code style=\"font-size: 0.9rem;\"><a href=\"{}\">{}</a></code><ul>",
+                    target, target
                 ));
                 for package in available_packages {
                     let package_name = package["name"].as_str().unwrap();
@@ -237,8 +216,7 @@ pub fn generate_apr_html(
                     let package_target = package["target"].as_str().unwrap();
                     if target == package_target {
                         header.push_str(&format!(
-                            "<li><a href=\"{}/{}/{}/{}.html\"><b>{}</b>-{}</a></li>",
-                            base_url,
+                            "<li><a href=\"{}/{}/{}.html\"><b>{}</b>-{}</a></li>",
                             package_target,
                             package_name,
                             package_name,
@@ -252,9 +230,14 @@ pub fn generate_apr_html(
         }
         header.push_str("</ul>");
 
-        head.push_str(&format!("<meta property=\"og:title\" content=\"packages\" /><meta property=\"og:url\" content=\"{}/packages.html\" /><meta property=\"og:description\" content=\"{} packages available to install\" />", base_url, available_packages.len()));
+        head.push_str(&format!("<meta property=\"og:title\" content=\"packages\" /><meta property=\"og:description\" content=\"{} packages available to install\" />", available_packages.len()));
         head.push_str(&format!("<title>packages - {}</title></head>", repo_name));
     } else if template == "about" {
+        header = format!(
+            "<body><h3><code>{}/</code> - aati package repository</h3><a href=\"index.html\">home</a> - <a href=\"packages.html\">packages</a> - <a href=\"about.html\">about</a><hr />",
+            repo_name
+        );
+
         header.push_str(&format!(
             "<p>{}</p><p>Number of packages: <b>{}</b></p><p>Maintained by: <b>{}</b></p><hr /><p>Generated using <a href=\"{}\">aati {}</a> as a hosted Aati Package Repository.</p>",
             repo_description,
@@ -264,9 +247,14 @@ pub fn generate_apr_html(
             get_version()
         ));
 
-        head.push_str(&format!("<meta property=\"og:title\" content=\"about\" /><meta property=\"og:url\" content=\"{}/about.html\" /><meta property=\"og:description\" content=\"about {}\" />", base_url, repo_name));
+        head.push_str(&format!("<meta property=\"og:title\" content=\"about\" /><meta property=\"og:description\" content=\"about {}\" />", repo_name));
         head.push_str(&format!("<title>about - {}</title></head>", repo_name));
     } else if template == "package" {
+        header = format!(
+            "<body><h3><code>{}/</code> - aati package repository</h3><a href=\"../../index.html\">home</a> - <a href=\"../../packages.html\">packages</a> - <a href=\"../../about.html\">about</a><hr />",
+            repo_name
+        );
+
         if let Some(package) = current_package {
             let package_name = package["name"].as_str().unwrap();
             let package_target = package["target"].as_str().unwrap();
@@ -353,13 +341,18 @@ pub fn generate_apr_html(
             }
             header.push_str("</table>");
 
-            head.push_str(&format!("<meta property=\"og:title\" content=\"{}/{}\" /><meta property=\"og:url\" content=\"{}/{}/{}.html\" /><meta property=\"og:description\" content=\"{}\" />", repo_name, package_name, base_url, package_target, package_name, package_description));
+            head.push_str(&format!("<meta property=\"og:title\" content=\"{}/{}\" /><meta property=\"og:description\" content=\"{}\" />", repo_name, package_name, package_description));
             head.push_str(&format!(
                 "<title>{}/{}</title></head>",
                 repo_name, package_name
             ));
         }
     } else {
+        header = format!(
+            "<body><h3><code>{}/</code> - aati package repository</h3><a href=\"../index.html\">home</a> - <a href=\"../packages.html\">packages</a> - <a href=\"../about.html\">about</a><hr />",
+            repo_name
+        );
+
         let target = template;
 
         // Borrow Checker headache, had to do all this
@@ -387,20 +380,15 @@ pub fn generate_apr_html(
                 let package_target = package["target"].as_str().unwrap();
                 if target == package_target {
                     header.push_str(&format!(
-                        "<li><a href=\"{}/{}/{}/{}.html\"><b>{}</b>-{}</a></li>",
-                        base_url,
-                        package_target,
-                        package_name,
-                        package_name,
-                        package_name,
-                        package_version,
+                        "<li><a href=\"{}/{}/{}.html\"><b>{}</b>-{}</a></li>",
+                        package_target, package_name, package_name, package_name, package_version,
                     ));
                 }
             }
             header.push_str("</ul>");
         }
 
-        head.push_str(&format!("<meta property=\"og:title\" content=\"{} packages\" /><meta property=\"og:url\" content=\"{}/{}\" /><meta property=\"og:description\" content=\"{} {} packages available to install\" />", target, base_url, target, retained_available_packages.len(), target));
+        head.push_str(&format!("<meta property=\"og:title\" content=\"{} packages\" /><meta property=\"og:description\" content=\"{} {} packages available to install\" />", target, retained_available_packages.len(), target));
         head.push_str(&format!(
             "<title>{} packages - {}</title></head>",
             target, repo_name

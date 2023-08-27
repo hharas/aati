@@ -345,13 +345,6 @@ as published by the Free Software Foundation.",
                 .short_flag('N')
                 .about("Generate HTML files for a repository")
                 .args([
-                    Arg::new("url")
-                        .long("url")
-                        .short('u')
-                        .default_value("/")
-                        .action(ArgAction::Set)
-                        .help("Base url")
-                        .value_hint(ValueHint::Url),
                     Arg::new("repo")
                         .long("repository")
                         .short('r')
@@ -398,13 +391,6 @@ as published by the Free Software Foundation.",
                         .default_value("8887")
                         .action(ArgAction::Set)
                         .help("Server port"),
-                    Arg::new("url")
-                        .long("url")
-                        .short('u')
-                        .default_value("/")
-                        .action(ArgAction::Set)
-                        .help("Base url")
-                        .value_hint(ValueHint::Url),
                     Arg::new("repo")
                         .long("repository")
                         .short('r')
@@ -586,13 +572,11 @@ as published by the Free Software Foundation.",
         Some(("generate", generate_matches)) => {
             let quiet = generate_matches.get_flag("quiet");
 
-            let website_url = generate_matches.get_one::<String>("url").unwrap();
             let repo_url = generate_matches.get_one::<String>("repo").unwrap();
             let manifest_path = generate_matches.get_one::<String>("manifest").unwrap();
             let output_directory = generate_matches.get_one::<String>("directory").unwrap();
 
             generate::command(
-                website_url,
                 repo_url,
                 manifest_path.into(),
                 output_directory.into(),
@@ -602,11 +586,10 @@ as published by the Free Software Foundation.",
         Some(("serve", serve_matches)) => {
             let host = serve_matches.get_one::<String>("host").unwrap();
             let port = serve_matches.get_one::<String>("port").unwrap();
-            let base_url = serve_matches.get_one::<String>("url").unwrap();
             let repo_url = serve_matches.get_one::<String>("repo").unwrap();
             let manifest_path = serve_matches.get_one::<String>("manifest").unwrap();
 
-            serve::command(host, port, base_url, repo_url, manifest_path.into());
+            serve::command(host, port, repo_url, manifest_path.into());
         }
         Some(("completions", completions_matches)) => {
             let shell = completions_matches.get_one::<String>("shell").unwrap();

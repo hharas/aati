@@ -25,7 +25,7 @@ use tiny_http::{Header, Response, Server};
 
 use crate::{commands::generate::generate_apr_html, config::POSSIBLE_TARGETS};
 
-pub fn command(host: &str, port: &str, base_url: &str, repo_url: &str, manifest_path: PathBuf) {
+pub fn command(host: &str, port: &str, repo_url: &str, manifest_path: PathBuf) {
     let address = format!("{host}:{port}");
 
     match Server::http(address) {
@@ -51,26 +51,17 @@ pub fn command(host: &str, port: &str, base_url: &str, repo_url: &str, manifest_
                             format!("+   {} {}", request.method(), request.url()).bright_green()
                         );
 
-                        let mut html =
-                            generate_apr_html(&repo_config, "index", None, base_url, repo_url);
+                        let mut html = generate_apr_html(&repo_config, "index", None, repo_url);
                         let mut url = request.url().to_string();
 
                         url.remove(0);
 
                         if url.is_empty() || url == "index.html" {
-                            html =
-                                generate_apr_html(&repo_config, "index", None, base_url, repo_url);
+                            html = generate_apr_html(&repo_config, "index", None, repo_url);
                         } else if url == "about.html" {
-                            html =
-                                generate_apr_html(&repo_config, "about", None, base_url, repo_url);
+                            html = generate_apr_html(&repo_config, "about", None, repo_url);
                         } else if url == "packages.html" {
-                            html = generate_apr_html(
-                                &repo_config,
-                                "packages",
-                                None,
-                                base_url,
-                                repo_url,
-                            );
+                            html = generate_apr_html(&repo_config, "packages", None, repo_url);
                         } else {
                             let mut html_assigned = false;
 
@@ -80,13 +71,7 @@ pub fn command(host: &str, port: &str, base_url: &str, repo_url: &str, manifest_
                                     || url == *target.to_string()
                                 {
                                     html_assigned = true;
-                                    html = generate_apr_html(
-                                        &repo_config,
-                                        target,
-                                        None,
-                                        base_url,
-                                        repo_url,
-                                    );
+                                    html = generate_apr_html(&repo_config, target, None, repo_url);
                                 }
                             }
 
@@ -107,7 +92,6 @@ pub fn command(host: &str, port: &str, base_url: &str, repo_url: &str, manifest_
                                                 &repo_config,
                                                 "package",
                                                 Some(package),
-                                                base_url,
                                                 repo_url,
                                             );
                                         }
