@@ -14,8 +14,8 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 ascii = "1.1.0"
-clap = { version = "4.4.1", features = ["string"] }
-clap_complete = "4.4.0"
+clap = { version = "4.4.3", features = ["string"] }
+clap_complete = "4.4.1"
 colored = "2.0.4"
 dirs = "5.0.1"
 hex = "0.4.3"
@@ -26,7 +26,7 @@ rustc_version = "0.4.0"
 serde = { version = "1.0.188", features = ["derive"] }
 tar = "0.4.40"
 tiny_http = "0.12.0"
-toml = "0.7.6"
+toml = "0.7.8"
 ureq = "2.7.1"
 
 [badges]
