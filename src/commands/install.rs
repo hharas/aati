@@ -71,10 +71,10 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
                 )
             {
                 let mut tar_path_buf = temp_dir();
-                tar_path_buf.push(&format!("{}-{}.tar", name, version));
+                tar_path_buf.push(format!("{}-{}.tar", name, version));
 
                 let mut package_directory = temp_dir();
-                package_directory.push(&format!("{}-{}", name, version));
+                package_directory.push(format!("{}-{}", name, version));
 
                 let mut tarball = match File::create(&tar_path_buf) {
                     Ok(file) => file,

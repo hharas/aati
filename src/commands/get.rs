@@ -170,6 +170,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
 
                                 let mut downloaded_file = match OpenOptions::new()
                                     .create(true)
+                                    .truncate(true)
                                     .read(true)
                                     .write(true)
                                     .open(&download_path)
@@ -276,13 +277,13 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     }
 
                                     let mut tar_path_buf = temp_dir();
-                                    tar_path_buf.push(&format!(
+                                    tar_path_buf.push(format!(
                                         "{}-{}.tar",
                                         extracted_package[1], extracted_package[2]
                                     ));
 
                                     let mut package_directory = temp_dir();
-                                    package_directory.push(&format!(
+                                    package_directory.push(format!(
                                         "{}-{}",
                                         extracted_package[1], extracted_package[2]
                                     ));
