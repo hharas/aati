@@ -133,8 +133,9 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
             match ureq::head(&url).call() {
                 Ok(head_response) => {
                     let content_length = head_response
-                        .header("Content-Length")
-                        .and_then(|len| len.parse::<u64>().ok())
+                        .headers()
+                        .get("Content-Length")
+                        .map(|value| value.len())
                         .unwrap_or(0);
 
                     let human_readable_size = format_size(content_length, BINARY);
@@ -162,8 +163,8 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                         // 4. Download the LZ4 compressed package
 
                         match ureq::get(url.as_str()).call() {
-                            Ok(response) => {
-                                let mut reader = response.into_reader();
+                            Ok(mut response) => {
+                                let mut reader = response.body_mut().as_reader();
 
                                 let download_path = std::env::temp_dir()
                                     .join(format!("{}-{}.tar.lz4", name, version));

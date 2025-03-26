@@ -64,8 +64,8 @@ pub fn add(repository_url: String, quiet: bool) {
             );
         }
         match ureq::get(requested_url.as_str()).call() {
-            Ok(repo_toml) => {
-                let repo_toml = repo_toml.into_string().unwrap();
+            Ok(mut repo_toml) => {
+                let repo_toml = repo_toml.body_mut().read_to_string().unwrap();
 
                 let repo_value: Value = repo_toml.parse().unwrap();
 
