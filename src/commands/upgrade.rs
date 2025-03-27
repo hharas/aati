@@ -78,18 +78,18 @@ pub fn command(choice: Option<&str>, force: bool, quiet: bool) {
                         get::command(package_name, true, quiet);
                     } else {
                         if !quiet {
-                            println!("{}", "+ That Package is already up to date!".bright_blue());
+                            eprintln!("{}", "+ That Package is already up to date!".bright_blue());
                         }
                         exit(1);
                     }
                 } else {
-                    println!("{}", "- Package not installed!".bright_red());
+                    eprintln!("{}", "- Package not installed!".bright_red());
                     exit(1);
                 }
             }
 
             None => {
-                println!("{}", "- PACKAGE NOT FOUND!".bright_red());
+                eprintln!("{}", "- PACKAGE NOT FOUND!".bright_red());
                 exit(1);
             }
         }

@@ -34,7 +34,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
     let lock_file_str = match read_to_string(&aati_lock_path_buf) {
         Ok(contents) => contents,
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FAILED TO READ LOCKFILE AT '{}'! ERROR[45]: {}",
@@ -60,7 +60,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
     {
         Some(found_package) => found_package,
         None => {
-            println!(
+            eprintln!(
                 "{}",
                 format!("- Package '{}' not found in the Lockfile!", package_name).bright_red()
             );
@@ -104,7 +104,7 @@ pub fn remove_from_lockfile(package_name: &str) {
     let lock_file_str = match read_to_string(&aati_lock_path_buf) {
         Ok(contents) => contents,
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FAILED TO READ LOCKFILE AT '{}'! ERROR[57]: {}",
@@ -128,7 +128,7 @@ pub fn remove_from_lockfile(package_name: &str) {
     {
         Ok(file) => file,
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FAILED TO OPEN LOCKFILE AT '{}' FOR WRITING! ERROR[46]: {}",
@@ -146,7 +146,7 @@ pub fn remove_from_lockfile(package_name: &str) {
     match file.write_all(toml_str.as_bytes()) {
         Ok(_) => {}
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FAILED TO WRITE INTO LOCKFILE AT'{}'! ERROR[47]: {}",

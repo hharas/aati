@@ -106,7 +106,7 @@ pub fn command(repo_url: &str, manifest_path_buf: PathBuf, parent_directory: Pat
                     let mut file = match File::create(&filepath) {
                         Ok(file) => file,
                         Err(error) => {
-                            println!(
+                            eprintln!(
                                 "{}",
                                 format!(
                                     "- FAILED TO CREATE FILE '{}'! ERROR[14]: {}",
@@ -122,7 +122,7 @@ pub fn command(repo_url: &str, manifest_path_buf: PathBuf, parent_directory: Pat
                     match file.write_all(filehtml.as_bytes()) {
                         Ok(_) => {}
                         Err(error) => {
-                            println!(
+                            eprintln!(
                                 "{}",
                                 format!(
                                     "- FAILED TO WRITE INTO FILE '{}'! ERROR[87]: {}",
@@ -146,13 +146,13 @@ pub fn command(repo_url: &str, manifest_path_buf: PathBuf, parent_directory: Pat
             }
 
             Err(error) => {
-                println!("{}", format!("ERROR[12]: {}", error).bright_red());
+                eprintln!("{}", format!("ERROR[12]: {}", error).bright_red());
                 exit(1);
             }
         },
 
         Err(error) => {
-            println!("{}", format!("ERROR[13]: {}", error).bright_red());
+            eprintln!("{}", format!("ERROR[13]: {}", error).bright_red());
             exit(1);
         }
     }

@@ -207,13 +207,13 @@ pub fn command(text: &str, repo_name: Option<&str>) {
                                 installed_package_version,
                             );
                         } else {
-                            println!("{}", "- INVALID CHOICE!".bright_red());
+                            eprintln!("{}", "- INVALID CHOICE!".bright_red());
                             exit(1);
                         }
                     }
 
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!("- FAILED TO PARSE INPUT! ERROR[9]: {}", error).bright_red()
                         );
@@ -222,7 +222,7 @@ pub fn command(text: &str, repo_name: Option<&str>) {
                 }
             }
         } else {
-            println!("{}", "- Package not found!".bright_red());
+            eprintln!("{}", "- Package not found!".bright_red());
             exit(1);
         }
     } else {

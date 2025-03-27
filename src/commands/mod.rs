@@ -65,7 +65,7 @@ pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool, qui
                     remove::remove_from_lockfile(&package_name);
                     did_removal = true;
                 } else if !quiet {
-                    println!(
+                    eprintln!(
                         "{}",
                         format!(
                             "+ Package '{}' ignored due to not being installed",
@@ -108,7 +108,7 @@ pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool, qui
                         println!("{}", "+ Transaction aborted".bright_green());
                     }
                 } else {
-                    println!(
+                    eprintln!(
                         "{}",
                         format!("- Package '{}' is not installed!", package_name).bright_red()
                     );
@@ -165,7 +165,7 @@ pub fn remove(packages_option: Option<Vec<String>>, lock: bool, force: bool, qui
                 println!("{}", "+ Transaction aborted".bright_green());
             }
         } else if !quiet {
-            println!("{}", "+ No packages to remove".bright_green());
+            eprintln!("{}", "+ No packages to remove".bright_green());
         }
     }
 }
@@ -178,7 +178,7 @@ pub fn changelog(package_name_option: Option<&str>, latest_only: bool) {
             }
 
             None => {
-                println!(
+                eprintln!(
                     "{}",
                     "- Package not found in the added repositories!".bright_red()
                 );

@@ -111,7 +111,7 @@ pub fn command(host: &str, port: &str, repo_url: &str, manifest_path: PathBuf) {
                             Ok(_) => {}
 
                             Err(error) => {
-                                println!("{}", format!("ERROR[18]: {}", error).bright_red());
+                                eprintln!("{}", format!("ERROR[18]: {}", error).bright_red());
                                 exit(1);
                             }
                         }
@@ -119,19 +119,19 @@ pub fn command(host: &str, port: &str, repo_url: &str, manifest_path: PathBuf) {
                 }
 
                 Err(error) => {
-                    println!("{}", format!("ERROR[17]: {}", error).bright_red());
+                    eprintln!("{}", format!("ERROR[17]: {}", error).bright_red());
                     exit(1);
                 }
             },
 
             Err(error) => {
-                println!("{}", format!("ERROR[16]: {}", error).bright_red());
+                eprintln!("{}", format!("ERROR[16]: {}", error).bright_red());
                 exit(1);
             }
         },
 
         Err(error) => {
-            println!("{}", format!("ERROR[15]: {}", error).bright_red());
+            eprintln!("{}", format!("ERROR[15]: {}", error).bright_red());
             exit(1);
         }
     }

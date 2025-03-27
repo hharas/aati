@@ -79,7 +79,7 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
                 let mut tarball = match File::create(&tar_path_buf) {
                     Ok(file) => file,
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!(
                                 "- FAILED TO CREATE FILE '{}'! ERROR[94]: {}",
@@ -96,7 +96,7 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
                 let mut decoder = match Decoder::new(input_file) {
                     Ok(decoder) => decoder,
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!(
                                 "- FAILED TO DECODE THE LZ4 COMPRESSED PACKAGE AT '{}'! ERROR[95]: {}",
@@ -113,7 +113,7 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
                 match copy(&mut decoder, &mut tarball) {
                     Ok(_) => {}
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!(
                                 "- FAILED TO WRITE INTO FILE '{}'! ERROR[97]: {}",
@@ -134,7 +134,7 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
                 match archive.unpack(temp_dir()) {
                     Ok(_) => {}
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!(
                                 "- FAILED TO EXTRACT TARBALL '{}'! ERROR[81]: {}",
@@ -151,7 +151,7 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
                 match remove_file(tar_path_buf) {
                     Ok(_) => {}
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!(
                                 "- COULD NOT DELETE TEMPORARY PACKAGE TARBALL! ERROR[84]: {}",
@@ -170,7 +170,7 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
                 let pkgfile = match read_to_string(&pkgfile_path_buf) {
                     Ok(contents) => contents,
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!(
                                 "- FAILED TO READ FILE '{}'! ERROR[82]: {}",
@@ -212,7 +212,7 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
                     match remove_dir_all(package_directory) {
                         Ok(_) => {}
                         Err(error) => {
-                            println!(
+                            eprintln!(
                                 "{}",
                                 format!(
                                     "- COULD NOT DELETE TEMPORARY PACKAGE DIRECTORY! ERROR[85]: {}",
@@ -234,7 +234,7 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
                     let lock_file_str = match read_to_string(&aati_lock_path_buf) {
                         Ok(contents) => contents,
                         Err(error) => {
-                            println!(
+                            eprintln!(
                                 "{}",
                                 format!(
                                     "- FAILED TO READ LOCKFILE AT '{}'! ERROR[98]: {}",
@@ -266,7 +266,7 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
                     {
                         Ok(file) => file,
                         Err(error) => {
-                            println!(
+                            eprintln!(
                                 "{}",
                                 format!(
                                     "- FAILED TO OPEN LOCKFILE AT '{}' FOR WRITING! ERROR[80]: {}",
@@ -284,7 +284,7 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
                     match file.write_all(toml_str.as_bytes()) {
                         Ok(_) => {}
                         Err(error) => {
-                            println!(
+                            eprintln!(
                                 "{}",
                                 format!(
                                     "- FAILED TO WRITE INTO LOCKFILE AT '{}'! ERROR[2]: {}",
@@ -316,7 +316,7 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
                             }
                         }
                         Err(error) => {
-                            println!(
+                            eprintln!(
                                 "{}",
                                 format!(
                                     "- FAILED TO DELETE DIRECTORY '{}'! ERROR[86]: {}",
@@ -336,7 +336,7 @@ pub fn command(filename: &str, force: bool, quiet: bool) {
         }
 
         Err(error) => {
-            println!("{}", format!("- ERROR[11]: {}", error).bright_red());
+            eprintln!("{}", format!("- ERROR[11]: {}", error).bright_red());
             exit(1);
         }
     }
@@ -426,7 +426,7 @@ pub fn use_pkgfile(
                 let lock_file_str = match read_to_string(&aati_lock_path_buf) {
                     Ok(contents) => contents,
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!(
                                 "- FAILED TO READ LOCKFILE AT '{}'! ERROR[98]: {}",
@@ -500,7 +500,7 @@ pub fn parse_filename(mut filename: &str) -> Package {
         let package = if let Some((package, _)) = filename.rsplit_once(".tar.lz4") {
             package
         } else {
-            println!(
+            eprintln!(
                 "{}",
                 format!("- FILE '{}' HAS AN INVALID FILENAME!", filename).bright_red()
             );
@@ -513,7 +513,7 @@ pub fn parse_filename(mut filename: &str) -> Package {
         let (name, version) = if let Some((name, version)) = package.rsplit_once('-') {
             (name, version)
         } else {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FILE '{}' DOESN'T CONTAIN A HYPHEN AS A SEPARATOR!",
@@ -541,7 +541,7 @@ pub fn parse_filename(mut filename: &str) -> Package {
             },
         } //         ^^^^^ That's the name of the repo containing locally installed packages.
     } else {
-        println!(
+        eprintln!(
             "{}\n{}",
             "- Unidentified file extension!".bright_red(),
             "+ Note: Only .tar.lz4 files are installable.".bright_blue()

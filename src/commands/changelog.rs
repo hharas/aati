@@ -38,7 +38,7 @@ pub fn display(changelog: &Vec<Value>, latest_only: bool) {
         let mut temp_changelog = match File::create(&temp_changelog_path) {
             Ok(temp_changelog) => temp_changelog,
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO CREATE FILE '{}'! ERROR[59]: {}",
@@ -54,7 +54,7 @@ pub fn display(changelog: &Vec<Value>, latest_only: bool) {
         match temp_changelog.write_all(parsed_changelog.as_bytes()) {
             Ok(_) => {}
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO WRITE INTO FILE '{}'! ERROR[103]: {}",
@@ -66,7 +66,7 @@ pub fn display(changelog: &Vec<Value>, latest_only: bool) {
                 match remove_file(&temp_changelog_path) {
                     Ok(_) => {}
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!(
                                 "- FAILED TO DELETE FILE '{}'! ERROR[103]: {}",
@@ -100,7 +100,7 @@ pub fn display(changelog: &Vec<Value>, latest_only: bool) {
         match remove_file(&temp_changelog_path) {
             Ok(_) => {}
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO DELETE FILE '{}'! ERROR[102]: {}",

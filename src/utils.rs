@@ -60,7 +60,7 @@ pub fn check_aati_dirs() {
             Ok(_) => {}
 
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO CREATE DIRECTORY '{}'! ERROR[20]: {}",
@@ -79,7 +79,7 @@ pub fn check_aati_dirs() {
             Ok(_) => {}
 
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO CREATE DIRECTORY '{}'! ERROR[21]: {}",
@@ -98,7 +98,7 @@ pub fn check_aati_dirs() {
             Ok(_) => {}
 
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO CREATE DIRECTORY '{}'! ERROR[22]: {}",
@@ -117,7 +117,7 @@ pub fn check_aati_dirs() {
             Ok(_) => {}
 
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO CREATE DIRECTORY '{}'! ERROR[23]: {}",
@@ -182,7 +182,7 @@ pub fn get_aati_lock() -> String {
         let mut aati_lock_file = match File::create(&aati_lock_path_buf) {
             Ok(file) => file,
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO CREATE FILE '{}'! ERROR[22]: {}",
@@ -200,7 +200,7 @@ pub fn get_aati_lock() -> String {
         match writeln!(aati_lock_file, "{}", default_config) {
             Ok(_) => {}
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO WRITE INTO FILE '{}'! ERROR[24]: {}",
@@ -215,7 +215,7 @@ pub fn get_aati_lock() -> String {
         }
 
         if !cfg!(windows) {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "+ Make sure to add '{}' to PATH and '{}' to LD_LIBRARY_PATH.
@@ -228,7 +228,7 @@ pub fn get_aati_lock() -> String {
                 .yellow()
             );
         } else {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "+ Make sure to add '{}' and '{}' to %PATH%.",
@@ -243,7 +243,7 @@ pub fn get_aati_lock() -> String {
     let aati_lock = match read_to_string(&aati_lock_path_buf) {
         Ok(content) => content,
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FAILED TO READ FILE '{}'! ERROR[23]: {}",
@@ -264,7 +264,7 @@ pub fn get_repo_config(repo_name: &str) -> String {
     let repo_config_path_buf = get_repo_config_path_buf(repo_name);
 
     if !repo_config_path_buf.exists() {
-        println!(
+        eprintln!(
             "{}",
             format!(
                 "- Could not find repository manifest at '{}'! Try: $ aati repo add <repo url>",
@@ -278,7 +278,7 @@ pub fn get_repo_config(repo_name: &str) -> String {
     let repo_config = match read_to_string(&repo_config_path_buf) {
         Ok(content) => content,
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FAILED TO READ FILE '{}'! ERROR[25]: {}",
@@ -302,7 +302,7 @@ pub fn get_aati_config() -> Option<String> {
         let mut aati_config_file = match File::create(&aati_config_path_buf) {
             Ok(file) => file,
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO CREATE FILE '{}'! ERROR[26]: {}",
@@ -323,7 +323,7 @@ pub fn get_aati_config() -> Option<String> {
         match writeln!(aati_config_file, "{}", default_config) {
             Ok(_) => {}
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO WRITE INTO FILE '{}'! ERROR[27]: {}",
@@ -343,7 +343,7 @@ pub fn get_aati_config() -> Option<String> {
     let aati_config = match read_to_string(&aati_config_path_buf) {
         Ok(content) => content,
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FAILED TO READ FILE '{}'! ERROR[28]: {}",
@@ -369,7 +369,7 @@ pub fn prompt(prompt_text: &str) -> String {
         Ok(_) => {}
 
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!("- DIDN'T RECEIVE VALID INPUT! ERROR[3]: {}", error).bright_red()
             );
@@ -389,7 +389,7 @@ pub fn prompt_yn(prompt_text: &str) -> bool {
         Ok(_) => {}
 
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!("- DIDN'T RECEIVE VALID INPUT! ERROR[4]: {}", error).bright_red()
             );
@@ -641,7 +641,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                 }
             }
         } else {
-            println!(
+            eprintln!(
                 "{}",
                 "- YOU HAVE NO REPOSITORIES SET! TRY: aati repo add <repo url>".bright_red()
             );
@@ -752,12 +752,12 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                                 result_package[4].clone(),
                             ])
                         } else {
-                            println!("{}", "- INVALID CHOICE!".bright_red());
+                            eprintln!("{}", "- INVALID CHOICE!".bright_red());
                             exit(1);
                         }
                     }
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!("- FAILED TO PARSE INPUT! ERROR[10]: {}", error).bright_red()
                         );
@@ -773,7 +773,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
                         result_package.target.clone(),
                     ]),
                     None => {
-                        println!("{}", "- PACKAGE REPOSITORY NOT FOUND!".bright_red());
+                        eprintln!("{}", "- PACKAGE REPOSITORY NOT FOUND!".bright_red());
                         exit(1);
                     }
                 }
@@ -782,7 +782,7 @@ pub fn extract_package(text: &str, added_repos: &Vec<Value>) -> Option<Vec<Strin
             None
         }
     } else {
-        println!("{}", "- UNEXPECTED BEHAVIOUR!".bright_red());
+        eprintln!("{}", "- UNEXPECTED BEHAVIOUR!".bright_red());
         exit(1);
     }
 }
@@ -922,7 +922,7 @@ pub fn make_executable(_installation_path_buf: &PathBuf) {
         let metadata = match metadata(_installation_path_buf) {
             Ok(metadata) => metadata,
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO GET METADATA OF FILE '{}'! ERROR[42]: {}",
@@ -941,7 +941,7 @@ pub fn make_executable(_installation_path_buf: &PathBuf) {
         match set_permissions(_installation_path_buf, permissions) {
             Ok(_) => {}
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO SET PERMISSIONS OF FILE '{}'! ERROR[43]: {}",
@@ -1038,7 +1038,7 @@ pub fn execute_lines(
                     match copy(source_path_buf, &destination_path_buf) {
                         Ok(_) => {}
                         Err(error) => {
-                            println!(
+                            eprintln!(
                                 "{}",
                                 format!(
                                     "- FAILED TO WRITE INTO FILE '{}'! ERROR[91]: {}",
@@ -1067,7 +1067,7 @@ pub fn execute_lines(
                     match copy(source_path_buf, &destination_path_buf) {
                         Ok(_) => {}
                         Err(error) => {
-                            println!(
+                            eprintln!(
                                 "{}",
                                 format!(
                                     "- FAILED TO WRITE INTO FILE '{}'! ERROR[100]: {}",
@@ -1089,7 +1089,7 @@ pub fn execute_lines(
                 match remove_file(path) {
                     Ok(_) => {}
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!("- FAILED TO DELETE FILE {}! ERROR[92]: {}", path, error)
                                 .as_str()
@@ -1128,7 +1128,7 @@ pub fn execute_lines(
                 match command.output() {
                     Ok(output) => output,
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!(
                                 "- FAILED RUNNING COMMAND: '{}'! GIVEN ERROR: {}",
@@ -1142,7 +1142,7 @@ pub fn execute_lines(
             }
 
             _ => {
-                println!(
+                eprintln!(
                     "{}",
                     format!("- INVALID PKGFILE COMMAND '{}'!", line).bright_red()
                 );

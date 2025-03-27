@@ -97,7 +97,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
         // 2. Make sure this Package is found in the Repository
 
         if !is_found {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- Package '{}' is not found on the Repository! Try: $ aati sync",
@@ -178,7 +178,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                 {
                                     Ok(file) => file,
                                     Err(error) => {
-                                        println!(
+                                        eprintln!(
                                             "{}",
                                             format!(
                                                 "- FAILED TO CREATE FILE '{}'! ERROR[29]: {}",
@@ -197,7 +197,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                 match copy(&mut reader, &mut downloaded_file) {
                                     Ok(_) => {}
                                     Err(error) => {
-                                        println!(
+                                        eprintln!(
                                             "{}",
                                             format!(
                                                 "- FAILED TO WRITE INTO DOWNLOADED FILE '{}'! ERROR[30]: {}",
@@ -221,7 +221,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                 let mut checksum_reader = match File::open(&download_path) {
                                     Ok(file) => file,
                                     Err(error) => {
-                                        println!(
+                                        eprintln!(
                                             "{}",
                                             format!(
                                                 "- FAILED TO OPEN DOWNLOADED FILE '{}' FOR READING! ERROR[31]: {}",
@@ -238,7 +238,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                 let lz4_reader = match File::open(&download_path) {
                                     Ok(file) => file,
                                     Err(error) => {
-                                        println!(
+                                        eprintln!(
                                             "{}",
                                             format!(
                                                 "- FAILED TO OPEN DOWNLOADED FILE '{}' FOR READING! ERROR[32]: {}",
@@ -256,7 +256,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                 match checksum_reader.read_to_end(&mut body) {
                                     Ok(_) => {}
                                     Err(error) => {
-                                        println!(
+                                        eprintln!(
                                             "{}",
                                             format!(
                                                 "- FAILED TO READ DOWNLOADED FILE '{}'! ERROR[33]: {}",
@@ -292,7 +292,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     let mut tarball = match File::create(&tar_path_buf) {
                                         Ok(file) => file,
                                         Err(error) => {
-                                            println!(
+                                            eprintln!(
                                                 "{}",
                                                 format!(
                                                     "- FAILED TO CREATE FILE '{}'! ERROR[35]: {}",
@@ -311,7 +311,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     let mut decoder = match Decoder::new(lz4_reader) {
                                         Ok(decoder) => decoder,
                                         Err(error) => {
-                                            println!(
+                                            eprintln!(
                                                 "{}",
                                                 format!(
                                             "- FAILED TO DECODE THE LZ4 COMPRESSED PACKAGE AT '{}'! ERROR[36]: {}",
@@ -328,7 +328,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     match remove_file(&download_path) {
                                         Ok(_) => {}
                                         Err(error) => {
-                                            println!(
+                                            eprintln!(
                                                 "{}",
                                                 format!(
                                             "- FAILED TO DELETE DOWNLODED FILE '{}'! ERROR[37]: {}",
@@ -345,7 +345,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     match copy(&mut decoder, &mut tarball) {
                                         Ok(_) => {}
                                         Err(error) => {
-                                            println!(
+                                            eprintln!(
                                                 "{}",
                                                 format!(
                                             "- FAILED TO WRITE INTO FILE '{}'! ERROR[38]: {}",
@@ -366,7 +366,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     match archive.unpack(temp_dir()) {
                                         Ok(_) => {}
                                         Err(error) => {
-                                            println!(
+                                            eprintln!(
                                                 "{}",
                                                 format!(
                                                     "- FAILED TO EXTRACT TARBALL '{}'! ERROR[89]: {}",
@@ -383,7 +383,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     match remove_file(tar_path_buf) {
                                         Ok(_) => {}
                                         Err(error) => {
-                                            println!(
+                                            eprintln!(
                                                 "{}",
                                                 format!(
                                                     "- COULD NOT DELETE TEMPORARY PACKAGE TARBALL! ERROR[93]: {}",
@@ -402,7 +402,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     let pkgfile = match read_to_string(&pkgfile_path_buf) {
                                         Ok(contents) => contents,
                                         Err(error) => {
-                                            println!(
+                                            eprintln!(
                                                 "{}",
                                                 format!(
                                                     "- FAILED TO READ FILE '{}'! ERROR[90]: {}",
@@ -445,7 +445,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     match remove_dir_all(package_directory) {
                                         Ok(_) => {}
                                         Err(error) => {
-                                            println!(
+                                            eprintln!(
                                                 "{}",
                                                 format!(
                                                     "- COULD NOT DELETE TEMPORARY PACKAGE DIRECTORY! ERROR[83]: {}",
@@ -472,7 +472,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     let lock_file_str = match read_to_string(&aati_lock_path_buf) {
                                         Ok(contents) => contents,
                                         Err(error) => {
-                                            println!(
+                                            eprintln!(
                                                 "{}",
                                                 format!(
                                                 "- FAILED TO READ LOCKFILE AT '{}'! ERROR[39]: {}",
@@ -505,7 +505,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     {
                                         Ok(file) => file,
                                         Err(error) => {
-                                            println!(
+                                            eprintln!(
                                                     "{}",
                                                     format!(
                                                 "- FAILED TO OPEN LOCKFILE AT '{}' FOR WRITING! ERROR[40]: {}",
@@ -523,7 +523,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     match file.write_all(toml_str.as_bytes()) {
                                         Ok(_) => {}
                                         Err(error) => {
-                                            println!(
+                                            eprintln!(
                                                 "{}",
                                                 format!(
                                             "- FAILED TO WRITE INTO LOCKFILE AT '{}'! ERROR[41]: {}",
@@ -548,7 +548,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     match remove_dir_all(&package_directory) {
                                         Ok(_) => if !quiet {println!("{}", "+ Deleted temporary package directory".bright_green())},
                                         Err(error) => {
-                                            println!(
+                                            eprintln!(
                                                 "{}",
                                                 format!(
                                                     "- FAILED TO DELETE DIRECTORY '{}'! ERROR[86]: {}",
@@ -563,7 +563,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     }
                                 }
                                 } else {
-                                    println!(
+                                    eprintln!(
                                         "{}",
                                         "- Checksums don't match! Installation is aborted"
                                             .bright_red()
@@ -572,7 +572,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                                     match remove_file(&download_path) {
                                         Ok(_) => {}
                                         Err(error) => {
-                                            println!(
+                                            eprintln!(
                                                 "{}",
                                                 format!(
                                                     "- UNABLE DELETE FILE '{}'! ERROR[44]: {}",
@@ -589,7 +589,7 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                             }
 
                             Err(error) => {
-                                println!(
+                                eprintln!(
                                     "{}",
                                     format!("- ERROR[1]: {}", error).as_str().bright_red()
                                 );
@@ -602,13 +602,13 @@ pub fn command(package_name: &str, force: bool, quiet: bool) {
                 }
 
                 Err(error) => {
-                    println!("{}", format!("- ERROR[0]: {}", error).as_str().bright_red());
+                    eprintln!("{}", format!("- ERROR[0]: {}", error).as_str().bright_red());
                     exit(1);
                 }
             }
         }
     } else {
-        println!("{}", "- PACKAGE NOT FOUND!".bright_red());
+        eprintln!("{}", "- PACKAGE NOT FOUND!".bright_red());
         exit(1);
     }
 }

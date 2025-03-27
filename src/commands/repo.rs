@@ -85,7 +85,7 @@ pub fn add(repository_url: String, quiet: bool) {
                     let mut repo_config = match File::create(&repo_config_path_buf) {
                         Ok(file) => file,
                         Err(error) => {
-                            println!(
+                            eprintln!(
                                 "{}",
                                 format!(
                                     "- FAILED TO CREATE FILE '{}'! ERROR[68]: {}",
@@ -113,7 +113,7 @@ pub fn add(repository_url: String, quiet: bool) {
                     match writeln!(repo_config, "{}", repo_toml) {
                         Ok(_) => {}
                         Err(error) => {
-                            println!(
+                            eprintln!(
                                 "{}",
                                 format!(
                                     "- FAILED TO WRITE INTO REPO CONFIG AT '{}'! ERROR[69]: {}",
@@ -153,7 +153,7 @@ pub fn add(repository_url: String, quiet: bool) {
                     {
                         Ok(file) => file,
                         Err(error) => {
-                            println!(
+                            eprintln!(
                                 "{}",
                                 format!(
                                 "- FAILED TO OPEN CONFIG FILE AT '{}' FOR WRITING! ERROR[70]: {}",
@@ -171,7 +171,7 @@ pub fn add(repository_url: String, quiet: bool) {
                     match file.write_all(toml_str.as_bytes()) {
                         Ok(_) => {}
                         Err(error) => {
-                            println!(
+                            eprintln!(
                                 "{}",
                                 format!(
                                     "- FAILED TO WRITE INTO CONFIG FILE AT '{}'! ERROR[71]: {}",
@@ -193,7 +193,7 @@ pub fn add(repository_url: String, quiet: bool) {
                         );
                     }
                 } else {
-                    println!(
+                    eprintln!(
                         "{}",
                         format!(
                             "- Repository '{} ({})' is already added!",
@@ -206,7 +206,7 @@ pub fn add(repository_url: String, quiet: bool) {
             }
 
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO REQUEST ({})! ERROR[6]: {}",
@@ -218,7 +218,7 @@ pub fn add(repository_url: String, quiet: bool) {
             }
         }
     } else {
-        println!(
+        eprintln!(
             "{}",
             format!(
                 "- Repository '{} ({})' is already added!",
@@ -298,7 +298,7 @@ pub fn remove(repo_name_option: Option<String>, force: bool, quiet: bool) {
                 let config_file_str = match read_to_string(&aati_config_path_buf) {
                     Ok(contents) => contents,
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!(
                                 "- FAILED TO READ CONFIG FILE AT '{}'! ERROR[72]: {}",
@@ -325,7 +325,7 @@ pub fn remove(repo_name_option: Option<String>, force: bool, quiet: bool) {
                 {
                     Ok(file) => file,
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!(
                                 "- FAILED TO OPEN CONFIG FILE AT '{}' FOR WRITING! ERROR[73]: {}",
@@ -343,7 +343,7 @@ pub fn remove(repo_name_option: Option<String>, force: bool, quiet: bool) {
                 match file.write_all(toml_str.as_bytes()) {
                     Ok(_) => {}
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!(
                                 "- FAILED TO WRITE INTO CONFIG FILE AT '{}'! ERROR[74]: {}",
@@ -369,7 +369,7 @@ pub fn remove(repo_name_option: Option<String>, force: bool, quiet: bool) {
                 match remove_file(&repo_path_buf) {
                     Ok(_) => {}
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!(
                                 "- FAILED TO DELETE FILE '{}'! ERROR[79]: {}",
@@ -397,7 +397,7 @@ pub fn remove(repo_name_option: Option<String>, force: bool, quiet: bool) {
                 println!("{}", "+ Transaction aborted".bright_green());
             }
         } else {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- Repository '{}' is not added to the Config file!",
@@ -455,7 +455,7 @@ pub fn list() {
             );
         }
     } else {
-        println!("{}", "+ You have no repos set!".yellow());
+        eprintln!("{}", "+ You have no repos set!".yellow());
     }
 }
 
@@ -485,7 +485,7 @@ pub fn init(
         match create_dir_all(&repo_dir) {
             Ok(_) => {}
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO CREATE DIRECTORY '{}'! ERROR[49]: {}",
@@ -501,7 +501,7 @@ pub fn init(
         let mut repo_toml = match File::create(&repo_toml_path_buf) {
             Ok(file) => file,
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO CREATE FILE '{}'! ERROR[50]: {}",
@@ -525,7 +525,7 @@ pub fn init(
                 }
             }
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO CREATE DIRECTORY '{}'! ERROR[52]: {}",
@@ -550,7 +550,7 @@ pub fn init(
                 }
             }
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO CREATE DIRECTORY '{}'! ERROR[51]: {}",
@@ -574,7 +574,7 @@ pub fn init(
                 }
             }
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO CREATE DIRECTORY '{}'! ERROR[53]: {}",
@@ -619,7 +619,7 @@ pub fn init(
                 }
             }
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO WRITE INTO FILE '{}'! ERROR[67]: {}",
@@ -640,7 +640,7 @@ pub fn init(
             );
         }
     } else {
-        println!(
+        eprintln!(
             "{}",
             format!(
                 "+ Directory '{}' doesn't exist!",

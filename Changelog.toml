@@ -1,4 +1,15 @@
 [[version]]
+tag = '0.12.3'
+date = 'Thu Mar 27 03:28:39 2025 +0300'
+changes = '''
+Bugfixes:
+  - Removed the deprecated 'current' field from aati's generated `repo.toml` manifest
+Features:
+  - Errors are printed to stderr
+  - Updated dependencies
+'''
+
+[[version]]
 tag = "0.12.2"
 date = 'Sun Aug 27 13:10:38 2023 +0300'
 changes = '''- Removed '--url' from 'generate' and 'serve' commands'''

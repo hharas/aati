@@ -44,7 +44,7 @@ pub fn command(repo_names_option: Option<Vec<String>>, quiet: bool) {
                     {
                         selected_repos.push(found_repo.to_owned());
                     } else if !quiet {
-                        println!("{}", format!("+ Repository '{}' ignored due to not being found in the config file", repo_name).yellow());
+                        eprintln!("{}", format!("+ Repository '{}' ignored due to not being found in the config file", repo_name).yellow());
                     }
                 }
             } else {
@@ -77,7 +77,7 @@ pub fn command(repo_names_option: Option<Vec<String>>, quiet: bool) {
                         let mut repo_config = match File::create(&repo_config_path_buf) {
                             Ok(file) => file,
                             Err(error) => {
-                                println!(
+                                eprintln!(
                                     "{}",
                                     format!(
                                         "- FAILED TO CREATE FILE '{}'! ERROR[88]: {}",
@@ -105,7 +105,7 @@ pub fn command(repo_names_option: Option<Vec<String>>, quiet: bool) {
                         match writeln!(repo_config, "{}", repo_toml) {
                             Ok(_) => {}
                             Err(error) => {
-                                println!(
+                                eprintln!(
                                     "{}",
                                     format!(
                                         "- FAILED TO WRITE INTO REPO CONFIG AT '{}'! ERROR[48]: {}",
@@ -128,7 +128,7 @@ pub fn command(repo_names_option: Option<Vec<String>>, quiet: bool) {
                     }
 
                     Err(error) => {
-                        println!(
+                        eprintln!(
                             "{}",
                             format!(
                                 "- FAILED TO REQUEST ({})! ERROR[5]: {}",
@@ -144,7 +144,7 @@ pub fn command(repo_names_option: Option<Vec<String>>, quiet: bool) {
 
         None => {
             let aati_config_path_buf = get_aati_config_path_buf();
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- ERROR[8]: FAILED TO PARSE INFO FROM {}! TRY: aati repo <repo url>",

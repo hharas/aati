@@ -55,7 +55,7 @@ pub fn command(mut directory_name: String, quiet: bool) {
     let file = match File::create(&tar_destination) {
         Ok(file) => file,
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FAILED TO CREATE NEW FILE '{}'! ERROR[7]: {}",
@@ -78,7 +78,7 @@ pub fn command(mut directory_name: String, quiet: bool) {
         Ok(_) => match builder.finish() {
             Ok(_) => {}
             Err(error) => {
-                println!(
+                eprintln!(
                     "{}",
                     format!(
                         "- FAILED TO CREATE '{}' TARBALL! ERROR[102]: {}",
@@ -92,7 +92,7 @@ pub fn command(mut directory_name: String, quiet: bool) {
             }
         },
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FAILED TO APPEND '{}' DIRECTORY TO THE TARBALL! ERROR[101]: {}",
@@ -109,7 +109,7 @@ pub fn command(mut directory_name: String, quiet: bool) {
     let output_file = match File::create(&lz4_destination) {
         Ok(file) => file,
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FAILED TO CREATE FILE '{}'! ERROR[75]: {}",
@@ -126,7 +126,7 @@ pub fn command(mut directory_name: String, quiet: bool) {
     let mut encoder = match EncoderBuilder::new().level(16).build(output_file) {
         Ok(encoder) => encoder,
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!("- UNABLE INITIALISE THE LZ4 ENCODER! ERROR[76]: {}", error).bright_red()
             );
@@ -142,7 +142,7 @@ pub fn command(mut directory_name: String, quiet: bool) {
     let mut tarball = match File::open(&tar_destination) {
         Ok(file) => file,
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FAILED TO OPEN FILE '{}' FOR READING! ERROR[96]: {}",
@@ -159,7 +159,7 @@ pub fn command(mut directory_name: String, quiet: bool) {
     match copy(&mut tarball, &mut encoder) {
         Ok(_) => {}
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FAILED TO WRITE DATA INTO THE LZ4 ENCODER! ERROR[77]: {}",
@@ -175,7 +175,7 @@ pub fn command(mut directory_name: String, quiet: bool) {
     match encoder.finish().1 {
         Ok(_) => {}
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FAILED TO COMPRESS FINE '{}' USING LZ4! ERROR[78]: {}",
@@ -192,7 +192,7 @@ pub fn command(mut directory_name: String, quiet: bool) {
     match remove_file(&tar_destination) {
         Ok(_) => {}
         Err(error) => {
-            println!(
+            eprintln!(
                 "{}",
                 format!(
                     "- FAILED TO DELETE FILE {}! ERROR[54]: {}",
