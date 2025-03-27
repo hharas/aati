@@ -596,7 +596,7 @@ pub fn init(
 
     [index]
     packages = [
-    #   {{ name = \"package-name-here\", current = \"0.1.1\", target = \"any\", versions = [
+    #   {{ name = \"package-name-here\", target = \"any\", versions = [
     #       {{ tag = \"0.1.1\", checksum = \"sha256-sum-here\" }},
     #       {{ tag = \"0.1.0\", checksum = \"sha256-sum-here\" }},
     #   ], author = \"{}\", description = \"Package description here.\", url = \"{}\" }},
